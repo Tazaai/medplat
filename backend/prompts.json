@@ -1,0 +1,12 @@
+[
+  {
+    "id": "case1",
+    "title": "Blødningsforstyrrelser",
+    "prompt": "Skriv et detaljeret case-resumé om blødningsforstyrrelser til akutmodtagelsen."
+  },
+  {
+    "id": "case2",
+    "title": "Forgiftning med opiater",
+    "prompt": "Skriv en akut case om en patient med opioidoverdosis."
+  }
+]

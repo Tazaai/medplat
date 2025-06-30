@@ -1,0 +1,37 @@
+[
+  {
+    "id": "case001-absces-i-kind-kæbekirurgi",
+    "title": "Absces i kind hos mand med misbrug",
+    "content": "57-årig mand med odontogen sinuit og absces i højre kind. Kendt med misbrug, underernæring, AFLI og immunsvækkelse. Behandles med antibiotika og ernæringstilskud.",
+    "category": "Kæbekirurgi",
+    "age": 57
+  },
+  {
+    "id": "case002-sepsis-immunkompromitteret",
+    "title": "Sepsis hos mand med alkoholisk leversygdom",
+    "content": "56-årig mand med kendt alkoholisk cirrose og portal hypertension. Indlægges med hypotension og høj CRP. Bloddyrkninger positive. Behandles med bredspektret antibiotika og væsketerapi.",
+    "category": "Infektionsmedicin",
+    "age": 56
+  },
+  {
+    "id": "case003-akut-mavesmerter-mavetarmkirurgi",
+    "title": "Akut abdomen hos tidligere opereret kvinde",
+    "content": "61-årig kvinde med tidligere hysterektomi og kolecystektomi. Akut indlæggelse pga. mavesmerter, opkast og udspilet abdomen. Rtg viser ileus. Plan: CT og kirurgisk vurdering.",
+    "category": "Mavetarmkirurgi",
+    "age": 61
+  },
+  {
+    "id": "case004-hyperkaliæmi-nyremedicin",
+    "title": "Hyperkaliæmi hos ældre med AK-behandling",
+    "content": "82-årig mand med nyresvigt og AK-behandling. K med K+ 6,4 og EKG-forandringer. Behandles med calciumglukonat, insulin-glukose og resonium. Vurderes til dialyse.",
+    "category": "Nyremedicin",
+    "age": 82
+  },
+  {
+    "id": "case005-akut-brystsmerter-kardiologi",
+    "title": "Brystsmerter hos 72-årig kvinde med tidligere STEMI",
+    "content": "72-årig kvinde med kendt iskæmisk hjertesygdom og PCI. Indlægges med brystsmerter og dyspnø. EKG: ST-depressioner. Troponin stiger. Behandles som NSTEMI.",
+    "category": "Kardiologi",
+    "age": 72
+  }
+]

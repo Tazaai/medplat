@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "medplat-458911",
+  "private_key_id": "5eb5014bebd182af25124284282f6a36b4aaceea",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPZHQJaXosvrE8\ntlPOm/psrHja50lqO7gJuiw9/43m0qvZ66/cYwnp/IASccBp5heXasJUgDi4PRmA\nfst0UnfhVaPSO7zb0l9fNdgqDtpdPh7BxLwk69q9yTq1LPLKHuEMb1MYnobD6lkJ\nB9Z9tLfiEPvUXag2fcrdau+YvmNMRV0tmftYQhM14KBWBZi76HF0KoXdseYtNCyj\n0PzLoW3ZcE1bxRib5MqOIoescG68t1aAnf44XwrmSNVwAjU4EC3QOWea1I29/HDA\neKyCgNut549AfzQZ68PHko0xUbG+KkVjaAny8T+7iAkDPX6Thgc960pBXLgY0uX3\nIhHSxNG5AgMBAAECggEAAaLrRpURz7gglXDxE3TvK1vnQDhChuy6JltG0TPAHqnp\njTij+CXfBJlncUwJXb5Sz/9EUbez88H7N4gd7C/u1xwa/bJW+LQsBOuiu3QAU8Do\nnanmn3ot1FZrsbjw2XxQ45uP7koFe/pCEEG7zDKRg4kh4cbeEuqp2KwTjpEzyZkm\n3tY874GXtoCl56sArHc/zgd2tpxYPHpAwFOmMb+Vu01ZHvZAbx8bsw7JS+QXgQ7r\nU2hvntro8OC0CFq7kJTgkM/7bZWVmEKhaoahDjc5/rZoIE03DaFCBHRyTfsbaTVl\n9NbIOQTKb22VDfMLhKIF8mFj1BkmtNBPwdyYIBI2GQKBgQD2HQCmvYsSLbfzAL/T\nn0dRDSVDX6b+wKQUqqVrhE4THnzOAaXq/LhNtdNn/0cPtVgOYHTYFHfxzz1pUW7f\nw2QzzJ6OcmgPn2g/7/dKqU45C5zs0ChC1U+VXiQsRjCQiFWdmJAV1r8OPUj/G6Vn\njnkJh4ovWYNGaZetyZpICW6V/wKBgQDXuUAArl2evkWEzUmPsE4K+iPOSCmeTGq9\nsh+l7eJol8M2XrkOI2p1ZFXE6RdolKOhLyFhBJ3SBExt5/XV2aoy0wm7cvOOCcjv\n4mpERtncT5U/hD9/waaWS9P8C4tfipR9wo6ZcrbrTn3ye9ecZ6EciUW37WpDRsPn\nH2KAFBbIRwKBgQDoPMHqlZ1vz/hus9xPw1M2pmLtSot4hSvP3J8v768E15YJhwCb\n11HK8rLExdy2c/bdyiM360irw1U91nv7ZpNdVc6guFB9vXxQKQ5/Q3fu2IiB5oK3\nXjY0yprztGALYrr3dYkxMm0i8K27HMleCNEqLt40hBEeFnHsqfqN02io3QKBgQCj\npz/sxFr1sLcglnR183RhU36SYaBhHOvlWRo1URBv9KH9v0J4fVmoESQYLBS8G/c+\nsniKF2x7BRPOVSjkwSojQIKjmAM5ACdWBNhFT9K7FgzNkNBzZT+xyXjaPw/OvV0F\nQvHXa3VlcbiOmnDpkJxi/6jKbewteaPo1KBvNc5KxQKBgGkkYZi7AdWZX9v4uzoS\nqfjnQdgyhWVLw0u3VdqquLSMLNL/6GFmKfICPO79Q+GdjK4fpOQUzagXOy2Xr6VG\nWzeQpS1mtcQzeJQizzuUUxJ+HdfYJxU4rkhZ3ctz7UvduS+UL2aukgwQ3BtakHVu\nk/rOWKof/aZcQ26I3dN8Dfxw\n-----END PRIVATE KEY-----\n",
+  "client_email": "medplat-deployer@medplat-458911.iam.gserviceaccount.com",
+  "client_id": "105208741534324207924",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/medplat-deployer%40medplat-458911.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

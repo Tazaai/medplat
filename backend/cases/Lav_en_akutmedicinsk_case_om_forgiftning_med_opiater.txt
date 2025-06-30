@@ -1,0 +1,23 @@
+Patient Præsentation:
+
+En 26-årig mandlig patient præsenteres i akutafdelingen af hans bekymrede ven. Vennen fortæller, at patienten har taget et ubekendt antal smertestillende tabletter, som han har fået af en ven, der bruger dem til kroniske rygsmerter. 
+
+Patientens primære klager omfatter svær døsighed, træthed, og forvirring. Han har også opkastet flere gange. Hans vejrtrækning er langsom og overfladisk. Han er kendt for at have lidt af depression, men tager ikke regelmæssig medicin. Han har ingen kendte allergier.
+
+Klinisk Undersøgelse:
+
+På undersøgelse er patienten bevidsthedssvækket, men reagerer på smertestimuli. Hans puls er langsom (45 bpm), blodtrykket lavt (90/60 mmHg), og hans respirationsfrekvens er betydeligt nedsat (8 pr. minut). Hans pupiller er meget indsnævrede. Huden er kold og klam.
+
+Behandling og Fremgang:
+
+På baggrund af patientens kliniske billede og anamnese, er der stærk mistanke om forgiftning med opiater. Det er afgørende at stabilisere patientens tilstand hurtigst mulig. Der indledes med at sikre frie luftveje, og patienten gives ilt for at modvirke hypoxien. Patienten behandles med naloxon, der er en antagonist til opiat-receptorerne, for at reversere effekten af de mistænkte opiater. Samtidig overvåges vitale funktioner løbende, og der tages blodprøver for yderligere diagnostik og overvågning af patientens tilstand. 
+
+Efterfølgende vil det være essentielt at indlede en psykiatrisk vurdering af patienten, idet han har udvist tegn på selvskadende adfærd. Patienten og hans familie rådes til at søge støtte og behandling, herunder evt. opstart af en substitutionsbehandling for hans opiatmisbrug. 
+
+Komplikationer: 
+
+Komplikationer ved en opiat-overdosis kan bl.a. være hjerneskade på grund af nedsat iltforsyning, lungebetændelse, hjertestop og i værste fald død.
+
+Læringspunkter:
+
+Det er vigtigt at genkende tegn på opiatforgiftning, da en tidlig indsats kan være afgørende for patientens overlevelse og fremtidige helbred. Det er ligeledes vigtigt at være opmærksom på de psykosociale aspekter af opiatmisbrug, og at sikre patienten den nødvendige opfølgning efter den akutte behandling.

@@ -1,0 +1,78 @@
+import express from "express";
+import dotenv from "dotenv";
+import { generateCase } from "./generate_case_openai.mjs";
+import admin from "firebase-admin";
+import fs from "fs";
+import cors from "cors";
+
+// FIREBASE ADMIN INITIALISERING
+const serviceAccount = JSON.parse(fs.readFileSync("./serviceAccountKey.json", "utf8"));
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+const db = admin.firestore();
+
+dotenv.config();
+const app = express();
+
+// Cloud Run kræver at lytte på process.env.PORT eller 8080!
+const port = process.env.PORT || 8080;
+
+// ---- CORS ----
+app.use(cors({
+  origin: "https://frontend-139218747785.europe-west10.run.app"
+}));
+app.options('*', cors({
+  origin: "https://frontend-139218747785.europe-west10.run.app"
+}));
+
+app.use(express.json());
+
+// === Use topics router ===
+// IMPORTÉR FØRST HER, EFTER FIREBASE ER INITIALISERET
+import("./routes/topics_api.mjs").then(({ default: topicsApi }) => {
+.catch(err => { console.error("Failed to import routes/topics_api.mjs:", err); });
+  app.use("/api/topics", topicsApi);
+
+  // Health check route
+  app.get("/", (req, res) => {
+    res.send("Backend is working!");
+  });
+
+  // POST /api/dialog - ONLY history generation!
+  app.post("/api/dialog", async (req, res) => {
+    try {
+      const userMessage = req.body.userMessage || "Generate a clinical case";
+      const lang = req.body.lang || "da";
+      // Use a strict prompt for history only
+      const prompt = `
+        Generate ONLY the patient's subjective history (anamnesis) for this clinical case:
+        ${userMessage}
+        Do NOT include objective findings, labs, differential diagnoses, or treatment.
+        Only write the story/history that the patient tells the doctor.
+      `;
+      const result = await generateCase(prompt, lang);
+      res.json({ aiReply: result });
+    } catch (error) {
+      res.status(500).json({ aiReply: null, error: error.message });
+    }
+  });
+
+  // Gammel route (bruger ikke sprog, behold til bagudkompatibilitet)
+  app.post("/generate-case", async (req, res) => {
+    try {
+      const prompt = req.body.prompt || "Generate a clinical case";
+      const result = await generateCase(prompt);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Cloud Run kræver "0.0.0.0"
+  });
+});
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running at http://0.0.0.0:${port}`);
+});

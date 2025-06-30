@@ -1,0 +1,200 @@
+Akut bronkitis
+Sepsis
+Hjerteinsufficiens
+KOL
+Lungeemboli
+Pneumoni
+Anafylaksi
+Epileptisk anfald
+Hypoglykæmi
+Hyperglykæmi
+Diabetisk ketoacidose
+Stroke
+TIA
+Meningitis
+Appendicitis
+Cholecystitis
+Pancreatitis
+Tarmobstruktion
+UVI
+Akut nyresvigt
+Hyponatriæmi
+Hyperkaliæmi
+Hypokaliæmi
+Metabolisk acidose
+Akut konfusion
+Delirium
+Selvmordsrisiko
+Akut psykotisk tilstand
+Overdosis
+Intoxikation
+Astmaanfald
+Akut lungeødem
+AV-blok
+Supraventrikulær takykardi
+Ventrikulær takykardi
+Asystoli
+PEA
+Hjertestop
+Akut blødning
+GI-blødning
+Traume
+Forfrysning
+Brandsår
+El-skade
+Hypotermi
+Hypertermi
+Dehydrering
+Elektrolytforstyrrelser
+Anæmi
+Neutropen feber
+COVID-19
+RS-virus
+Influenza
+Trombose
+DVT
+LE
+Aortadissektion
+Hypertensiv krise
+Preeklampsi
+Eklampsi
+Fødselskomplikation
+Postpartum blødning
+Ektopisk graviditet
+Nyresten
+Akut urinretention
+Polyuri
+Rabdomyolyse
+Guillain-Barré syndrom
+Status epilepticus
+Takyarytmi
+Bradyarytmi
+Perikarditis
+Endokarditis
+Myokarditis
+Tarmiskæmi
+Cholangitis
+Intraabdominal absces
+Colitis ulcerosa
+Crohn’s sygdom
+Blæreperforation
+Hjernerystelse
+Subduralt hæmatom
+Epiduralt hæmatom
+Akut stressreaktion
+Akut angst
+PTSD
+Migræne
+Klyngehovedpine
+Trigeminal neuralgi
+Facialisparese
+Toksisk shock syndrom
+Skorpionbid
+Slangebid
+Allergisk reaktion
+Fremmedlegeme aspiration
+Pneumothorax
+Hæmothorax
+Skulderluksation
+Hoftefraktur
+Hjertetamponade
+Perforeret ulcus
+Sårinfektion
+Kateterrelateret infektion
+Tryksår
+Infektiøs endokarditis
+Urosepsis
+Blodforgiftning
+Autoimmun encefalitis
+Hypofysær apopleksi
+Thyroideakrise
+Addison-krise
+Hypercalcæmi
+Hypocalcæmi
+Hypomagnesæmi
+Hypermagnesæmi
+Svangerskabskomplikation
+Abortus imminens
+Missed abortion
+Blæremola
+Skulderdystoci
+Navlesnorsprolaps
+Atoni blødning
+Kramper gravid
+Sepsis gravid
+Diabetes gravid
+Blodtryk gravid
+Feber ukendt fokus
+Hudabsces
+Cellulit
+Rosacea
+Erysipelas
+Impetigo
+Akut leukæmi
+Blødningsforstyrrelser
+Trombocytopeni
+ITP
+HUS
+TTP
+Transfusionsreaktion
+Anafylaksi medicin
+Feber efter transfusion
+Venøs insufficiens
+Arterieafklemning
+Forgiftning med paracetamol
+Forgiftning med opiater
+Forgiftning med benzodiazepiner
+Forgiftning med svampe
+Forgiftning med alkohol
+Amfetaminforgiftning
+Kokainforgiftning
+Cannabisforgiftning
+Benzinindtag
+Kulilteforgiftning
+Cyanidforgiftning
+Lithiumforgiftning
+Digitalisforgiftning
+NSAID-bivirkning
+Warfarin-blødning
+NOAK-overdosering
+Insulinshock
+Hyperosmolært syndrom
+Hypofyseinsufficiens
+SIADH
+Diabetes insipidus
+Nefrotisk syndrom
+Glomerulonefrit
+Akut reumatisk feber
+Polymyalgia reumatika
+Akut urinsyregigt
+Reaktiv artritis
+Septisk artritis
+Akut pancreatitis alkoholisk
+Pancreaskræft debut
+Leversvigt
+Hepatisk encefalopati
+Tarmperforation
+Tyndtarmsileus
+Volvulus
+Mesenterialt infarkt
+Akut testistorsion
+Torsion af ovariecyste
+Nekrotiserende fasciitis
+Immunreaktion lægemiddel
+Steven-Johnson syndrom
+Anafylaktisk shock
+Uforklarlig synkope
+Ortostatisk hypotension
+Langt QT syndrom
+Brugada syndrom
+WPW syndrom
+Kardiomyopati
+Mitralprolaps
+Aortastenose
+Hjertesvigt debut
+Akut peritonitis
+Fremmedlegeme i rectum
+Analfissur
+Hæmorider blødning
+Akut hepatitis
+Psykogen hyperventilation
