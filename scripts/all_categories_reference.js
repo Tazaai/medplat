@@ -1,0 +1,32 @@
+// 📚 Reference list of all current categories in topics2 (28 total)
+
+export const allCategories = [
+  "Acute Medicine",
+  "Anesthesiology",
+  "Cardiology",
+  "Dermatology",
+  "Disaster & Crisis Response",
+  "ENT / Otolaryngology",
+  "Emergency Medicine",
+  "Endocrinology",
+  "Gastroenterology",
+  "General Practice",
+  "Hematology",
+  "Infectious Diseases",
+  "Nephrology",
+  "Neurology",
+  "Nutrition & Metabolism",
+  "Obstetrics & Gynecology",
+  "Occupational Medicine",
+  "Oncology",
+  "Ophthalmology",
+  "Orthopedics",
+  "Palliative Medicine",
+  "Pediatrics",
+  "Psychiatry",
+  "Pulmonology",
+  "Rehabilitation Medicine",
+  "Rheumatology",
+  "Toxicology",
+  "Urology"
+];

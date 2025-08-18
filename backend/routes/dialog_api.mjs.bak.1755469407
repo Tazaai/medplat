@@ -1,0 +1,747 @@
+// ~/medplat/backend/routes/dialog_api.mjs
+import express from "express";
+import openai from "./openai_client.js"; // existing client
+
+console.log("✅ dialog_api.mjs LOADED (merged generator)");
+
+// ---------------------------------------------------------------------
+// Schema + Prompting
+// ---------------------------------------------------------------------
+const SCHEMA_HINT = `
+Return ONE JSON object with exactly these top-level keys:
+{
+  "meta": {
+    "topic": string,
+    "language": string,            // ISO code like "en", "da", "ar"
+    "region": string,              // e.g., "EU/DK", "US", "UK"
+    "demographics": { "age": number, "sex": "male"|"female"|"unspecified" },
+    "geography_of_living": string
+  },
+  "history": {
+    "presenting_complaint": string,
+    "onset_duration_severity": string,
+    "context_triggers": string,
+    "post_event": string,
+    "past_medical_history": string[],
+    "medications_current": string[],
+    "allergies": string[]
+  },
+  "exam": {
+    "vitals": object,              // { BP, HR, RR, Temp, Sat/SpO2, GCS, etc. }
+    "orthostatics": object,        // {} or structured values
+    "general": string,
+    "cardiorespiratory": string,
+    "hemodynamic_profile": string, // "warm & dry" | "warm & wet" | "cold & dry" | "cold & wet"
+    "pain_distress": string
+  },
+  "paraclinical": {
+    "labs": string[],
+    "ecg": string,
+    "imaging": [ { "modality": string, "timing": string, "rationale": string } ],
+    "other_tests": string[],
+    "test_kinetics": [ { "test": string, "timing_relation": string, "notes": string } ]
+  },
+  "differentials": [
+    { "name": string, "status": "ACCEPTED"|"REJECTED"|"KEEP_OPEN", "why_for": string, "why_against": string }
+  ],
+  "red_flags": string[],
+  "final_diagnosis": { "name": string, "rationale": string },
+  "pathophysiology": { "mechanism": string, "systems_organs": string },
+  "etiology": { "underlying_cause": string },
+  "management": {
+    "immediate": string[],
+    "escalation_if_wrong_dx": string[],
+    "region_guidelines": [ { "society": string, "year": string, "applies_to": string, "note": string } ],
+    "timing_windows": [ { "action": string, "window": string } ]
+  },
+  "disposition": {
+    "admit_vs_discharge": string,
+    "unit": string,
+    "follow_up": string,
+    "social_needs": string
+  },
+  "evidence": {
+    "prevalence": string,
+    "incidence": string,
+    "key_tests": [ { "test": string, "sensitivity": string, "specificity": string, "notes": string } ],
+    "prognosis": string
+  },
+  "teaching": {
+    "pearls": string[],
+    "mnemonics": string[]
+  },
+  "panel_notes": {
+    "internal_medicine": string,
+    "surgery": string,
+    "emergency_medicine": string
+  }
+}
+`.trim();
+
+const SYSTEM_PROMPT = `
+You are a senior clinical panel generating *complete* teaching cases.
+CRITICAL:
+- Output STRICT JSON only (no markdown fences, no prose).
+- Fill EVERY field with realistic details. Never leave arrays empty.
+- Use appropriate demographics for the topic.
+- Use requested language code for content (keys remain in English as per schema).
+- No URLs in guidelines; summarize in "note".
+Schema to follow:
+${SCHEMA_HINT}
+`.trim();
+
+function userJSONPrompt({
+  area = "",
+  topic = "",
+  language = "en",
+  region = "EU/DK",
+  niveau = "",
+  patient_constraints = {},
+  minutes_from_onset = null
+}) {
+  return `
+Generate one realistic case using the unified JSON schema.
+
+context:
+- area: ${area}
+- topic: ${topic}
+- niveau: ${niveau}
+- language: ${language}
+- region: ${region}
+- patient_constraints: ${JSON.stringify(patient_constraints)}
+- onset_minutes_ago: ${minutes_from_onset ?? "unknown"}
+
+Global requirements:
+- Demographics must be realistic for the topic (age/sex not random).
+- Geography_of_living must be present (e.g., "urban, lives alone").
+- Labs/imaging must be diagnostically relevant for ${topic}.
+- Include red flags tailored to ${topic}.
+- Avoid brand names if generic exists.
+- No references as URLs; summarize guideline sources in "region_guidelines.note".
+`.trim();
+}
+
+// ---------------------------------------------------------------------
+// JSON utilities
+// ---------------------------------------------------------------------
+const stripFences = (s = "") =>
+  String(s)
+    .trim()
+    .replace(/^`{3,}(?:json)?\s*/i, "")
+    .replace(/`{3,}\s*$/i, "")
+    .replace(/^`+|`+$/g, "");
+
+async function repairJson(badJsonText, model = "gpt-4o-mini") {
+  const completion = await openai.chat.completions.create({
+    model,
+    messages: [
+      { role: "system", content: "You output ONLY valid JSON. No commentary." },
+      { role: "user", content: `Fix ONLY the formatting so the following becomes valid JSON. Output JSON only:\n\n${badJsonText}` }
+    ],
+    temperature: 0.0
+  });
+  return stripFences(completion?.choices?.[0]?.message?.content || "{}");
+}
+
+const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+const arr = (v) => (Array.isArray(v) ? v : v == null ? [] : [v].filter(Boolean));
+const normStr = (x, d = "") => (typeof x === "string" && x.trim() ? x.trim() : d);
+const nonEmpty = (v) => (Array.isArray(v) ? v.length > 0 : !!v);
+const s = (x) => (typeof x === "string" && x.trim() ? x.trim() : "");
+const first = (...vals) => vals.find((v) => s(v)) || "";
+
+// normalize language labels to ISO
+function normalizeLang(language = "en") {
+  const L = normStr(language).toLowerCase();
+  const map = {
+    english: "en", en: "en",
+    dansk: "da", danish: "da", da: "da",
+    deutsch: "de", german: "de", de: "de",
+    french: "fr", fr: "fr",
+    spanish: "es", es: "es",
+    italian: "it", it: "it",
+    arabic: "ar", ar: "ar",
+    turkish: "tr", tr: "tr",
+    urdu: "ur", ur: "ur",
+    farsi: "fa", persian: "fa", fa: "fa"
+  };
+  return map[L] || "en";
+}
+
+// baseline normalizer (ensures keys exist, shapes OK)
+function normalizeAndBaseline(obj = {}, ctx = {}) {
+  const out = { ...obj };
+
+  // ensure keys
+  for (const k of [
+    "meta","history","exam","paraclinical","differentials","red_flags",
+    "final_diagnosis","pathophysiology","etiology","management",
+    "disposition","evidence","teaching","panel_notes"
+  ]) {
+    if (!(k in out)) out[k] = (k === "differentials" || k === "red_flags") ? [] : {};
+  }
+
+  // meta
+  out.meta = isObj(out.meta) ? out.meta : {};
+  out.meta.topic = ctx.topic || out.meta.topic || "";
+  out.meta.language = normalizeLang(out.meta.language || ctx.language || "en");
+  out.meta.region = out.meta.region || ctx.region || "EU/DK";
+  out.meta.demographics = isObj(out.meta.demographics) ? out.meta.demographics : {};
+  if (typeof out.meta.demographics.age !== "number") out.meta.demographics.age = 60;
+  if (!out.meta.demographics.sex) out.meta.demographics.sex = "unspecified";
+  out.meta.geography_of_living = out.meta.geography_of_living || "urban, lives with family";
+
+  // history
+  out.history = isObj(out.history) ? out.history : {};
+  out.history.presenting_complaint = normStr(out.history.presenting_complaint);
+  out.history.onset_duration_severity = normStr(out.history.onset_duration_severity);
+  out.history.context_triggers = normStr(out.history.context_triggers);
+  out.history.post_event = normStr(out.history.post_event);
+  out.history.past_medical_history = arr(out.history.past_medical_history);
+  out.history.medications_current = arr(out.history.medications_current);
+  out.history.allergies = arr(out.history.allergies);
+
+  // exam
+  out.exam = isObj(out.exam) ? out.exam : {};
+  out.exam.vitals = isObj(out.exam.vitals) ? out.exam.vitals : {};
+  out.exam.orthostatics = isObj(out.exam.orthostatics) ? out.exam.orthostatics : {};
+  out.exam.general = normStr(out.exam.general);
+  out.exam.cardiorespiratory = normStr(out.exam.cardiorespiratory);
+  out.exam.hemodynamic_profile = out.exam.hemodynamic_profile || "warm & dry";
+  out.exam.pain_distress = out.exam.pain_distress || "appears uncomfortable";
+
+  // paraclinical
+  out.paraclinical = isObj(out.paraclinical) ? out.paraclinical : {};
+  out.paraclinical.labs = arr(out.paraclinical.labs);
+  out.paraclinical.ecg = normStr(out.paraclinical.ecg);
+  out.paraclinical.imaging = arr(out.paraclinical.imaging).map(x => ({
+    modality: x?.modality || "",
+    timing: x?.timing || "",
+    rationale: x?.rationale || ""
+  }));
+  out.paraclinical.other_tests = arr(out.paraclinical.other_tests);
+  out.paraclinical.test_kinetics = arr(out.paraclinical.test_kinetics).map(x => ({
+    test: x?.test || "",
+    timing_relation: x?.timing_relation || "",
+    notes: x?.notes || ""
+  }));
+
+  // diffs, red flags
+  out.differentials = arr(out.differentials).map(d => ({
+    name: d?.name || "",
+    status: d?.status || "KEEP_OPEN",
+    why_for: d?.why_for || "",
+    why_against: d?.why_against || ""
+  }));
+  out.red_flags = arr(out.red_flags);
+
+  // management
+  out.management = isObj(out.management) ? out.management : {};
+  out.management.immediate = arr(out.management.immediate);
+  out.management.escalation_if_wrong_dx = arr(out.management.escalation_if_wrong_dx);
+  out.management.region_guidelines = arr(out.management.region_guidelines).map(g => ({
+    society: g?.society || (out.meta.region.includes("EU") ? "ESO/ESC" : "AHA/ACC"),
+    year: g?.year || "2021",
+    applies_to: g?.applies_to || out.meta.topic || "",
+    note: g?.note || "Regional consensus summary."
+  }));
+  out.management.timing_windows = arr(out.management.timing_windows).map(t => ({
+    action: t?.action || "",
+    window: t?.window || ""
+  }));
+
+  // disposition
+  out.disposition = isObj(out.disposition) ? out.disposition : {};
+  out.disposition.admit_vs_discharge = out.disposition.admit_vs_discharge || "Admit";
+  out.disposition.unit = out.disposition.unit || "Appropriate specialty ward";
+  out.disposition.follow_up = out.disposition.follow_up || "Arrange specialty follow-up";
+  out.disposition.social_needs = out.disposition.social_needs || "Assess caregiver support and home safety";
+
+  // evidence
+  out.evidence = isObj(out.evidence) ? out.evidence : {};
+  out.evidence.prevalence = normStr(out.evidence.prevalence);
+  out.evidence.incidence = normStr(out.evidence.incidence);
+  out.evidence.key_tests = arr(out.evidence.key_tests).map(t => ({
+    test: t?.test || "",
+    sensitivity: t?.sensitivity || "",
+    specificity: t?.specificity || "",
+    notes: t?.notes || ""
+  }));
+  out.evidence.prognosis = normStr(out.evidence.prognosis);
+
+  // teaching
+  out.teaching = isObj(out.teaching) ? out.teaching : {};
+  out.teaching.pearls = arr(out.teaching.pearls);
+  out.teaching.mnemonics = arr(out.teaching.mnemonics);
+
+  // panel
+  out.panel_notes = isObj(out.panel_notes) ? out.panel_notes : {};
+  out.panel_notes.internal_medicine = normStr(out.panel_notes.internal_medicine, "—");
+  out.panel_notes.surgery = normStr(out.panel_notes.surgery, "—");
+  out.panel_notes.emergency_medicine = normStr(out.panel_notes.emergency_medicine, "—");
+
+  return out;
+}
+
+// extra completeness fillers (topic-aware) -------------------------------
+function ensureVitals(v = {}) {
+  const vv = isObj(v) ? { ...v } : {};
+  vv.HR = vv.HR ?? 104;
+  vv.BP = vv.BP ?? "132/78";
+  vv.RR = vv.RR ?? 20;
+  vv.Sat = vv.Sat ?? "98% (RA)";
+  vv.Temp = vv.Temp ?? 37.8;
+  vv.GCS = vv.GCS ?? "15";
+  return vv;
+}
+
+function topicFillers(topic = "") {
+  const t = (topic || "").toLowerCase();
+
+  // 🚀 include appendicitis by name as well as "acute abdomen"
+  if (
+    t.includes("acute_abdomen") ||
+    t.includes("acute abdomen") ||
+    t.includes("appendicitis") ||
+    t.includes("acute appendicitis")
+  ) {
+    return {
+      presenting: "Acute abdominal pain localizing to the right lower quadrant, nausea, anorexia.",
+      onset: "Sudden onset 12–18 hours ago, progressive, VAS 7–8/10.",
+      context: "No trauma. Last meal 8h ago. No prior abdominal surgery.",
+      pmh: ["Hypertension", "Hyperlipidemia"],
+      meds: ["Amlodipine 5 mg daily", "Atorvastatin 20 mg nightly"],
+      allergies: ["No known drug allergies"],
+      exam: {
+        general: "Uncomfortable, prefers to lie still.",
+        cardiorespiratory: "Clear lungs, regular heart sounds.",
+        hemodynamic_profile: "warm & dry",
+        pain_distress: "guarding noted over RLQ",
+        abdomen: "RLQ tenderness with rebound at McBurney point, positive Rovsing sign"
+      },
+      labs: [
+        "CBC: WBC 14.2 ×10^9/L (neutrophil predominance), Hb 13.2 g/dL, Plt 250 ×10^9/L",
+        "CRP 85 mg/L",
+        "BMP: Na 138, K 3.8, Creatinine 1.1 mg/dL, Urea 8 mmol/L",
+        "LFTs: AST 22, ALT 24, ALP 88, Bilirubin 0.9 mg/dL",
+        "Lipase 22 U/L",
+        "Urinalysis: negative nitrite/leuk est; no hematuria",
+        "hCG: negative (if applicable)",
+        "Lactate 1.8 mmol/L"
+      ],
+      imaging: [
+        { modality: "Ultrasound abdomen", timing: "ED", rationale: "Evaluate RLQ, rule out biliary disease" },
+        { modality: "CT abd/pelvis with IV contrast", timing: "First 2–4 h", rationale: "Appendiceal inflammation, fat stranding, no free air" }
+      ],
+      diffs: [
+        { name: "Acute appendicitis", status: "ACCEPTED", why_for: "RLQ pain, WBC/CRP up, CT signs", why_against: "" },
+        { name: "Cholecystitis", status: "REJECTED", why_for: "Nausea", why_against: "Pain RLQ not RUQ; no Murphy sign" },
+        { name: "SBO", status: "KEEP_OPEN", why_for: "Abdominal pain", why_against: "No vomiting; no prior surgery" },
+        { name: "Renal colic", status: "REJECTED", why_for: "Flank→groin pain can mimic", why_against: "UA negative for blood" }
+      ],
+      finalDx: { name: "Acute appendicitis", rationale: "Consistent exam + labs + CT" },
+      patho: { mechanism: "Luminal obstruction → bacterial overgrowth → inflammation.", systems_organs: "Appendix; may involve peritoneum if perforated." },
+      etiology: { underlying_cause: "Fecalith or lymphoid hyperplasia (less commonly tumor)." },
+      immediate: [
+        "ABC; monitoring; analgesia and antiemetic",
+        "NPO; IV access ×2; isotonic fluids",
+        "Broad-spectrum antibiotics (per local protocol)",
+        "CT abdomen/pelvis with contrast if not done",
+        "Urgent surgical consult for appendectomy"
+      ],
+      escalation: ["If perforation/peritonitis: urgent OR; ICU if unstable."],
+      timing: ["Pre-incision antibiotics; aim appendectomy within 12–24h if stable."],
+      disposition: {
+        admit_vs_discharge: "Admit",
+        unit: "Surgical ward",
+        follow_up: "Post-op review 7–10 days; wound check",
+        social_needs: "Assess caregiver support and postop instructions"
+      },
+      teaching: {
+        pearls: [
+          "Analgesia does not mask peritoneal signs—treat pain.",
+          "US first in young/pregnant; CT has highest accuracy otherwise."
+        ],
+        mnemonics: ["APPENDIX: Anorexia, Pain RLQ, Pyrexia, Elevated WBC, Nausea, Defense, Imaging, eXclude mimics"]
+      },
+      evidence: {
+        key_tests: [
+          { test: "CT abdomen (contrast)", sensitivity: "~94–98%", specificity: "~95–97%", notes: "High accuracy" },
+          { test: "Ultrasound", sensitivity: "~75–90%", specificity: "~86–95%", notes: "Operator dependent" }
+        ],
+        prognosis: "Excellent with timely surgery."
+      },
+      panel: {
+        internal_medicine: "Optimize fluids/comorbidities pre-op.",
+        surgery: "Likely appendectomy; antibiotics per protocol.",
+        emergency_medicine: "Early antibiotics and imaging; prompt surgical involvement."
+      }
+    };
+  }
+
+  // generic baseline
+  return {
+    presenting: "Acute symptoms prompting ED evaluation.",
+    onset: "Hours to days; moderate to severe intensity.",
+    context: "No trauma reported.",
+    pmh: ["Hypertension"],
+    meds: ["Amlodipine 5 mg daily"],
+    allergies: ["No known drug allergies"],
+    exam: {
+      general: "Alert, oriented.",
+      cardiorespiratory: "Normal heart sounds, clear lungs.",
+      hemodynamic_profile: "warm & dry",
+      pain_distress: "mild distress",
+      abdomen: "soft, localized tenderness"
+    },
+    labs: ["CBC: mild leukocytosis", "CRP elevated", "BMP near baseline", "Urinalysis unremarkable"],
+    imaging: [
+      { modality: "Ultrasound", timing: "ED", rationale: "First-line assessment" },
+      { modality: "CT as indicated", timing: "ED", rationale: "Define pathology if unclear" }
+    ],
+    diffs: [
+      { name: "Primary topic-related diagnosis", status: "KEEP_OPEN", why_for: "Matches presentation", why_against: "" },
+      { name: "Important alternative 1", status: "KEEP_OPEN", why_for: "", why_against: "" }
+    ],
+    finalDx: { name: normStr(topic), rationale: "Working diagnosis" },
+    patho: { mechanism: "Pathophysiology consistent with presentation.", systems_organs: "Relevant organ(s)." },
+    etiology: { underlying_cause: "Common causes for this condition." },
+    immediate: ["ABC; monitoring", "IV access; fluids", "Analgesia/antiemetic", "Screening labs & targeted imaging", "Consult appropriate specialty"],
+    escalation: ["Escalate/ICU if unstable or deterioration."],
+    timing: ["Time-sensitive diagnostics & therapy per condition."],
+    disposition: { admit_vs_discharge: "Admit", unit: "Appropriate ward", follow_up: "Clinic follow-up", social_needs: "Assess supports/safety" },
+    teaching: { pearls: ["Early targeted testing improves outcomes."], mnemonics: [] },
+    evidence: { key_tests: [], prognosis: "" },
+    panel: { internal_medicine: "Stabilize comorbidities.", surgery: "Consult if operative pathology suspected.", emergency_medicine: "Initiate diagnostics & early therapy." }
+  };
+}
+
+function ensureCaseCompleteness(unified, { topic, language, region }) {
+  const u = normalizeAndBaseline(unified, { topic, language, region });
+  const tfill = topicFillers(u?.meta?.topic || "");
+
+  // history
+  if (!nonEmpty(u.history.presenting_complaint)) u.history.presenting_complaint = tfill.presenting;
+  if (!nonEmpty(u.history.onset_duration_severity)) u.history.onset_duration_severity = tfill.onset;
+  if (!nonEmpty(u.history.context_triggers)) u.history.context_triggers = tfill.context;
+  if (!nonEmpty(u.history.past_medical_history)) u.history.past_medical_history = arr(tfill.pmh);
+  if (!nonEmpty(u.history.medications_current)) u.history.medications_current = arr(tfill.meds);
+  if (!nonEmpty(u.history.allergies)) u.history.allergies = arr(tfill.allergies);
+
+  // exam
+  u.exam.vitals = ensureVitals(u.exam.vitals);
+  if (!nonEmpty(u.exam.general)) u.exam.general = tfill.exam.general;
+  if (!nonEmpty(u.exam.cardiorespiratory)) u.exam.cardiorespiratory = tfill.exam.cardiorespiratory;
+  u.exam.hemodynamic_profile = u.exam.hemodynamic_profile || tfill.exam.hemodynamic_profile;
+  u.exam.pain_distress = u.exam.pain_distress || tfill.exam.pain_distress;
+  if (!nonEmpty(u.exam.abdomen)) u.exam.abdomen = tfill.exam.abdomen;
+
+  // paraclinical
+  if (!nonEmpty(u.paraclinical.labs)) u.paraclinical.labs = arr(tfill.labs);
+  if (!nonEmpty(u.paraclinical.imaging)) u.paraclinical.imaging = arr(tfill.imaging);
+
+  // diffs, final dx, etc.
+  if (!nonEmpty(u.differentials)) u.differentials = arr(tfill.diffs);
+  if (!isObj(u.final_diagnosis)) u.final_diagnosis = {};
+  if (!nonEmpty(u.final_diagnosis.name)) u.final_diagnosis.name = tfill.finalDx.name;
+  if (!nonEmpty(u.final_diagnosis.rationale)) u.final_diagnosis.rationale = tfill.finalDx.rationale;
+
+  // patho/etiology
+  if (!isObj(u.pathophysiology)) u.pathophysiology = {};
+  if (!nonEmpty(u.pathophysiology.mechanism)) u.pathophysiology.mechanism = tfill.patho.mechanism;
+  if (!nonEmpty(u.pathophysiology.systems_organs)) u.pathophysiology.systems_organs = tfill.patho.systems_organs;
+  if (!isObj(u.etiology)) u.etiology = {};
+  if (!nonEmpty(u.etiology.underlying_cause)) u.etiology.underlying_cause = tfill.etiology.underlying_cause;
+
+  // management
+  if (!isObj(u.management)) u.management = {};
+  if (!nonEmpty(u.management.immediate)) u.management.immediate = arr(tfill.immediate);
+  if (!nonEmpty(u.management.escalation_if_wrong_dx)) u.management.escalation_if_wrong_dx = arr(tfill.escalation);
+  if (!nonEmpty(u.management.timing_windows)) u.management.timing_windows = arr(tfill.timing);
+
+  // disposition
+  if (!isObj(u.disposition)) u.disposition = {};
+  if (!nonEmpty(u.disposition.admit_vs_discharge)) u.disposition.admit_vs_discharge = tfill.disposition.admit_vs_discharge;
+  if (!nonEmpty(u.disposition.unit)) u.disposition.unit = tfill.disposition.unit;
+  if (!nonEmpty(u.disposition.follow_up)) u.disposition.follow_up = tfill.disposition.follow_up;
+  if (!nonEmpty(u.disposition.social_needs)) u.disposition.social_needs = tfill.disposition.social_needs;
+
+  // evidence & teaching
+  if (!isObj(u.evidence)) u.evidence = {};
+  if (!nonEmpty(u.evidence.key_tests)) u.evidence.key_tests = arr(tfill.evidence.key_tests);
+  if (!nonEmpty(u.evidence.prognosis)) u.evidence.prognosis = tfill.evidence.prognosis;
+
+  if (!isObj(u.teaching)) u.teaching = {};
+  if (!nonEmpty(u.teaching.pearls)) u.teaching.pearls = arr(tfill.teaching.pearls);
+  if (!nonEmpty(u.teaching.mnemonics)) u.teaching.mnemonics = arr(tfill.teaching.mnemonics);
+
+  // panel
+  if (!isObj(u.panel_notes)) u.panel_notes = {};
+  u.panel_notes.internal_medicine ||= tfill.panel.internal_medicine;
+  u.panel_notes.surgery ||= tfill.panel.surgery;
+  u.panel_notes.emergency_medicine ||= tfill.panel.emergency_medicine;
+
+  return u;
+}
+
+// legacy sections for older readers ------------------------------------
+function buildLegacySections(unified) {
+  const u = unified || {};
+  const history = u.history || {};
+  const exam = u.exam || {};
+  const para = u.paraclinical || {};
+  const diffs = Array.isArray(u.differentials) ? u.differentials : [];
+  const refs = Array.isArray((u.management || {}).region_guidelines) ? u.management.region_guidelines : [];
+
+  const I_PatientHistory = {
+    presenting_complaint: history.presenting_complaint || "",
+    onset_duration_severity: history.onset_duration_severity || "",
+    context_triggers: history.context_triggers || "",
+    post_event_details: history.post_event || "",
+    past_medical_history: (history.past_medical_history || []).join("; "),
+    medications_allergies: `Meds: ${(history.medications_current || []).join(", ")}; Allergies: ${(history.allergies || []).join(", ")}`
+  };
+
+  const II_ObjectiveFindings = {
+    vitals: JSON.stringify(exam.vitals || {}),
+    orthostatic_vitals: JSON.stringify(exam.orthostatics || {}),
+    physical_exam: [
+      exam.general ? `General: ${exam.general}` : "",
+      exam.cardiorespiratory ? `Cardiorespiratory: ${exam.cardiorespiratory}` : "",
+      exam.abdomen ? `Abdomen: ${exam.abdomen}` : "",
+      exam.hemodynamic_profile ? `Hemodynamic: ${exam.hemodynamic_profile}` : "",
+      exam.pain_distress ? `Pain/Distress: ${exam.pain_distress}` : ""
+    ].filter(Boolean).join(" | "),
+    risk_factors: (u.meta?.topic ? `Topic: ${u.meta.topic}. ` : "") + (history.past_medical_history || []).join(", "),
+    exposures: "",
+    family_disposition: ""
+  };
+
+  const III_ParaclinicalInvestigations = {
+    labs: (para.labs || []).join("; "),
+    ecg: para.ecg || "",
+    imaging: (para.imaging || []).map(i => {
+      if (isObj(i)) return `${i.modality}${i.timing ? " — " + i.timing : ""}${i.rationale ? " — " + i.rationale : ""}`;
+      return String(i || "");
+    }).join(" | "),
+    other_tests: (para.other_tests || []).join("; ")
+  };
+
+  const IV_DifferentialDiagnoses = {
+    list: diffs.map(d => {
+      const n = isObj(d) ? d.name : String(d || "");
+      const st = isObj(d) ? d.status : "";
+      return st ? `${n} [${st}]` : n;
+    }),
+    red_flags: Array.isArray(u.red_flags) ? u.red_flags : []
+  };
+
+  const V_FinalDiagnosis = {
+    diagnosis: u.final_diagnosis?.name || "",
+    criteria_or_rationale: u.final_diagnosis?.rationale || ""
+  };
+
+  const VI_Pathophysiology = {
+    mechanism: u.pathophysiology?.mechanism || "",
+    systems_or_organs: u.pathophysiology?.systems_organs || ""
+  };
+
+  const VIb_Etiology = {
+    underlying_cause: u.etiology?.underlying_cause || ""
+  };
+
+  const VII_ConclusionAndDiscussion = {
+    summary: `Diagnosis: ${u.final_diagnosis?.name || ""}. ${u.final_diagnosis?.rationale || ""}`,
+    treatment_principles: (u.management?.immediate || []).map(s => ({ title: (String(s).split(":")[0] || "Step").slice(0, 40), details: String(s) })),
+    immediate_management: (u.management?.immediate || []).join(" | "),
+    discharge_vs_admit_criteria: u.disposition?.admit_vs_discharge || "",
+    disposition_and_followup: `Unit: ${u.disposition?.unit || ""}; Follow-up: ${u.disposition?.follow_up || ""}; Social: ${u.disposition?.social_needs || ""}`,
+    references: refs.map(r => {
+      if (isObj(r)) {
+        const parts = [r.society, r.year, r.applies_to, r.note].filter(Boolean);
+        return parts.join(" — ");
+      }
+      return String(r || "");
+    })
+  };
+
+  const VIII_EvidenceAndStatistics = {
+    prevalence: u.evidence?.prevalence || "",
+    incidence: u.evidence?.incidence || "",
+    key_test_performance: (u.evidence?.key_tests || []).map(t => ({
+      test: t.test || "",
+      sensitivity: t.sensitivity || "",
+      specificity: t.specificity || "",
+      notes: t.notes || ""
+    })),
+    prognosis: u.evidence?.prognosis || "",
+    biphasic_reaction_rate: "",
+    recommended_observation_time: ""
+  };
+
+  const TeachingAndGamification = {
+    clinical_reasoning_notes: (u.teaching?.pearls || []).join(" | "),
+    mnemonics_or_pearls: u.teaching?.mnemonics || [],
+    next_step_prompts: []
+  };
+
+  return {
+    I_PatientHistory,
+    II_ObjectiveFindings,
+    III_ParaclinicalInvestigations,
+    IV_DifferentialDiagnoses,
+    V_FinalDiagnosis,
+    VI_Pathophysiology,
+    VIb_Etiology,
+    VII_ConclusionAndDiscussion,
+    VIII_EvidenceAndStatistics,
+    TeachingAndGamification
+  };
+}
+
+// simple text formatter used by UI preview (optional)
+function formatCaseToText(obj = {}) {
+  try {
+    const h = obj.history || {};
+    const ex = obj.exam || {};
+    const fd = obj.final_diagnosis || {};
+    const hL = obj["I_PatientHistory"] || {};
+    const exL = obj["II_ObjectiveFindings"] || {};
+    const fdL = obj["V_FinalDiagnosis"] || {};
+
+    const presenting = first(h.presenting_complaint, hL.presenting_complaint);
+    const onset = first(h.onset_duration_severity, hL.onset_duration_severity);
+    const hemo = first(ex.hemodynamic_profile, exL.hemodynamic_profile);
+    const pain = first(ex.pain_distress, exL.pain_distress);
+    const finalDx = first(fd.name, fdL.diagnosis);
+
+    return [
+      "I. Patient History",
+      `Presenting Complaint: ${presenting}`,
+      `Onset/Duration/Severity: ${onset}`,
+      "",
+      "II. Objective Clinical Findings",
+      `Hemodynamic: ${hemo}; Pain: ${pain}`,
+      "",
+      "V. Final Diagnosis",
+      finalDx
+    ].join("\n");
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------
+// Core generator (merged): OpenAI → repair → baseline → completeness
+// ---------------------------------------------------------------------
+async function generateCaseJSON({
+  area,
+  topic,
+  language = "en",
+  region = "EU/DK",
+  niveau = "",
+  model = "gpt-4o-mini",
+  patient_constraints = {},
+  minutes_from_onset = null
+}) {
+  if (typeof topic === "object" && topic?.topic) topic = topic.topic;
+  if (typeof topic !== "string" || !topic.trim()) throw new Error("Invalid topic");
+
+  let raw = "{}";
+  try {
+    const completion = await openai.chat.completions.create({
+      model,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userJSONPrompt({ area, topic, language, region, niveau, patient_constraints, minutes_from_onset }) }
+      ],
+      temperature: 0.4
+    });
+    raw = completion?.choices?.[0]?.message?.content || "{}";
+  } catch {
+    raw = "{}";
+  }
+
+  // parse or repair
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    const repaired = await repairJson(raw, model);
+    data = JSON.parse(repaired);
+  }
+
+  // baseline + completeness (topic-aware)
+  const baseline = normalizeAndBaseline(data, { topic, language, region });
+  const enriched = ensureCaseCompleteness(baseline, { topic, language, region });
+
+  // Add legacy sections for compatibility
+  const legacy = buildLegacySections(enriched);
+
+  // return hybrid
+  return {
+    ...enriched,
+    ...legacy,
+    meta: {
+      ...(enriched.meta || {}),
+      medical_area: area,
+      niveau,
+      language: enriched.meta?.language || normalizeLang(language),
+      keywords: Array.isArray(enriched.meta?.keywords) ? enriched.meta.keywords : []
+    }
+  };
+}
+
+// ---------------------------------------------------------------------
+// Express Router
+// ---------------------------------------------------------------------
+const router = express.Router();
+
+router.get("/", (_req, res) =>
+  res.json({
+    ok: true,
+    usage: "POST /api/dialog { area, topic, language, region, niveau, model, patient_constraints, minutes_from_onset }",
+  })
+);
+
+router.get("/healthz", (_req, res) => res.status(200).send("ok"));
+
+async function handleDialog(req, res) {
+  try {
+    const {
+      area,
+      topic,
+      language = "en",
+      region = "EU/DK",
+      niveau = "",
+      model = "gpt-4o-mini",
+      patient_constraints = {},
+      minutes_from_onset = null,
+    } = req.body || {};
+
+    if (!area || !topic) {
+      return res.status(400).json({ ok: false, error: "Missing area/topic" });
+    }
+
+    const unified = await generateCaseJSON({
+      area, topic, language, region, niveau, model, patient_constraints, minutes_from_onset
+    });
+
+    const aiReply = JSON.stringify(unified);
+    const text = formatCaseToText(unified);
+
+    return res.status(200).json({ ok: true, case: unified, aiReply, text });
+  } catch (err) {
+    console.error("❌ /api/dialog error:", err);
+    return res.status(500).json({ ok: false, error: err?.message || "Server error" });
+  }
+}
+
+// Support both mount styles:
+// app.use("/api/dialog", router)  → POST /api/dialog
+router.post("/", handleDialog);
+// app.use("/api", router)         → POST /api/dialog
+router.post("/dialog", handleDialog);
+
+export default router;

@@ -1,0 +1,61 @@
+import express from "express";
+import admin from "../firebase.mjs";
+const router = express.Router();
+
+function withTimeout(promise, ms = 8000, label = "operation") {
+  return Promise.race([
+    promise,
+    new Promise((_, r) => setTimeout(() => r(new Error(`${label} timeout after ${ms}ms`)), ms)),
+  ]);
+}
+const norm = (s="") => String(s||"").trim();
+const nlang = (l="en") => (String(l||"en").trim().toLowerCase() || "en");
+
+async function loadFromFirestore(area, lang) {
+  if (!admin.apps.length) {
+    console.warn("Firebase not initialized, skipping Firestore load.");
+    return [];
+  }
+  const db = admin.firestore();
+  const collectionsToTry = ["topics2", "topics"];
+
+  for (const collectionName of collectionsToTry) {
+    try {
+      const snap = await withTimeout(db.collection(collectionName).where("category", "==", area).get(), 6000, collectionName);
+      if (!snap.empty) {
+        const out = [];
+        snap.forEach(d => {
+          const x = d.data() || {};
+          if (!lang || !x.lang || x.lang === lang) out.push({ id: x.id, topic: x.topic, category: x.category, lang: x.lang || "en" });
+        });
+        if (out.length > 0) return out; // Found topics, return them
+      }
+    } catch (e) {
+      console.warn(`Firestore query on '${collectionName}' failed for ${area}/${lang}:`, e.message);
+    }
+  }
+  return []; // Tried all collections, none worked or had matching data
+}
+const fallback = (area,lang) => ([
+  { id:"acute_abdominal_pain", topic:"Acute abdominal pain", category:area, lang },
+  { id:"sepsis", topic:"Sepsis", category:area, lang },
+  { id:"syncope", topic:"Syncope", category:area, lang },
+]);
+
+router.post("/", async (req, res) => {
+  const area = norm(req.body?.area);
+  const lang = nlang(req.body?.lang);
+  if (!area) return res.status(400).json({ ok:false, error:"Missing 'area'", hint:{area:"Medical Fields", lang:"en"} });
+
+  const t0 = Date.now();
+  try {
+    const fromDb = await loadFromFirestore(area, lang);
+    const topics = (Array.isArray(fromDb) && fromDb.length) ? fromDb : fallback(area, lang);
+    return res.status(200).json({ ok:true, area, lang, count:topics.length, topics, took_ms:Date.now()-t0, source: (fromDb&&fromDb.length)?"firestore":"fallback" });
+  } catch (e) {
+    console.error("topics_api error:", e);
+    return res.status(500).json({ ok:false, error:String(e?.message||e), took_ms:Date.now()-t0 });
+  }
+});
+router.get("/", (_req,res)=>res.json({ok:true,route:"topics",method:"GET",try:"POST /api/topics"}));
+export default router;

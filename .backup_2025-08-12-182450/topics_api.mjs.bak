@@ -1,0 +1,54 @@
+import express from "express";
+const router = express.Router();
+
+function withTimeout(promise, ms = 8000, label = "operation") {
+  return Promise.race([
+    promise,
+    new Promise((_, r) => setTimeout(() => r(new Error(`${label} timeout after ${ms}ms`)), ms)),
+  ]);
+}
+const norm = (s="") => String(s||"").trim();
+const nlang = (l="en") => (String(l||"en").trim().toLowerCase() || "en");
+
+async function loadFromFirestore(area, lang) {
+  let admin;
+  try { ({ default: admin } = await import("firebase-admin")); } catch { return null; }
+  if (!admin?.apps?.length) return null;
+  const db = admin.firestore();
+  const out = [];
+
+  try {
+    const snap = await withTimeout(db.collection("topics2").where("category","==",area).get(), 6000, "topics2");
+    snap.forEach(d => { const x=d.data()||{}; if (!lang||!x.lang||x.lang===lang) out.push({id:x.id,topic:x.topic,category:x.category,lang:x.lang||"en"}); });
+  } catch {}
+  if (!out.length) {
+    try {
+      const snap = await withTimeout(db.collection("topics").where("category","==",area).get(), 6000, "topics");
+      snap.forEach(d => { const x=d.data()||{}; if (!lang||!x.lang||x.lang===lang) out.push({id:x.id,topic:x.topic,category:x.category,lang:x.lang||"en"}); });
+    } catch {}
+  }
+  return out;
+}
+const fallback = (area,lang) => ([
+  { id:"acute_abdominal_pain", topic:"Acute abdominal pain", category:area, lang },
+  { id:"sepsis", topic:"Sepsis", category:area, lang },
+  { id:"syncope", topic:"Syncope", category:area, lang },
+]);
+
+router.post("/", async (req, res) => {
+  const area = norm(req.body?.area);
+  const lang = nlang(req.body?.lang);
+  if (!area) return res.status(400).json({ ok:false, error:"Missing 'area'", hint:{area:"Medical Fields", lang:"en"} });
+
+  const t0 = Date.now();
+  try {
+    const fromDb = await loadFromFirestore(area, lang);
+    const topics = (Array.isArray(fromDb) && fromDb.length) ? fromDb : fallback(area, lang);
+    return res.status(200).json({ ok:true, area, lang, count:topics.length, topics, took_ms:Date.now()-t0, source: (fromDb&&fromDb.length)?"firestore":"fallback" });
+  } catch (e) {
+    console.error("topics_api error:", e);
+    return res.status(500).json({ ok:false, error:String(e?.message||e), took_ms:Date.now()-t0 });
+  }
+});
+router.get("/", (_req,res)=>res.json({ok:true,route:"topics",method:"GET",try:"POST /api/topics"}));
+export default router;

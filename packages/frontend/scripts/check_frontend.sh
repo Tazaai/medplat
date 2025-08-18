@@ -55,3 +55,25 @@ $DRY_RUN && echo "✅ DRY RUN complete" && exit 0
 
 npm install || exit 1
 npm run build || exit 1
+
+# 🔍 Cross-check API usage consistency
+echo "🔍 Checking if /api/topics and /api/dialog are used correctly in frontend..."
+
+if ! grep -q "/api/topics" ./src/components/CaseView.jsx; then
+  echo "❌ /api/topics not used in CaseView.jsx"
+fi
+
+if ! grep -q "/api/dialog" ./src/components/CaseView.jsx; then
+  echo "❌ /api/dialog not used in CaseView.jsx"
+fi
+
+if ! grep -q "/api/dialog" ./src/components/DialogChat.jsx; then
+  echo "⚠️  /api/dialog not referenced in DialogChat.jsx"
+fi
+
+echo "✅ API usage check (frontend) complete."
+
+
+# 🔁 Shared sync checker
+source ~/medplat/packages/shared/check_api_sync.sh
+check_api_sync

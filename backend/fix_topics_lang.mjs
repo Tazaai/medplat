@@ -1,25 +1,51 @@
-import admin from 'firebase-admin';
-import { Translate } from '@google-cloud/translate').v2;
-import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
+// ~/medplat/backend/fix_topics_lang.mjs
+import { db } from "./firebaseClient.js";
 
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
-
-const translate = new Translate();
-
-async function translateCollection(collectionName) {
-  const snapshot = await db.collection(collectionName).get();
-  for (const doc of snapshot.docs) {
-    const data = doc.data();
-    if (data.name && data.lang !== 'en') {
-      const [translated] = await translate.translate(data.name, 'en');
-      await doc.ref.update({ name: translated, lang: 'en' });
-      console.log(`✅ ${collectionName}/${doc.id} → "${data.name}" → "${translated}"`);
-    }
-  }
+/**
+ * Normalize { id, topic, category, lang } for both 'topics2' and 'topics'.
+ * - Ensures lang exists (default "en")
+ * - Ensures id is normalized snake_case of topic if missing/wrong
+ */
+function normId(s = "") {
+  return s
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
-await translateCollection('topics');
-await translateCollection('topics2');
+async function fixCollection(name) {
+  const snap = await db.collection(name).get();
+  let count = 0;
 
-console.log('🎉 Done translating all topics to English.');
+  for (const doc of snap.docs) {
+    const d = doc.data() || {};
+    const updates = {};
+
+    if (!d.lang) updates.lang = "en";
+    if (!d.topic || !d.category) continue; // skip unusable docs
+
+    const expectedId = normId(d.topic);
+    if (!d.id || d.id.startsWith("case_") || d.id !== expectedId) {
+      updates.id = expectedId;
+    }
+
+    if (Object.keys(updates).length) {
+      await doc.ref.set({ ...d, ...updates }, { merge: true });
+      count++;
+      console.log(`✅ ${name}/${doc.id} →`, updates);
+    }
+  }
+
+  console.log(`Done: ${name} fixed ${count} documents.`);
+}
+
+(async function run() {
+  await fixCollection("topics2");
+  await fixCollection("topics");
+  process.exit(0);
+})().catch((e) => {
+  console.error("❌ fix_topics_lang failed:", e);
+  process.exit(1);
+});

@@ -51,3 +51,18 @@ $DRY_RUN && echo "✅ DRY RUN complete" && exit 0
 
 npm install || exit 1
 npm start || echo "🚫 Backend start failed. Please check logs."
+
+# 🔍 Verifying /api/topics and /api/dialog routes
+if ! grep -q "/api/topics" ~/medplat/packages/backend/index.js; then echo "❌ Missing /api/topics in index.js"; fi
+if ! grep -q "/api/dialog" ~/medplat/packages/backend/index.js; then echo "❌ Missing /api/dialog in index.js"; fi
+
+# 🔍 Validate frontend API usage
+if ! grep -q "/api/dialog" ~/medplat/packages/frontend/src/components/CaseView.jsx; then echo "❌ Missing dialog call in frontend"; fi
+if ! grep -q "/api/topics" ~/medplat/packages/frontend/src/components/CaseView.jsx; then echo "❌ Missing topics call in frontend"; fi
+
+echo "✅ Backend-Frontend diagnostic sync check done."
+
+
+# 🔁 Shared sync checker
+source ~/medplat/packages/shared/check_api_sync.sh
+check_api_sync

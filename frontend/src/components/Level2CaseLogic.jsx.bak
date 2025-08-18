@@ -1,0 +1,427 @@
+// ~/medplat/backend/routes/gamify_api.mjs
+import express from "express";
+import cors from "cors";
+import OpenAI from "openai";
+
+const router = express.Router();
+
+// CORS (frontend + local dev)
+const FRONTEND = "https://medplat-frontend-139218747785.europe-west1.run.app";
+const corsOpts = {
+  origin: [FRONTEND, "http://localhost:5173"],
+  credentials: true,
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+router.use(cors(corsOpts));
+router.options("/", cors(corsOpts));
+
+// OpenAI
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Domains
+const DOMAINS = [
+  "history_and_red_flags",
+  "pathophysiology",
+  "aetiology",
+  "diagnosis",
+  "management",
+  "prognosis",
+  "risk_factors",
+  "complications",
+  "ethics",
+];
+
+// Early gating policy (Q1 = history; Q2–Q3 risk/pathophys)
+const EARLY_BAN = new Set(["diagnosis", "differential", "management", "therapy", "treatment"]);
+const EARLY_ALLOWED_STEP2_3 = new Set(["history_and_red_flags", "risk_factors", "pathophysiology"]);
+
+// === Diagnosis leak control for early items ===
+const DIAG_TERMS = [
+  "appendicitis","acute appendicitis","stump appendicitis","cholecystitis","pancreatitis","diverticulitis",
+  "peritonitis","perforation","mesenteric ischemia","bowel obstruction","sbo",
+  "aaa","aneurysm","ruptured aneurysm","ectopic pregnancy","ovarian torsion",
+  "stroke","ischemic stroke","intracerebral hemorrhage","tbi","mi","myocardial infarction",
+  "sepsis","septic shock"
+];
+const LEAK_PHRASES = [
+  /corroborated by imaging/i,
+  /confirmed (on|by)/i,
+  /classic signs? (and|&)? (symptoms )?of/i,
+  /pathognomonic/i,
+  /diagnosed/i,
+  /definitive/i,
+  /consistent with/i
+];
+function escapeRegExp(str){return str.replace(/[-/\\^$*+?.()|[\]{}]/g,"\\$&");}
+function neutralizeText(s) {
+  let out = String(s || "");
+  LEAK_PHRASES.forEach(rx => { out = out.replace(rx, "suggestive but not definitive"); });
+  DIAG_TERMS.forEach(term => {
+    const rx = new RegExp(`\\b${escapeRegExp(term)}\\b`, "gi");
+    out = out.replace(rx, "the suspected condition");
+  });
+  return out;
+}
+function leaksDiagnosis(s) {
+  const t = String(s || "");
+  const lower = t.toLowerCase();
+  return DIAG_TERMS.some(d => lower.includes(d)) || LEAK_PHRASES.some(rx => rx.test(t));
+}
+
+// Short history extractor (skips JSON-like headers)
+function extractShortHistory(text) {
+  const lines = String(text || "")
+    .split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const nonJson = lines.filter((l) => !/^"?patient history"?\s*:\s*\{?$/i.test(l));
+  const hit =
+    nonJson.find((l) => /^i+\./i.test(l)) ||
+    nonJson.find((l) => /history|presentation|complaint/i.test(l)) ||
+    nonJson.slice(0, 2).join(" ");
+  return hit || "";
+}
+
+// Shuffle helper
+function shuffleArray(arr = []) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Safe JSON parse (handles code fences / extracts first array)
+function safeParse(raw) {
+  if (!raw) return null;
+  let s = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  try {
+    const js = JSON.parse(s);
+    if (Array.isArray(js)) return js;
+    if (js && Array.isArray(js.items)) return js.items;
+  } catch {}
+  const arr = s.match(/\[[\s\S]*\]/);
+  if (arr) {
+    try {
+      const js = JSON.parse(arr[0]);
+      if (Array.isArray(js)) return js;
+    } catch {}
+  }
+  return null;
+}
+
+function normalizeSection(x = "") {
+  const s = String(x || "").toLowerCase();
+  if (s.includes("history")) return "history_and_red_flags";
+  if (s.includes("risk")) return "risk_factors";
+  if (s.includes("patho")) return "pathophysiology";
+  if (s.includes("aetio") || s.includes("etiol")) return "aetiology";
+  if (s.includes("diagnos") || s.includes("differential")) return "diagnosis";
+  if (s.includes("manage") || s.includes("treat") || s.includes("therapy")) return "management";
+  if (s.includes("prognos")) return "prognosis";
+  if (s.includes("complication")) return "complications";
+  if (s.includes("ethic")) return "ethics";
+  return s || "other";
+}
+
+function coerceScoreTo320(n) {
+  const s = Number(n ?? 0);
+  if (s >= 3) return 3;
+  if (s >= 1) return 2; // treat legacy partial as 2
+  return 0;
+}
+
+// Ensure exactly one 3, at least one 2; others 0
+function enforceThreeTwoZero(mapped = []) {
+  let has3 = false;
+  mapped = mapped.map(c => ({ ...c, score: coerceScoreTo320(c.score) }));
+  // ensure one (and only one) '3'
+  mapped = mapped.map(c => {
+    if (c.score === 3) {
+      if (has3) return { ...c, score: 2 };
+      has3 = true; return c;
+    }
+    return c;
+  });
+  if (!has3 && mapped.length) mapped[0].score = 3;
+
+  // ensure at least one '2'
+  const has2 = mapped.some(c => c.score === 2);
+  if (!has2) {
+    const idx0 = mapped.findIndex(c => c.score === 0 && c.text?.trim());
+    if (idx0 >= 0) mapped[idx0].score = 2;
+    else if (mapped.length > 1) mapped[1].score = 2;
+  }
+  // normalize others to 0
+  let seen3 = false;
+  mapped = mapped.map(c => {
+    if (c.score === 3) { if (seen3) return { ...c, score: 0 }; seen3 = true; return c; }
+    return c.score === 2 ? c : { ...c, score: 0 };
+  });
+  return mapped;
+}
+
+function normalizeItem(q, idx = 0) {
+  const rawChoices = Array.isArray(q.choices)
+    ? q.choices.map((c) => (typeof c === "string" ? { text: c, score: 0, explanation: "" } : c))
+    : [];
+  let mapped = rawChoices.map((c) => ({
+    text: c?.text ?? "",
+    score: coerceScoreTo320(c?.score),
+    explanation: c?.explanation ?? "",
+  }));
+  mapped = enforceThreeTwoZero(mapped);
+  const shuffled = shuffleArray(mapped);
+  const answerIndex = Math.max(0, shuffled.findIndex((c) => c.score === 3));
+  return {
+    index: idx,
+    prompt: q.prompt || q.question || "",
+    paragraph: q.paragraph || q.context || "",
+    section: normalizeSection(q.section || q.type || ""),
+    choices: shuffled,
+    answerIndex,
+    rationalePanel: Array.isArray(q.rationalePanel) ? q.rationalePanel.slice(0, 3) : [],
+    references: Array.isArray(q.references) ? q.references.slice(0, 4) : [],
+    qualityScore: typeof q.qualityScore === "number" ? q.qualityScore : undefined,
+  };
+}
+
+// Reorder questions to enforce early gating
+function enforceEarlyGating(items = []) {
+  if (!items.length) return items;
+  const out = [];
+  const rest = [...items];
+
+  // Q1 must be history_and_red_flags
+  let i1 = rest.findIndex((q) => q.section === "history_and_red_flags");
+  if (i1 === -1) i1 = 0;
+  out.push(rest.splice(i1, 1)[0]);
+
+  // Q2–Q3 limited to risk_factors / pathophysiology / history
+  for (let k = 0; k < 2 && rest.length; k++) {
+    let idx = rest.findIndex((q) => EARLY_ALLOWED_STEP2_3.has(q.section));
+    if (idx === -1) idx = rest.findIndex((q) => !EARLY_BAN.has(q.section)); // fallback
+    if (idx === -1) idx = 0;
+    out.push(rest.splice(idx, 1)[0]);
+  }
+
+  // Remaining
+  return [...out, ...rest];
+}
+
+async function ensureTwelve({ list, missingCount, basePrompt, model }) {
+  if (list.length >= 12) return list.slice(0, 12);
+  if (missingCount <= 0) return list;
+  try {
+    const followUp = [
+      ...basePrompt.slice(0, 1),
+      {
+        role: "system",
+        content:
+          (basePrompt[0]?.content || "") +
+          `\nYou produced fewer than 12 items. Generate ONLY ${missingCount} MORE items for later phases (exam, labs, imaging, diagnosis, management, complications, ethics). Use 3-2-0 scoring and include 2–3 short references per item.`,
+      },
+      { role: "user", content: "Return ONLY the JSON array of the extra items." },
+    ];
+    const r = await openai.chat.completions.create({ model, messages: followUp, temperature: 0.6 });
+    const raw = r?.choices?.[0]?.message?.content?.trim() || "";
+    const extra = safeParse(raw) || [];
+    return [...list, ...extra].slice(0, 12);
+  } catch {
+    const pad = Array.from({ length: missingCount }, (_, k) => ({
+      index: list.length + k,
+      section: "extra",
+      prompt: "Additional review question (placeholder)",
+      paragraph: "",
+      choices: [
+        { text: "—", score: 0, explanation: "" },
+        { text: "—", score: 0, explanation: "" },
+        { text: "—", score: 0, explanation: "" },
+        { text: "—", score: 0, explanation: "" },
+      ],
+      answerIndex: 0,
+      rationalePanel: [],
+      references: [],
+      qualityScore: 0,
+    }));
+    return [...list, ...pad].slice(0, 12);
+  }
+}
+
+// ---- Global case feature flags (auto-detected from raw case text)
+function detectFlags(rawText = "") {
+  const t = String(rawText).toLowerCase();
+  const priorAppendectomy = /\b(appendectom(y|ies)|appendicectomy|previous appendectomy|prior appendectomy|appendix removed)\b/.test(t);
+  return { priorAppendectomy };
+}
+
+router.post("/", async (req, res) => {
+  try {
+    const {
+      text: textRaw,
+      caseText,
+      fullText,
+      model = process.env.MEDPLAT_MODEL || "gpt-4o-mini",
+      language = "en",
+      topic = "unknown",
+      region = null,   // legacy
+      locale = null,   // preferred
+      request = {}
+    } = req.body;
+
+    const text = (textRaw || caseText || fullText || "").trim();
+    if (!text) return res.status(200).json({ shortHistory: "", mcqs: [] });
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "OPENAI_API_KEY is missing" });
+    }
+
+    const shortHistory = extractShortHistory(text);
+
+    const regionCode = (locale || region || "").toString().toUpperCase();
+    const regionNote =
+      regionCode === "DK"
+        ? "Follow Danish national guidelines (Sundhedsstyrelsen/DSAM/DSSM) first; then European (e.g., WSES/ESC/ESO/NICE), then WHO."
+        : "Follow globally trusted sources (e.g., WSES/ACS/NICE/WHO) and adapt regionally when relevant.";
+
+    // Clean case content (drop obvious reference lines)
+    const skip = ["reference:", "ref:", "uptodate", "sundhedsstyrelsen", "📍 (references"];
+    const paragraphs = text
+      .split(/\n+/).map((p) => p.trim())
+      .filter((p) => p && !skip.some((k) => p.toLowerCase().includes(k)));
+
+    // Detect global flags (apply to all specialties)
+    const flags = detectFlags(text);
+    const conditionalRules = [];
+    if (flags.priorAppendectomy) {
+      conditionalRules.push(
+        '- If prior appendectomy appears in CASE CONTENT, include "stump appendicitis" explicitly in Q9–Q10 differential/diagnosis (not before), with rationale in the panel.'
+      );
+    }
+
+    const targetCount = 12;
+
+    const EXPLANATION_STYLE = `
+Consultant-level reasoning. Prioritize information that changes immediate management.
+- Provide short, high-yield justifications.
+- Explain ONLY for score=3 and score=0 (leave score=2 blank to reflect partial knowledge).
+- If a critical detail is not present in the paragraph, ask for it ("Which question would you ask now?") rather than asserting it exists.
+`;
+
+    const OUTPUT_SCHEMA = `
+Return a JSON array (or {"items":[...]}) of objects:
+{
+  "question": string,          // MCQ stem
+  "paragraph": string,         // Short context excerpt grounding the stem
+  "choices": [
+    { "text": string, "score": 3|2|0, "explanation": string } // exactly one 3, >=1 score=2, others 0
+  ],
+  "type": "history_and_red_flags|pathophysiology|aetiology|diagnosis|management|prognosis|risk_factors|complications|ethics",
+  "rationalePanel": [string, string, string],
+  "references": [string, string, string],   // 2–3 short citations (guidelines/reviews), locale-aware when possible
+  "qualityScore": number
+}
+`;
+
+    const basePrompt = [
+      {
+        role: "system",
+        content: `You are a panel of three senior clinicians generating advanced, reasoning-based MCQs for clever medical doctors.
+Topic: ${topic}
+Language: ${language}
+Guidelines: ${regionNote}
+Domains (use these exact labels): ${DOMAINS.join(", ")}
+
+ORDERING & DIAGNOSIS PRIVACY:
+- Q1 MUST be "history_and_red_flags".
+- Q2–Q3 limited to "risk_factors" or "pathophysiology".
+- Q4+ may include diagnosis/management etc.
+- Do NOT reveal or name the suspected/final diagnosis in the stem or paragraph BEFORE Q4.
+- If source text contains explicit diagnosis (e.g., "classic signs of X", "confirmed by CT"), paraphrase early paragraphs into neutral, symptom-based wording WITHOUT naming the disease.
+
+EARLY HISTORY PRIORITIZATION (Q1–Q3):
+- Ask "Which single historical question/detail is MOST critical now?" Provide a clear second-best (score=2).
+- Prefer details that change immediate management: onset/LKW or migration of pain, pregnancy/LMP, anticoagulants/steroids/immunosuppression, trauma, prior abdominal surgery/adhesions.
+
+CONTENT RULES (GLOBAL):
+- Base items strictly on the provided case paragraphs; include a "paragraph" excerpt grounding each item.
+- 3–4 choices per item with 3-2-0 scoring: exactly one score=3, ≥1 score=2, others score=0.
+- Provide ≥2 plausible options + exactly 1 clearly wrong option.
+${conditionalRules.join('\n')}
+- Include 2–3 short, high-quality references per item (e.g., Sundhedsstyrelsen/DSAM when DK; WSES/NICE/WHO/major reviews otherwise). Keep citations concise (guideline name + year/DOI if known).
+${EXPLANATION_STYLE}
+OUTPUT EXACTLY ${targetCount} ITEMS. ${OUTPUT_SCHEMA}`
+      },
+      { role: "user", content: `CASE CONTENT:\n\n${paragraphs.join("\n\n")}` },
+    ];
+
+    // primary attempt
+    let result = await openai.chat.completions.create({
+      model,
+      messages: basePrompt,
+      temperature: 0.6,
+    });
+
+    let raw = result?.choices?.[0]?.message?.content?.trim() || "";
+    let parsed = safeParse(raw);
+
+    // retry once if parsing failed
+    if (!parsed) {
+      const retryPrompt = [
+        ...basePrompt,
+        { role: "system", content: "Your last message was not valid JSON. Return ONLY the JSON array (or {\"items\":[...]}) as specified." },
+      ];
+      result = await openai.chat.completions.create({ model, messages: retryPrompt, temperature: 0.5 });
+      raw = result?.choices?.[0]?.message?.content?.trim() || "";
+      parsed = safeParse(raw);
+    }
+
+    if (!parsed) {
+      console.error("Failed to parse GPT output:", raw?.slice(0, 800));
+      return res.status(500).json({ error: "Failed to parse MCQs" });
+    }
+
+    // normalize + coerce to 3-2-0 with one 3 and >=1 two
+    let list = parsed.map((q, i) => normalizeItem(q, i));
+
+    // enforce early gating
+    list = enforceEarlyGating(list);
+
+    // sanitize early items (no diagnosis reveal in first 3)
+    list = list.map((q, i) => {
+      if (i < 3) {
+        const p = leaksDiagnosis(q.paragraph) ? neutralizeText(q.paragraph) : q.paragraph;
+        const st = leaksDiagnosis(q.prompt) ? neutralizeText(q.prompt) : q.prompt;
+        return { ...q, paragraph: p, prompt: st };
+      }
+      return q;
+    });
+
+    // ensure exactly 12
+    if (list.length !== 12) {
+      list = await ensureTwelve({
+        list,
+        missingCount: Math.max(0, 12 - list.length),
+        basePrompt,
+        model,
+      }).then((items) => items.map((q, i) => normalizeItem(q, i)));
+      list = enforceEarlyGating(list).slice(0, 12);
+      list = list.map((q, i) => {
+        if (i < 3) {
+          const p = leaksDiagnosis(q.paragraph) ? neutralizeText(q.paragraph) : q.paragraph;
+          const st = leaksDiagnosis(q.prompt) ? neutralizeText(q.prompt) : q.prompt;
+          return { ...q, index: i, paragraph: p, prompt: st };
+        }
+        return { ...q, index: i };
+      });
+    } else {
+      list = list.map((q, i) => ({ ...q, index: i }));
+    }
+
+    return res.json({ shortHistory, mcqs: list });
+  } catch (err) {
+    console.error("gamify_api error:", err);
+    res.status(500).json({ error: err?.message || "Server error" });
+  }
+});
+
+export default router;

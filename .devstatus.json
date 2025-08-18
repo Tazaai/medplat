@@ -1,0 +1,12 @@
+{
+  "backend": {
+    "status": "broken",
+    "lastTest": 1751534145.757156,
+    "log": "\"ERROR: (gcloud.builds.submit) Invalid value for [source]: Dockerfile required when specifying --tag Deploying container to Cloud Run service [\\u001b[1mmedplat-backend\\u001b[m] in project [\\u001b[1mmedplat-458911\\u001b[m] region [\\u001b[1meurope-west1\\u001b[m] Deploying... Setting IAM Policy...............done Creating Revision..........................................................................failed Deployment failed ERROR: (gcloud.run.deploy) Revision 'medplat-backend-00355-wfx' is not ready and cannot serve traffic. The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.  Logs URL: https://console.cloud.google.com/logs/viewer?project=medplat-458911&resource=cloud_run_revision/service_name/medplat-backend/revision_name/medplat-backend-00355-wfx&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22medplat-backend%22%0Aresource.labels.revision_name%3D%22medplat-backend-00355-wfx%22  For more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start \""
+  },
+  "frontend": {
+    "status": "broken",
+    "lastTest": 1751534145.945743,
+    "log": "\"npm error Missing script: \\\"build\\\" npm error npm error To see a list of scripts, run: npm error   npm run npm error A complete log of this run can be found in: /home/rahpodcast2022/.npm/_logs/2025-07-03T09_15_45_823Z-debug-0.log \""
+  }
+}

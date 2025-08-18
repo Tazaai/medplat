@@ -1,48 +1,45 @@
 import React, { useState } from "react";
+const IconPlaceholder = () => (<svg width="16" height="16" style={{background:"#ccc"}}></svg>);
 
 export default function DialogChat() {
-  const [messages, setMessages] = useState([
-    { sender: "ai", text: "👋 Welcome! What would you like to ask about?" }
-  ]);
   const [input, setInput] = useState("");
+  const [log, setLog] = useState([]);
 
-  const sendMessage = async () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-    setMessages((prev) => [...prev, { sender: "user", text: trimmed }]);
+  const send = () => {
+    if (!input.trim()) return;
+    const userInput = input.trim();
+    setLog(prev => [...prev, { role: "user", content: userInput }]);
     setInput("");
-    try {
-      const res = await fetch("https://medplat-backend-458911.europe-west1.run.app/api/dialog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userMessage: trimmed }),
+
+    fetch("https://medplat-backend-139218747785.europe-west1.run.app/api/dialog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: userInput, niveau: "simpel", lang: "da" })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const content = typeof data.aiReply === "string" ? data.aiReply : JSON.stringify(data);
+        setLog(prev => [...prev, { role: "ai", content }]);
       });
-      const data = await res.json();
-      setMessages((prev) => [...prev, { sender: "ai", text: data.aiReply }]);
-    } catch {
-      setMessages((prev) => [...prev, { sender: "ai", text: "❌ Error contacting AI." }]);
-    }
   };
 
   return (
-    <div className="p-4 bg-gray-100 rounded">
+    <div className="mt-6 p-4 bg-gray-100 rounded">
+      <h3 className="text-lg font-semibold mb-2">💬 Dialog</h3>
       <div className="mb-2">
-        {messages.map((m, i) => (
-          <p key={i} className={m.sender === "user" ? "text-right" : "text-left"}>
-            <span className={m.sender === "user" ? "text-blue-600" : "text-green-700"}>{m.text}</span>
-          </p>
+        {log.map((msg, idx) => (
+          <div key={idx} className={`mb-1 ${msg.role === "ai" ? "text-blue-800" : "text-black"}`}>
+            <strong>{msg.role === "ai" ? "AI" : "You"}:</strong> {msg.content}
+          </div>
         ))}
       </div>
       <input
-        className="border p-2 rounded w-full"
         value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        placeholder="Type your message..."
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && send()}
+        placeholder="Ask a what-if or comment..."
+        className="border p-2 rounded w-full"
       />
-      <button onClick={sendMessage} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded">
-        Send
-      </button>
     </div>
   );
 }

@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# === MedPlat Google Drive Backup Tool (manual, no autosync) ===
+CLIENT_ID="139218747785-37dsnqudtcl1hjkojk3fiea5he0oi627.apps.googleusercontent.com"
+CLIENT_SECRET="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"
+
+ROOT_NAME="medplat_backups"              # parent folder in Drive
+LOCAL_ROOT="$HOME/medplat"               # your project root
+GDRIVE="/usr/local/bin/gdrive"           # path to gdrive binary
+
+ensure_gdrive() {
+  if ! command -v "$GDRIVE" >/dev/null 2>&1; then
+    echo "gdrive not found at $GDRIVE, installing..."
+    tmp="/tmp/gdrive.tar.gz"
+    curl -L -o "$tmp" https://github.com/glotlabs/gdrive/releases/download/3.9.0/gdrive_linux-x64.tar.gz
+    tar -xzf "$tmp" -C /tmp
+    sudo mv /tmp/gdrive /usr/local/bin/gdrive
+    sudo chmod +x /usr/local/bin/gdrive
+  fi
+}
+
+init() {
+  ensure_gdrive
+  echo "→ Google auth (open URL, sign in, paste code here)"
+  "$GDRIVE" account add --client-id "$CLIENT_ID" --client-secret "$CLIENT_SECRET"
+  echo "✔ Account added"
+}
+
+root_id() {
+  "$GDRIVE" list --no-header --max 1 \
+    --query "name='${ROOT_NAME}' and mimeType='application/vnd.google-apps.folder'" \
+    | awk '{print $1}'
+}
+
+ensure_root() {
+  local id
+  id="$(root_id)"
+  if [ -z "${id:-}" ]; then
+    echo "→ Creating root folder '${ROOT_NAME}' in Drive"
+    id="$("$GDRIVE" mkdir "$ROOT_NAME" | awk '/Directory Id:/ {print $3}')"
+  fi
+  echo "$id"
+}
+
+backup() {
+  ensure_gdrive
+  [ -d "$LOCAL_ROOT" ] || { echo "Local project not found: $LOCAL_ROOT"; exit 1; }
+
+  local root; root="$(ensure_root)"
+  local stamp; stamp="$(date +'%Y%m%d_%H%M')"
+  local backup_name="medplat_backup_${stamp}"
+
+  echo "→ Creating backup folder: $backup_name"
+  local bid; bid="$("$GDRIVE" mkdir --parent "$root" "$backup_name" | awk '/Directory Id:/ {print $3}')"
+
+  echo "→ Uploading backend..."
+  "$GDRIVE" upload --recursive --parent "$bid" "$LOCAL_ROOT/backend"
+
+  echo "→ Uploading frontend..."
+  "$GDRIVE" upload --recursive --parent "$bid" "$LOCAL_ROOT/frontend"
+
+  echo "$bid" > "$HOME/.medplat_drive_latest"
+  echo "✔ Backup complete: $backup_name"
+  echo "  Drive Folder ID: $bid"
+}
+
+list_backups() {
+  ensure_gdrive
+  local root; root="$(ensure_root)"
+  echo "Backups under '${ROOT_NAME}':"
+  "$GDRIVE" list --no-header \
+    --query "'$root' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'medplat_backup_'" \
+    | awk '{printf "%s  %s %s\n",$1,$2,$3}'
+}
+
+share_latest() {
+  ensure_gdrive
+  local id
+  if [ -f "$HOME/.medplat_drive_latest" ]; then
+    id="$(cat "$HOME/.medplat_drive_latest")"
+  else
+    echo "No latest backup recorded. Run a backup first."; exit 1
+  fi
+  "$GDRIVE" share --role writer --type anyone "$id"
+  echo "✔ Latest backup shared (anyone with link can edit)."
+}
+
+restore() {
+  ensure_gdrive
+  local src="${1:-}"
+  [ -n "$src" ] || { echo "Usage: $0 restore <DRIVE_FOLDER_ID>"; exit 1; }
+
+  local dest="$HOME/medplat_restore_$(date +'%Y%m%d_%H%M')"
+  mkdir -p "$dest"
+  echo "→ Restoring Drive($src) → $dest"
+  "$GDRIVE" download --recursive --path "$dest" "$src"
+  echo "✔ Restore complete at: $dest"
+  echo "  Review & copy files you want back into $LOCAL_ROOT manually."
+}
+
+usage() {
+  cat <<USAGE
+Usage: $0 <command>
+  init            - authenticate gdrive with your Client ID/Secret
+  backup          - create a NEW dated backup folder and upload backend/frontend
+  list            - list backup folders in Drive
+  restore <ID>    - download a backup folder into medplat_restore_YYYYMMDD_HHMM
+  share-latest    - make the most recent backup editable by link
+USAGE
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  init) init ;;
+  backup) backup ;;
+  list) list_backups ;;
+  restore) restore "$@" ;;
+  share-latest) share_latest ;;
+  *) usage ;;
+esac

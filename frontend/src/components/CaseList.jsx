@@ -1,14 +1,13 @@
 import React from "react";
+const IconPlaceholder = () => (<svg width="16" height="16" style={{background:"#ccc"}}></svg>);
 
-export default function CaseList({ cases, onSelect }) {
+export default function CaseList({ cases = [] }) {
   return (
-    <div>
-      <h3 className="text-lg font-semibold mb-2">Available Cases</h3>
-      <ul className="list-disc pl-6">
+    <div className="p-4">
+      <h2 className="text-lg font-bold mb-2">Available Cases</h2>
+      <ul>
         {cases.map((c, i) => (
-          <li key={i} className="cursor-pointer text-blue-600 hover:underline" onClick={() => onSelect(c)}>
-            {c.topic}
-          </li>
+          <li key={i} className="mb-1">🔹 {c.topic}</li>
         ))}
       </ul>
     </div>
