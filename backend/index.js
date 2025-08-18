@@ -1,12 +1,23 @@
 // ~/medplat/backend/index.js
 import express from "express";
-import cors from "cors";
+// import cors from "cors"; // disabled
 
 import topicsApi from "./routes/topics_api.mjs";
 import dialogApi from "./routes/dialog_api.mjs";
 import gamifyApi from "./routes/gamify_api.mjs";
 
 const app = express();
+
+// --- Permissive CORS (temporary) ---
+app.use((req,res,next)=>{
+  res.set("Access-Control-Allow-Origin","*");
+  res.set("Access-Control-Allow-Headers","Content-Type, Authorization");
+  res.set("Access-Control-Allow-Methods","GET,POST,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+// --- End CORS ---
+
 
 // --- Permissive CORS (temporary) ---
 app.use((req,res,next)=>{
