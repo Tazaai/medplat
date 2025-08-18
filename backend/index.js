@@ -1,6 +1,6 @@
 // ~/medplat/backend/index.js
 import express from "express";
-// import cors from "cors"; // disabled
+// // import cors from "cors"; // disabled
 
 import topicsApi from "./routes/topics_api.mjs";
 import dialogApi from "./routes/dialog_api.mjs";
