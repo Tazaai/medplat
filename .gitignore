@@ -40,3 +40,4 @@ firebase-debug.log
 
 # Misc local
 backup/
+backend/routes/openai_client.js
