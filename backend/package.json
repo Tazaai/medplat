@@ -16,7 +16,7 @@
     "serve": "^14.2.4"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "OPENAI_API_KEY=$OPENAI_API_KEY node index.js",
     "lint": "echo 'No linting configured, skipping.'"
   },
   "devDependencies": {

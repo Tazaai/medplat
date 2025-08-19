@@ -36,9 +36,7 @@ export default function CaseView() {
   const [areas, setAreas] = useState([]);
   const [area, setArea] = useState("");
   const [topics, setTopics] = useState([]);
-  const [topicId, setTopicId] = useState("");
-  const [topicsLoading, setTopicsLoading] = useState(false);
-  const [notification, setNotification] = useState("");
+  const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState(null);
   const [gamify, setGamify] = useState(false);
@@ -47,7 +45,6 @@ export default function CaseView() {
 
   // Load Areas (categories) — POST /api/topics/categories
   useEffect(() => {
-    setNotification("");
     (async () => {
       try {
         const data = await fetch(`${API_BASE}/api/topics/categories`, {
@@ -58,7 +55,6 @@ export default function CaseView() {
 
         const arr = Array.isArray(data?.categories) ? data.categories : [];
         if (arr.length === 0 && lang !== "en") {
-          setNotification(`No areas found for ${LANGUAGE_NAME[lang]}; showing English as fallback.`);
           const fb = await fetch(`${API_BASE}/api/topics/categories`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lang:"en"})}).then(getJsonOrThrow);
           const arr2 = Array.isArray(fb?.categories) ? fb.categories : [];
           setAreas(arr2.slice().sort((a,b)=>String(a).localeCompare(String(b))));
@@ -68,7 +64,6 @@ export default function CaseView() {
       } catch (e) {
         console.error("Failed to load areas:", e);
         setAreas([]);
-        setNotification("⚠️ Could not load areas.");
       }
     })();
   }, [lang]);
@@ -78,11 +73,9 @@ export default function CaseView() {
     let cancelled = false;
     if (!area) {
       setTopics([]);
-      setTopicId("");
+      setTopic("");
       return () => {};
     }
-    setTopicsLoading(true);
-    setNotification("");
     (async () => {
       try {
         const data = await fetch(`${API_BASE}/api/topics`, {
@@ -93,13 +86,12 @@ export default function CaseView() {
 
         const items = Array.isArray(data?.topics) ? data.topics : [];
         if (items.length === 0 && lang !== "en") {
-          setNotification(`No topics for ${area} in ${LANGUAGE_NAME[lang]}; showing English as fallback.`);
           const fb = await fetch(`${API_BASE}/api/topics`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({area,lang:"en"})}).then(getJsonOrThrow);
           const fbItems = Array.isArray(fb?.topics) ? fb.topics : [];
           const fbSorted = fbItems.slice().sort((a,b)=>String(a.topic||a.id||"").localeCompare(String(b.topic||b.id||"")));
           if (!cancelled) {
             setTopics(fbSorted);
-            if (!topicId && fbSorted.length) setTopicId(fbSorted[0]?.id || "");
+            if (!topic && fbSorted.length) setTopic(fbSorted[0]?.topic || fbSorted[0]?.id || "");
           }
           return;
         }
@@ -108,15 +100,10 @@ export default function CaseView() {
           .sort((a, b) => String(a.topic || a.id || "").localeCompare(String(b.topic || b.id || "")));
         if (!cancelled) {
           setTopics(sorted);
-          if (!topicId && sorted.length) setTopicId(sorted[0]?.id || "");
+          if (!topic && sorted.length) setTopic(sorted[0]?.topic || sorted[0]?.id || "");
         }
       } catch (e) {
-        if (!cancelled) {
-          setTopics([]);
-          setNotification("⚠️ Could not load topics.");
-        }
-      } finally {
-        if (!cancelled) setTopicsLoading(false);
+        if (!cancelled) setTopics([]);
       }
     })();
     return () => {
@@ -126,40 +113,64 @@ export default function CaseView() {
 
   // Generate Case — POST /api/dialog
   const generateCase = async () => {
-    const topicObj = topics.find(t => t.id === topicId);
-    const topicName = topicObj?.topic || topicObj?.id || "";
-
-    if (!area || !topicName) {
+    if (!area || !topic) {
       alert("Please choose both Area and Topic.");
       return;
     }
     setLoading(true);
     setCaseData(null);
-    setNotification("");
     try {
       const data = await fetch(`${API_BASE}/api/dialog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           area,
-          topic: topicName,
+          topic,
           language: lang,
           model,
           gamify: Boolean(gamify),
         }),
       }).then(getJsonOrThrow);
 
-      // Align with backend response { ok, case, text }
-      const parsed = data?.case ?? null;
-      const summaryText = data?.text ?? "";
+      let parsed = data?.json ?? null;
 
-      // For gamify mode or a text fallback, use a stringified version of the full JSON.
-      const fullText = parsed ? JSON.stringify(parsed, null, 2) : (summaryText || "⚠️ No case data received.");
+      let fullRaw =
+        (typeof data.aiReply === "string" && data.aiReply) ||
+        data?.aiReply?.text ||
+        data?.text ||
+        data?.message ||
+        "";
 
-      setCaseData({ fullText, parsed });
+      if (!parsed) {
+        try {
+          parsed = JSON.parse(fullRaw);
+        } catch {
+          parsed = null;
+        }
+      }
+
+      let full = String(fullRaw || "");
+      if (!full && parsed) {
+        const lines = [];
+        if (parsed?.I_PatientHistory?.presenting_complaint)
+          lines.push(`I. Presenting Complaint: ${parsed.I_PatientHistory.presenting_complaint}`);
+        if (parsed?.II_ObjectiveFindings?.vitals)
+          lines.push(`II. Vitals: ${parsed.II_ObjectiveFindings.vitals}`);
+        if (parsed?.III_ParaclinicalInvestigations?.labs)
+          lines.push(`III. Labs: ${parsed.III_ParaclinicalInvestigations.labs}`);
+        if (parsed?.IV_DifferentialDiagnoses?.list?.length)
+          lines.push(`IV. DDx: ${parsed.IV_DifferentialDiagnoses.list.join(" • ")}`);
+        if (parsed?.V_FinalDiagnosis?.diagnosis)
+          lines.push(`V. Final Dx: ${parsed.V_FinalDiagnosis.diagnosis}`);
+        if (parsed?.VII_ConclusionAndDiscussion?.summary)
+          lines.push(`VII. Summary: ${parsed.VII_ConclusionAndDiscussion.summary}`);
+        full = lines.join("\n");
+      }
+
+      setCaseData({ fullText: full || "⚠️ No case data", parsed });
     } catch (e) {
       console.error("Error generating case:", e);
-      setCaseData({ fullText: `⚠️ Error generating case: ${e.message}`, parsed: null });
+      setCaseData({ fullText: "⚠️ Error generating case", parsed: null });
     } finally {
       setLoading(false);
     }
@@ -331,19 +342,13 @@ export default function CaseView() {
     <div className="p-4 max-w-3xl mx-auto space-y-4">
       <h1 className="text-2xl font-bold">Generate Patient History</h1>
 
-      {notification && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded">
-          {notification}
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm mb-1">Language</label>
           <select value={lang} onChange={(e) => {
             setLang(e.target.value);
             setArea("");
-            setTopicId("");
+            setTopic("");
           }} className="p-2 rounded border w-full">
             {Object.keys(LANGUAGE_NAME).map((code) => (
               <option key={code} value={code}>{LANGUAGE_NAME[code]}</option>
@@ -373,10 +378,10 @@ export default function CaseView() {
 
       <div>
         <label className="block text-sm mb-1">Topic</label>
-        <select value={topicId} onChange={(e) => setTopicId(e.target.value)} className="p-2 rounded border w-full" disabled={!area || topicsLoading}>
-          <option value="">{topicsLoading ? "Loading topics..." : "-- Choose Topic --"}</option>
+        <select value={topic} onChange={(e) => setTopic(e.target.value)} className="p-2 rounded border w-full" disabled={!area}>
+          <option value="">-- Choose Topic --</option>
           {topics.map((t) => (
-            <option key={t.id} value={t.id}>
+            <option key={String(t.id || t.topic)} value={String(t.topic || t.id)}>
               {String(t.topic || t.id)}
             </option>
           ))}
@@ -388,13 +393,13 @@ export default function CaseView() {
         <span>Enable gamification (interactive mode)</span>
       </label>
 
-      <button onClick={generateCase} disabled={!topicId || loading} className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">
+      <button onClick={generateCase} disabled={!topic || loading} className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">
         {loading ? "Generating..." : "🔄 Generate History"}
       </button>
 
       {caseData &&
         (gamify ? (
-          <Level2CaseLogic text={caseData.fullText} gamify={true} caseId={topicId} model={model} />
+          <Level2CaseLogic text={caseData.fullText} gamify={true} caseId={topic} model={model} />
         ) : caseData.parsed ? (
           <RenderStructured data={caseData.parsed} />
         ) : (
