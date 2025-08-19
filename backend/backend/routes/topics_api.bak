@@ -1,0 +1,28 @@
+import express from "express";
+
+export default function topicsApi(db) {
+  const router = express.Router();
+
+  router.post("/", async (req, res) => {
+    try {
+      const { area } = req.body;
+      if (!area) {
+        return res.status(400).json({ error: "Missing area" });
+      }
+
+      const collectionName = area === "EM" ? "topics" : "topics2";
+      const snapshot = await db.collection(collectionName).get();
+
+      const topics = snapshot.docs
+        .map(doc => doc.data()?.topic)
+        .filter(Boolean);
+
+      return res.status(200).json({ topics });
+    } catch (err) {
+      console.error("❌ Error in /api/topics:", err);
+      return res.status(500).json({ error: "Failed to fetch topics" });
+    }
+  });
+
+  return router;
+}

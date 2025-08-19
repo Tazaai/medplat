@@ -1,38 +1,42 @@
+// ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect } from "react";
-import GeneratedCase from "./GeneratedCase";
 import Level2CaseLogic from "./Level2CaseLogic";
 
-const API_BASE = "https://medplat-backend-139218747785.europe-west1.run.app";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://medplat-backend-139218747785.europe-west1.run.app";
 
 export default function CaseView() {
-  const [area, setArea] = useState("EM");
+  const [area, setArea] = useState("");
   const [topics, setTopics] = useState([]);
   const [category, setCategory] = useState("");
   const [caseId, setCaseId] = useState("");
   const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
   const [customTopic, setCustomTopic] = useState("");
+  const [model, setModel] = useState("gpt-4o-mini");
   const [caseData, setCaseData] = useState({ fullText: "" });
   const [loading, setLoading] = useState(false);
-  const [showFullCase, setShowFullCase] = useState(false);
-  const [useGamification, setUseGamification] = useState(true);
-  const [level, setLevel] = useState(1);
+  const [useGamification, setUseGamification] = useState(false);
 
   useEffect(() => {
-    const selectedArea = area === "EM" ? "Emergency Medicine" : "Other Specialties";
+    if (!area) return;
+
+    const areaToCollection = { "Medical Fields": "topics2" };
+    const collection = areaToCollection[area];
+    if (!collection) return;
+
     fetch(`${API_BASE}/api/topics`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ area: selectedArea })
+      body: JSON.stringify({ collection }),
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data?.topics)) {
           const enriched = data.topics.map((topic, i) => ({
             id: `case_${i + 1}`,
             topic: topic.topic,
-            category: topic.category || selectedArea,
-            subcategory: topic.subcategory || ""
+            category: topic.category || area,
+            subcategory: topic.subcategory || "",
           }));
           setTopics(enriched);
         } else {
@@ -49,31 +53,22 @@ export default function CaseView() {
   };
 
   const safeTopics = Array.isArray(topics) ? topics : [];
+  const filteredTopics = safeTopics.filter((t) => t.category === category);
+  const categories = [...new Set(safeTopics.map((t) => t.category))];
 
-  const emTopics = safeTopics.filter(t => t.category === "Emergency Medicine");
-  const emCategories = [...new Set(emTopics.map(t => t.subcategory))].filter(Boolean);
-  const emCases = emTopics.filter(t => t.subcategory === category);
-
-  const specTopics = safeTopics.filter(t => t.category !== "Emergency Medicine");
-  const specCategories = [...new Set(specTopics.map(t => t.category))].filter(Boolean);
-  const specCases = specTopics.filter(t => t.category === category);
-
-  const selectedTopic =
-    customTopic ||
-    (area === "EM"
-      ? emCases.find(c => c.id === caseId)?.topic
-      : specCases.find(c => c.id === caseId)?.topic) || "";
+  const selectedTopic = (() => {
+    if (customTopic.trim()) return customTopic.trim();
+    const match = filteredTopics.find((c) => c.id === caseId);
+    return match?.topic?.trim() || "";
+  })();
 
   const generateCase = async () => {
     if (!selectedTopic) {
       alert("Please select a valid case or enter a custom topic");
       return;
     }
-
     setLoading(true);
     setCaseData({ fullText: "" });
-    setShowFullCase(!useGamification);
-
     try {
       const res = await fetch(`${API_BASE}/api/dialog`, {
         method: "POST",
@@ -81,19 +76,22 @@ export default function CaseView() {
         body: JSON.stringify({
           topic: selectedTopic,
           language: getLanguage(),
-          area: area === "EM" ? "Emergency Medicine" : "Other Specialties"
-        })
+          area,
+          model,
+        }),
       });
-
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      const parsed = typeof data.aiReply === "string" ? JSON.parse(data.aiReply || "{}") : data.aiReply;
-      setCaseData({ fullText: parsed?.text || parsed || "⚠️ No data returned" });
+      setCaseData({
+        fullText:
+          typeof data.aiReply === "string"
+            ? data.aiReply
+            : data.aiReply?.text || "⚠️ No case data",
+      });
     } catch (err) {
       console.error(err);
-      setCaseData({ fullText: "⚠️ Error generating case." });
+      setCaseData({ fullText: "⚠️ Error generating case" });
     }
-
     setLoading(false);
   };
 
@@ -105,53 +103,71 @@ export default function CaseView() {
         <label className="mr-2">Custom topic/disease:</label>
         <input
           value={customTopic}
-          onChange={e => setCustomTopic(e.target.value)}
+          onChange={(e) => setCustomTopic(e.target.value)}
           placeholder="e.g. Sepsis"
           className="p-2 border rounded ml-2"
         />
       </div>
 
       <div className="mb-2">
-        <label>Area:</label>
+        <label>Choose area:</label>
         <select
           value={area}
-          onChange={e => {
+          onChange={(e) => {
             setArea(e.target.value);
             setCategory("");
             setCaseId("");
           }}
           className="p-2 rounded border ml-2"
         >
-          <option value="EM">Emergency Medicine</option>
-          <option value="specials">Other Specialties</option>
+          <option value="">-- Select area --</option>
+          <option value="Medical Fields">Medical Fields</option>
         </select>
       </div>
 
       <div className="mb-2">
         <label>Language:</label>
-        <select value={lang} onChange={e => setLang(e.target.value)} className="p-2 rounded border ml-2">
-          {[{ value: "en", label: "English" },
-            { value: "da", label: "Dansk" },
-            { value: "fa", label: "Farsi" },
-            { value: "ar", label: "Arabic" },
-            { value: "ur", label: "Urdu" },
-            { value: "es", label: "Spanish" },
-            { value: "de", label: "German" },
-            { value: "custom", label: "Other language..." }
-          ].map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
+          className="p-2 rounded border ml-2"
+        >
+          <option value="en">English</option>
+          <option value="da">Danish</option>
+          <option value="de">German</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="it">Italian</option>
+          <option value="ar">Arabic</option>
+          <option value="tr">Turkish</option>
+          <option value="ur">Urdu</option>
+          <option value="fa">Farsi</option>
+          <option value="hi">Hindi</option>
+          <option value="ru">Russian</option>
+          <option value="zh">Chinese</option>
+          <option value="custom">Other (custom code)</option>
         </select>
         {lang === "custom" && (
           <input
             value={customLang}
-            onChange={e => setCustomLang(e.target.value)}
+            onChange={(e) => setCustomLang(e.target.value)}
             placeholder="ISO code"
             className="p-2 border rounded ml-2"
           />
         )}
+      </div>
+
+      <div className="mb-2">
+        <label>Model:</label>
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="p-2 rounded border ml-2"
+        >
+          <option value="gpt-4o-mini">GPT-4o Mini (default)</option>
+          <option value="gpt-4o">GPT-4o (advanced)</option>
+          <option value="gpt-4">GPT-4 (expert mode)</option>
+        </select>
       </div>
 
       <div className="mb-2">
@@ -162,34 +178,21 @@ export default function CaseView() {
             onChange={() => setUseGamification(!useGamification)}
             className="mr-2"
           />
-          Enable gamification (progressive reveal)
+          Enable gamification (interactive mode)
         </label>
       </div>
 
-      <div className="mb-2">
-        <label>Level:</label>
-        <select
-          value={level}
-          onChange={e => setLevel(Number(e.target.value))}
-          className="p-2 rounded border ml-2"
-        >
-          <option value={1}>Level 1 (Basic Reasoning)</option>
-          <option value={2}>Level 2 (Advanced Logic)</option>
-          <option value={3}>Level 3 (Challenge Mode 🔒)</option>
-        </select>
-      </div>
-
-      {(area === "EM" || area === "specials") && (
+      {area && (
         <>
           <div className="mb-2">
-            <label>{area === "EM" ? "Subcategory:" : "Category:"}</label>
+            <label>Category:</label>
             <select
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value)}
               className="p-2 rounded border ml-2"
             >
-              <option value="">Select {area === "EM" ? "subcategory" : "category"}</option>
-              {(area === "EM" ? emCategories : specCategories).map(sc => (
+              <option value="">Select category</option>
+              {categories.map((sc) => (
                 <option key={sc}>{sc}</option>
               ))}
             </select>
@@ -199,12 +202,12 @@ export default function CaseView() {
             <label>Case:</label>
             <select
               value={caseId}
-              onChange={e => setCaseId(e.target.value)}
+              onChange={(e) => setCaseId(e.target.value)}
               className="p-2 rounded border ml-2"
               disabled={!category}
             >
               <option value="">Select case</option>
-              {(area === "EM" ? emCases : specCases).map(c => (
+              {filteredTopics.map((c) => (
                 <option key={c.id} value={c.id}>
                   {typeof c.topic === "string" ? c.topic : JSON.stringify(c.topic)}
                 </option>
@@ -222,37 +225,19 @@ export default function CaseView() {
         {loading ? "Generating..." : "🔄 Generate History"}
       </button>
 
-      {caseData.fullText && level === 1 && (
-        <GeneratedCase
-          text={caseData.fullText}
-          language={getLanguage()}
-          gamify={useGamification}
-          showFull={showFullCase}
-          onShowFull={() => setShowFullCase(true)}
-        />
-      )}
-
-      {caseData.fullText && level === 2 && (
-        useGamification ? (
-          <Level2CaseLogic text={caseData.fullText} />
+      {caseData.fullText &&
+        (useGamification ? (
+          <Level2CaseLogic
+            text={caseData.fullText}      // ✅ only runs when we have text
+            gamify={true}
+            caseId={selectedTopic}
+            model={model}
+          />
         ) : (
-          <div className="mt-6 whitespace-pre-wrap leading-relaxed p-4 border rounded bg-gray-50">
+          <div className="mt-4 whitespace-pre-line border p-4 bg-white rounded shadow">
             {caseData.fullText}
           </div>
-        )
-      )}
-
-      {caseData.fullText && level === 3 && (
-        useGamification ? (
-          <div className="mt-4 p-4 border rounded bg-yellow-100 text-yellow-900">
-            🧠 Level 3 Challenge Mode is coming soon...
-          </div>
-        ) : (
-          <div className="mt-6 whitespace-pre-wrap leading-relaxed p-4 border rounded bg-gray-50">
-            {caseData.fullText}
-          </div>
-        )
-      )}
+        ))}
     </div>
   );
 }

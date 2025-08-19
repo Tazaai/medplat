@@ -1,0 +1,300 @@
+// ~/medplat/backend/routes/gamify_api.mjs
+import express from "express";
+import OpenAI from "openai";
+import { logUserStep } from "../utils/logUserStep.mjs";
+
+// NOTE: this file reads OPENAI_API_KEY from ENV. Do not hardcode secrets.
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+/* ------------------------------ JSON helpers ------------------------------ */
+function cleanRaw(raw = "") {
+  let s = raw
+    .trim()
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
+  s = s
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E]/g, '"');
+  return s;
+}
+function tryParseJSON(s) {
+  try { return JSON.parse(s); } catch { return null; }
+}
+// Accepts [...], or {"items":[...]} — and also tries to slice out a bracketed array
+function extractJSONArray(raw = "") {
+  const cleaned = cleanRaw(raw);
+  let parsed = tryParseJSON(cleaned);
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed && Array.isArray(parsed.items)) return parsed.items;
+
+  const first = cleaned.indexOf("[");
+  const last = cleaned.lastIndexOf("]");
+  if (first >= 0 && last > first) {
+    let slice = cleaned.slice(first, last + 1);
+    slice = slice.replace(/,\s*([}\]])/g, "$1"); // strip trailing commas
+    parsed = tryParseJSON(slice);
+    if (Array.isArray(parsed)) return parsed;
+  }
+  return null;
+}
+
+// Minimal validity check for resulting MCQs
+function looksLikeMCQArray(arr) {
+  return (
+    Array.isArray(arr) &&
+    arr.length > 0 &&
+    arr.every((q) => {
+      const ch = q?.choices || q?.options;
+      return (
+        typeof (q?.question || q?.prompt || q?.q) === "string" &&
+        Array.isArray(ch) &&
+        ch.length >= 3
+      );
+    })
+  );
+}
+
+// STRICT retry using response_format + extra instruction
+async function generateWithRetry(messages, model, maxRetries = 2) {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const strictBumper = {
+        role: "system",
+        content:
+          "Return ONLY a JSON array (or an object with an 'items' array). " +
+          "Do not include markdown, code fences, or commentary."
+      };
+
+      const useStrict = attempt > 1; // stricter second try
+      const finalMessages = useStrict ? [...messages, strictBumper] : messages;
+
+      const params = {
+        model,
+        messages: finalMessages,
+        temperature: useStrict ? 0.1 : 0.3,
+      };
+      if (useStrict) {
+        // Ask the model to return strict JSON
+        params.response_format = { type: "json_object" };
+      }
+
+      const result = await openai.chat.completions.create(params);
+      const raw = result?.choices?.[0]?.message?.content?.trim() || "";
+      console.log(`🧠 GPT RESPONSE (attempt ${attempt}, raw length=${raw.length})`);
+      const arr = extractJSONArray(raw);
+      if (!looksLikeMCQArray(arr)) {
+        throw new Error("Model did not return a valid JSON array.");
+      }
+      return arr;
+    } catch (err) {
+      lastErr = err;
+      console.error(`❌ Attempt ${attempt}: Failed to parse GPT JSON — ${err.message}`);
+      if (attempt === maxRetries) throw err;
+    }
+  }
+  throw lastErr || new Error("Unknown parsing error");
+}
+
+/* ----------------------------- misc utilities ----------------------------- */
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+function repairConcatenatedChoices(choices) {
+  let out = [...(choices || [])];
+  if (out.length < 3) {
+    const expanded = [];
+    for (const c of out) {
+      const t = (c.text || "").trim();
+      const parts = t
+        .split(/(?:\s*•\s*|\s{2,}|\.\s+(?=[A-Z]))/g)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (parts.length > 1) {
+        parts.forEach((p, i) => {
+          expanded.push({
+            text: p.endsWith(".") ? p : p + ".",
+            score: i === 0 ? c.score : 1,
+            explanation: i === 0 ? c.explanation || "" : "",
+          });
+        });
+      } else {
+        expanded.push(c);
+      }
+    }
+    out = expanded.slice(0, 3);
+  }
+  while (out.length < 3) {
+    out.push({ text: "Reassess and repeat focused exam.", score: 1, explanation: "" });
+  }
+  return out.slice(0, 3);
+}
+function convertTempsInText(txt = "") {
+  let s = txt;
+  s = s.replace(/(\b-?\d+(?:\.\d+)?)\s?°?\s?(?:F|°F)\b/gi, (_, fStr) => {
+    const f = parseFloat(fStr);
+    const c = (f - 32) * 5 / 9;
+    const cStr = Math.round(c * 10) / 10;
+    return `${f}°F (${cStr}°C)`;
+  });
+  s = s.replace(/(\b-?\d+(?:\.\d+)?)\s?°?\s?(?:C|°C)\b/gi, (_, cStr) => {
+    const c = parseFloat(cStr);
+    const f = (c * 9 / 5) + 32;
+    const fStr = Math.round(f * 10) / 10;
+    return `${c}°C (${fStr}°F)`;
+  });
+  return s;
+}
+function regionLine(region, language) {
+  const lang = (language || "").toLowerCase();
+  if (region === "DK" || lang.startsWith("da"))
+    return "Use Danish national guidelines first (Sundhedsstyrelsen, DSAM, DSSM, DSSInf), then European (ESC, ESO), then global (WHO, UpToDate).";
+  if (region === "SE") return "Use Swedish NBV national guidelines, then European, then global.";
+  if (region === "FR" || lang.startsWith("fr"))
+    return "Use French guidelines (HAS, SFAR), then EU and WHO.";
+  if (region === "EU") return "Use European guidelines (ESC/ESO/NICE), then global.";
+  if (region === "US" || lang.startsWith("en-us"))
+    return "Use U.S. guidelines (ACEP, CDC, IDSA), then global.";
+  return "Use globally trusted sources: UpToDate, NICE, ESC, IDSA, WHO.";
+}
+function buildPrompt(paragraphs, language, topic = "unknown", region = null) {
+  const regionNote = regionLine(region, language);
+  const intro = `You are a clinical teaching panel generating advanced medical MCQs.
+Topic: ${topic}
+Language: ${language}
+Guidelines: ${regionNote}
+Generate 5–12 reasoning-based MCQs (not recall). Include comparisons or clinical tables where helpful.`;
+
+  const rules = `Rules:
+- Don’t name a diagnosis too early (steps 0–2). Use neutral phrasing.
+- Include ethical, diagnostic, aetiologic, and pathophysiologic logic.
+- Include treatment examples (e.g., ceftriaxone, LMWH) only if consistent with region.
+- Structure: 3 answer choices, scores = 3 / 1 / 0.
+- Provide explanations for 3 and 0, not for 1.
+- Be brief, expert, and practical.
+- OUTPUT FORMAT: Return ONLY JSON: an array of objects (or {"items":[...]}) with:
+  {
+    "question": string,
+    "choices": [ { "text": string, "score": number (3|1|0), "explanation": string } , ... ],
+    "type": "pathophysiology|risk|diagnosis|management|ethics",
+    "stepHint": number|null
+  }`;
+
+  return [
+    { role: "system", content: `${intro}\n\n${rules}` },
+    { role: "user", content: `CASE CONTENT:\n\n${paragraphs.join("\n\n")}` },
+  ];
+}
+
+// Safe final fallback so UI never breaks
+function fallbackMCQ(topic = "Unknown topic") {
+  return [
+    {
+      question: `Which immediate step is most appropriate to evaluate suspected ${topic}?`,
+      choices: [
+        { text: "Obtain a focused ECG and vitals reassessment.", score: 3, explanation: "Rapid, non‑invasive and high-yield; prioritizes life threats." },
+        { text: "Order an outpatient dermatology referral.", score: 1, explanation: "" },
+        { text: "Delay evaluation until more history is available.", score: 0, explanation: "Delays can risk deterioration; prioritize critical diagnostics." }
+      ],
+      type: "diagnosis",
+      stepHint: 0
+    }
+  ];
+}
+
+/* ------------------------------- Router init ------------------------------ */
+export default function gamifyApi() {
+  const router = express.Router();
+
+  // Health check
+  router.get("/ping", (_req, res) => res.json({ ok: true, service: "gamify" }));
+
+  // Main endpoint — mounted at /api/gamify
+  router.post("/", async (req, res) => {
+    try {
+      const {
+        paragraphs = [],
+        caseText, // optional: raw full case string
+        language = "English",
+        topic = "unknown",
+        region = null,
+        model = process.env.MEDPLAT_MODEL || "gpt-4o-mini",
+        userId = null,
+        caseId = null,
+      } = req.body || {};
+
+      let para = Array.isArray(paragraphs) ? paragraphs : [];
+      if ((!para || para.length === 0) && typeof caseText === "string") {
+        para = caseText.split(/\n\s*\n/g).map((s) => s.trim()).filter(Boolean);
+      }
+      if (!para || para.length === 0) {
+        return res.status(400).json({ error: "missing_case_content" });
+      }
+
+      const messages = buildPrompt(para, language, topic, region);
+
+      let rawItems = null;
+      try {
+        rawItems = await generateWithRetry(messages, model, 2);
+      } catch (e) {
+        console.warn("⚠️ generateWithRetry failed, using fallback MCQ:", e?.message || e);
+        rawItems = fallbackMCQ(topic);
+      }
+
+      const mcqs = (rawItems || []).map((q, idx) => {
+        const question =
+          convertTempsInText(String(q.question || q.prompt || q.q || "").trim()) ||
+          `Question ${idx + 1}`;
+        let choices = q.choices || q.options || [];
+        choices = repairConcatenatedChoices(
+          (choices || []).map((c) => ({
+            text: convertTempsInText(String(c.text || c.option || "").trim()),
+            score: typeof c.score === "number" ? c.score : c.correct === true ? 3 : 0,
+            explanation: convertTempsInText(String(c.explanation || "").trim()),
+          }))
+        );
+        const scores = choices.map((c) => c.score);
+        if (!scores.includes(3)) choices[0].score = 3;
+        if (!scores.includes(1)) choices[1].score = 1;
+        if (!scores.includes(0)) choices[2].score = 0;
+        choices = shuffleArray(choices);
+
+        return {
+          index: idx,
+          question,
+          choices,
+          meta: { type: q.type || "mixed", stepHint: q.stepHint || null },
+        };
+      });
+
+      // non-fatal logging
+      try {
+        await logUserStep({
+          userId: userId || "anonymous",
+          caseId: caseId || topic || "unknown",
+          event: "gamify_generated",
+          extra: { count: mcqs.length, model },
+        });
+      } catch (e) {
+        console.warn("logUserStep failed (non-fatal):", e?.message || e);
+      }
+
+      return res.json({ ok: true, model, count: mcqs.length, mcqs });
+    } catch (err) {
+      console.error("gamify error:", err);
+      return res.status(500).json({
+        ok: false,
+        error: "gamify_failed",
+        message: err?.message || "unknown_error",
+      });
+    }
+  });
+
+  return router;
+}
