@@ -1,76 +1,40 @@
-// ~/medplat/backend/index.js
 import express from "express";
-// // // import cors from "cors"; // disabled
+import cors from "cors";
+import "./firebase.mjs";
 
 import topicsApi from "./routes/topics_api.mjs";
 import dialogApi from "./routes/dialog_api.mjs";
 import gamifyApi from "./routes/gamify_api.mjs";
+import commentApi from "./routes/comment_api.mjs";
 
 const app = express();
-
-// --- Permissive CORS (temporary) ---
-app.use((req,res,next)=>{
-  res.set("Access-Control-Allow-Origin","*");
-  res.set("Access-Control-Allow-Headers","Content-Type, Authorization");
-  res.set("Access-Control-Allow-Methods","GET,POST,OPTIONS");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
-// --- End CORS ---
-
-
-// --- Permissive CORS (temporary) ---
-app.use((req,res,next)=>{
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
-// --- End CORS ---
-
-app.use((req,res,next)=>{
-  res.set("Access-Control-Allow-Origin","*");
-  res.set("Access-Control-Allow-Headers","Content-Type, Authorization");
-  res.set("Access-Control-Allow-Methods","GET,POST,OPTIONS");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
 app.set("trust proxy", true);
 
-// ----- CORS (use env FRONTEND_ORIGIN for strict mode; allow all if unset) -----
-const allowed = (process.env.FRONTEND_ORIGIN || "")
-  .split(",")
-  .map(s => s.trim())
-  .filter(Boolean);
+const allowed = new Set([
+  process.env.FRONTEND_ORIGIN || "https://medplat-frontend-139218747785.europe-west1.run.app",
+  "http://localhost:5173",
+]);
 
-app.use(
-//   cors({
-    origin: allowed.length ? allowed : true, // true => reflect request origin (debug-friendly)
-    credentials: true,
-  })
-);
-
-// ----- Body parsing BEFORE routes -----
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    cb(null, allowed.has(origin));
+  },
+}));
 app.use(express.json({ limit: "1mb" }));
 
-// ----- Health & root -----
-app.get("/healthz", (_req, res) => res.status(200).send("ok"));
-app.get("/", (_req, res) =>
-  res.status(200).json({
-    ok: true,
-    service: "medplat-backend",
-    env: process.env.NODE_ENV || "development",
-  })
-);
-
-// ----- Routes -----
-app.use("/api/topics", topicsApi);
-app.use("/api/dialog", dialogApi);
-app.use("/api/gamify", gamifyApi);
-
-// ----- Start -----
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`🚀 medplat-backend listening on ${PORT}`);
+app.get("/", (_req, res) => {
+  res.json({ ok: true, service: "medplat-backend", env: process.env.NODE_ENV || "production", allowedOrigins: Array.from(allowed) });
 });
+app.get("/favicon.ico", (_req, res) => res.sendStatus(204));
+
+app.use("/api/topics", topicsApi);     // POST /api/topics/categories, POST /api/topics
+app.use("/api/gamify", gamifyApi);     // POST /api/gamify
+app.use("/api/comments", commentApi);  // POST /api/comments
+app.use("/api", dialogApi);            // POST /api/dialog
+
+app.all("/api/*", (_req, res) => res.status(404).json({ ok: false, error: "Not found" }));
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log("listening", PORT));
+export default app;

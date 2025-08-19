@@ -1,102 +1,53 @@
-// ~/medplat/backend/routes/topics_api.mjs
 import express from "express";
-import admin from "../firebase.mjs";
+import { getFirestore } from "firebase-admin/firestore";
 
 const router = express.Router();
+const db = getFirestore();
 
-const withTimeout = (p, ms = 8000, label = "operation") =>
-  Promise.race([
-    p,
-    new Promise((_, r) =>
-      setTimeout(() => r(new Error(`${label} timeout after ${ms}ms`)), ms)
-    ),
-  ]);
-
-const norm = (s = "") => String(s || "").trim();
-const nlang = (l = "en") =>
-  (String(l || "en").trim().toLowerCase() || "en");
-
-/**
- * Load topics or categories from Firestore.
- */
-async function loadFromFirestore(area, lang) {
-  if (!admin?.apps?.length) {
-    console.warn("Firebase not initialized, skipping Firestore load.");
-    return [];
-  }
-  const db = admin.firestore();
-  const collectionsToTry = ["topics2", "topics"];
-
-  for (const name of collectionsToTry) {
-    try {
-      const snap = await withTimeout(
-        db.collection(name).where("lang", "==", lang).get(),
-        6000,
-        `firestore-${name}`
-      );
-      if (!snap.empty) {
-        const arr = [];
-        snap.forEach((doc) => {
-          const d = doc.data() || {};
-          if (area && norm(d.category) !== norm(area)) return;
-          arr.push({ id: doc.id, ...d });
-        });
-        return arr;
-      }
-    } catch (e) {
-      console.error(`[topics_api] Failed to read ${name}:`, e);
-    }
-  }
-  return [];
-}
-
-// ---------- Routes ----------
-
-// Explicit categories endpoint
+// POST /api/topics/categories  -> { ok:true, categories:string[] }
 router.post("/categories", async (req, res) => {
   try {
-    const lang = nlang(req.body?.lang || req.query?.lang);
-    const arr = await loadFromFirestore(null, lang);
-    const categories = Array.from(
-      new Set(arr.map((d) => d.category).filter(Boolean))
-    ).sort();
+    const lang = (req.body && req.body.lang) || null;
+    const snap = await db.collection("topics2").select("category", "lang").get();
+    const set = new Set();
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      if (!d.category) return;
+      if (!lang || d.lang === lang) set.add(String(d.category));
+    });
+    const categories = Array.from(set).sort((a, b) => a.localeCompare(b));
     res.json({ ok: true, categories });
   } catch (e) {
-    console.error("Error in /categories:", e);
-    res.status(500).json({ ok: false, error: e.message });
+    console.error("categories error:", e);
+    res.status(500).json({ ok: false, error: "server_error" });
   }
 });
 
-// Main topics endpoint
+// POST /api/topics  -> { ok:true, topics:[{id,topic}] }
 router.post("/", async (req, res) => {
   try {
-    const area = norm(req.body?.area || req.query?.area);
-    const lang = nlang(req.body?.lang || req.query?.lang);
+    const { area, lang } = req.body || {};
+    if (!area) return res.status(400).json({ ok: false, error: "area_required" });
 
-    // 🔑 Handle {"list":"categories"} here for frontend compatibility
-    if (req.body?.list === "categories") {
-      const arr = await loadFromFirestore(null, lang);
-      const categories = Array.from(
-        new Set(arr.map((d) => d.category).filter(Boolean))
-      ).sort();
-      return res.json({ ok: true, categories });
-    }
+    let q = db.collection("topics2").where("category", "==", area);
+    // lang is optional; filter client-side to avoid missing index
+    const snap = await q.get();
 
-    if (!area) {
-      return res.json({ ok: true, topics: [] });
-    }
+    const out = [];
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      if (lang && d.lang && d.lang !== lang) return;
+      const id = String(d.id || doc.id || "").trim();
+      const topic = String(d.topic || d.id || doc.id || "").trim();
+      if (!topic) return;
+      out.push({ id: id || topic.replace(/\s+/g, "_").toLowerCase(), topic });
+    });
 
-    const arr = await loadFromFirestore(area, lang);
-    const topics = arr.map((d) => ({
-      id: d.id,
-      topic: d.topic || d.id,
-      category: d.category,
-      lang: d.lang,
-    }));
-    res.json({ ok: true, topics });
+    out.sort((a, b) => String(a.topic).localeCompare(String(b.topic)));
+    res.json({ ok: true, topics: out });
   } catch (e) {
-    console.error("Error in /:", e);
-    res.status(500).json({ ok: false, error: e.message });
+    console.error("topics error:", e);
+    res.status(500).json({ ok: false, error: "server_error" });
   }
 });
 

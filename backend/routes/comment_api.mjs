@@ -1,29 +1,25 @@
 import express from "express";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
-export default function commentApi(db) {
-  const router = express.Router();
+const router = express.Router();
+const db = getFirestore();
 
-  router.post("/", async (req, res) => {
-    try {
-      const { caseId, text, user } = req.body || {};
-      if (!caseId || !text || !user) {
-        return res.status(400).json({ error: "Missing fields in request body" });
-      }
+// POST /api/comments -> { ok:true }
+router.post("/", async (req, res) => {
+  try {
+    const { caseId, text, user } = req.body || {};
+    if (!caseId || !text) return res.status(400).json({ ok: false, error: "caseId_and_text_required" });
+    await db.collection("comments").add({
+      caseId,
+      text,
+      user: user || null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("comment error:", e);
+    res.status(500).json({ ok: false, error: "server_error" });
+  }
+});
 
-      const commentRef = db.collection("comments").doc();
-      await commentRef.set({
-        caseId,
-        text,
-        user,
-        timestamp: new Date().toISOString()
-      });
-
-      res.status(200).json({ success: true, id: commentRef.id });
-    } catch (err) {
-      console.error("❌ Error in /api/comments:", err);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
-
-  return router;
-}
+export default router;
