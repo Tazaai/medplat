@@ -58,3 +58,22 @@ build/
 # Local env
 .env
 *.env
+
+# Backend node deps
+backend/node_modules/
+
+# Secrets
+backend/serviceAccountKey.json
+backend/google-translate-service-account.json
+backend/firebase-key.json
+backend/medplat-458911-*.json
+backend/oauth-token.json
+backend/.env
+
+# Logs & temp
+backend/*.log
+backend/nohup.out
+backend/tmp/
+backend/logs/
+backend/*.swp
+backend.bak.*/
