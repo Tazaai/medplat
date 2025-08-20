@@ -7,7 +7,6 @@ const API_BASE = import.meta.env.VITE_API_BASE || "https://medplat-backend-13921
 export default function CaseView() {
   const [area, setArea] = useState("");
   const [topics, setTopics] = useState([]);
-  const [category, setCategory] = useState("");
   const [caseId, setCaseId] = useState("");
   const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
@@ -16,18 +15,36 @@ export default function CaseView() {
   const [caseData, setCaseData] = useState({ fullText: "" });
   const [loading, setLoading] = useState(false);
   const [useGamification, setUseGamification] = useState(false);
+  const [categories, setCategories] = useState([]);
 
+  // Fetch categories on component mount
   useEffect(() => {
-    if (!area) return;
+    fetch(`${API_BASE}/api/topics/categories`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.categories)) {
+          setCategories(data.categories);
+        } else {
+          setCategories([]);
+        }
+      })
+      .catch(() => setCategories([]));
+  }, []);
 
-    const areaToCollection = { "Medical Fields": "topics2" };
-    const collection = areaToCollection[area];
-    if (!collection) return;
+  // Fetch topics when area or language changes
+  useEffect(() => {
+    if (!area) {
+      setTopics([]);
+      return;
+    }
 
     fetch(`${API_BASE}/api/topics`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection }),
+      body: JSON.stringify({ area, lang: getLanguage() }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -44,7 +61,7 @@ export default function CaseView() {
         }
       })
       .catch(() => setTopics([]));
-  }, [area]);
+  }, [area, lang]);
 
   const getLanguage = () => {
     if (lang !== "custom") return lang;
@@ -53,8 +70,7 @@ export default function CaseView() {
   };
 
   const safeTopics = Array.isArray(topics) ? topics : [];
-  const filteredTopics = safeTopics.filter((t) => t.category === category);
-  const categories = [...new Set(safeTopics.map((t) => t.category))];
+  const filteredTopics = safeTopics; // Topics are already filtered by area in the useEffect
 
   const selectedTopic = (() => {
     if (customTopic.trim()) return customTopic.trim();
@@ -115,13 +131,16 @@ export default function CaseView() {
           value={area}
           onChange={(e) => {
             setArea(e.target.value);
-            setCategory("");
             setCaseId("");
           }}
           className="p-2 rounded border ml-2"
         >
           <option value="">-- Select area --</option>
-          <option value="Medical Fields">Medical Fields</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -185,29 +204,15 @@ export default function CaseView() {
       {area && (
         <>
           <div className="mb-2">
-            <label>Category:</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="p-2 rounded border ml-2"
-            >
-              <option value="">Select category</option>
-              {categories.map((sc) => (
-                <option key={sc}>{sc}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-2">
-            <label>Case:</label>
+            <label>Choose topic:</label>
             <select
               value={caseId}
               onChange={(e) => setCaseId(e.target.value)}
               className="p-2 rounded border ml-2"
-              disabled={!category}
+              disabled={!area}
             >
-              <option value="">Select case</option>
-              {filteredTopics.map((c) => (
+              <option value="">Select topic</option>
+              {safeTopics.map((c) => (
                 <option key={c.id} value={c.id}>
                   {typeof c.topic === "string" ? c.topic : JSON.stringify(c.topic)}
                 </option>

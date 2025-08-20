@@ -1,0 +1,151 @@
+Sepsis hos immunsupprimeret patient
+Hyponatriæmi ved psykisk sygdom
+Akut myokardieinfarkt hos ældre
+Akut pancreatitis ved alkoholoverforbrug
+Diabetisk ketoacidose hos ung type 1-diabetiker
+Aortadissektion ved brystsmerter
+Lungeemboli efter flyrejse
+Anafylaksi efter penicillin
+Meningitis hos ung patient med feber og nakkestivhed
+Akut nyresvigt efter dehydrering
+Akut astmaanfald hos barn
+Epileptisk krampeanfald hos kendt epileptiker
+Urosepsis hos ældre kvinde
+Hjerneblødning ved pludselig hovedpine
+Hypoglykæmi hos insulinbehandlet patient
+Hyperkalæmi hos patient i ACE-hæmmer
+Hyponatriæmi hos marathonløber
+Hjertestop på gaden
+Opkast og mavesmerter hos alkoholiker
+GI-blødning hos NSAID-bruger
+Hypotermi hos hjemløs
+CO-forgiftning i lejlighed
+Akut delir hos ældre
+Akut dekompensation ved KOL
+Akut dekompensation ved hjertesvigt
+Blodprop i benet (DVT)
+Sepsis efter UVI
+Infektion ved kateter
+Blodtryksfald ved allergisk reaktion
+Bevidstløs patient fundet på gade
+Stikskade med mistanke om HIV/HBV
+Bevidsthedspåvirket efter benzodiazepiner
+Bakteriel endokarditis
+Septisk shock i forbindelse med kateterinfektion
+Tarmiskæmi hos ældre
+Hjerteflimmer med høj puls
+Synkope ved lavt blodtryk
+Pneumoni hos yngre uden komorbiditet
+Pneumoni hos ældre med komorbiditet
+Influenza-lignende symptomer og respirationsbesvær
+Hypoxi og takykardi
+Akut appendicitis
+Blødning efter fødsel
+Eklampsi hos gravid kvinde
+Epigastrielle smerter og kvalme
+Leverkoma ved kronisk leversvigt
+Bevidstløshed ved hypoglykæmi
+Slagtilfælde med venstresidig hemiparese
+Stroke mimik ved migræne
+Nasal fraktur ved traume
+Akut konfusion på plejehjem
+Metabolisk acidose ved ketoacidose
+Respirationsstop efter opioider
+Sepsis ved inficeret sår
+Hjertebanken og angst hos thyreotoksikose
+Stik af bi – anafylaktisk reaktion
+Brystsmerter uden EKG-forandringer
+Brystsmerter med ST-elevation
+Smerte i ben efter flyrejse
+Smerter i bryst ved pneumothorax
+Akut perikarditis
+Hæmoptyse hos ryger
+Truende luftvejsobstruktion ved tonsillit
+Synsforstyrrelser og hovedpine
+Hyperventilation ved panikanfald
+Hyperglykæmi uden ketoacidose
+Opkast og kvalme ved graviditet
+Bevidsthedstab efter hovedtraume
+Forgiftning med paracetamol
+Forgiftning med svampe
+Rhabdomyolyse efter hård træning
+Hyponatriæmi ved SIADH
+Akut binyrebarkinsufficiens
+Hypokaliæmi og træthed
+Hyperkalæmi med breddeøgede QRS
+Takykardi og hypotension
+Bradykardi og synkope
+Mistanke om akut leukæmi
+Feber og nattesved
+Hududslæt og ledsmerter
+Fald hos ældre med hoftefraktur
+Akut lumbago
+Frossen skulder ved diabetes
+Blodig diarré ved colitis
+Tarmobstruktion ved adhesion
+Mavesmerter og feber efter operation
+Pankreatit og gallesten
+Cholecystitis og feber
+Neutropen feber efter kemo
+Diarré og dehydrering
+Alkoholisk hepatitis
+Delirium tremens
+Suicidal patient
+Patient i psykose
+Agitation i skadestue
+Patient med PTSD og flashbacks
+Udenlandsk patient uden CPR
+Intoxikation med ukendt stof
+Bevidsthedspåvirkning ved lav Na+
+Brystsmerter med normal EKG
+Uforklarlig takykardi
+Lang QT og synkope
+Palpitationer ved stress
+Euforisk patient
+Akut blindtarmsbetændelse
+Mistanke om testistorsion
+Kraftige underlivssmerter
+Spontan abort
+Ektopisk graviditet
+Postpartum depression
+Akut psykose efter fødsel
+Akut urinretention
+Nyresten med flankesmerter
+Pyelonefrit og feber
+UVI og konfusion
+Fækal inkontinens
+Ufrivillig vægttab og B-symptomer
+Rektalblødning og anæmi
+Hudabsces og feber
+Cellulitis og rødme
+Purulent sår og lymfangitis
+Akut anæmi ved blødning
+Trombocytopeni og petekkier
+Neutropeni og feber
+Leukocytose og infektion
+Bevidstløshed og lav SAT
+Asymmetrisk pupil og bevidsthedspåvirkning
+Kramper og urinafgang
+Blodtryk 220/120 og hovedpine
+Trykpneumothorax
+Blødning fra dræn
+Akut mavesmerter og lav BT
+Kardiel tamponade
+Postop hypotension
+Postop feber
+Akut kirurgisk abdomen
+Mistanke om aneurisme
+Hjertekompression ved traume
+Mistanke om meningitis
+Mistanke om botulisme
+Forhøjet INR og blødning
+Lav Hb og dyspnø
+Kvæstet thorax og vejrtrækningsbesvær
+Massiv hæmothorax
+Død i hjemmet og usikker dødsårsag
+Langsom puls og træthed
+Akut hæmiplegi
+Dobbeltsyn og svimmelhed
+Balancebesvær
+Gulfarvning af øjne og mørk urin
+Stigende levertal

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-FRONTEND_DIR=~/medplat/frontend
+FRONTEND_DIR=~/medplat/frontend/frontend
 
 echo "🔧 Replacing all 'GET /api/topics' fetch calls with 'POST'..."
 

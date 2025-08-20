@@ -1,0 +1,32 @@
+import express from "express";
+import admin from "firebase-admin";
+import topicsApi from "./routes/topics_api.mjs";
+import dialogApi from "./routes/dialog_api.mjs";
+import commentApi from "./routes/comment_api.mjs";
+import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// === Firebase init ===
+const serviceAccountPath = "./serviceAccountKey.json";
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccountPath)
+  });
+}
+const db = admin.firestore();
+
+// === Routes ===
+app.use("/api/topics", topicsApi(db));
+app.use("/api/dialog", dialogApi(db));
+app.use("/api/comments", commentApi(db));
+
+app.get("/", (req, res) => res.send("Medplat backend is working ✅"));
+
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`🚀 Server running on port ${port}`));

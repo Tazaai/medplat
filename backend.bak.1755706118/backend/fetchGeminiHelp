@@ -1,0 +1,18 @@
+const fetchGeminiHelp = async () => {
+  try {
+    const res = await fetch("http://localhost:8080/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input: caseText })
+    });
+    const data = await res.json();
+    if (data.result) {
+      setAiSuggestion(data.result);
+    } else {
+      setAiSuggestion("❌ Gemini API-svar mangler.");
+    }
+  } catch (err) {
+    console.error("AI-fejl:", err);
+    setAiSuggestion("❌ Fejl ved kald til Gemini-backend.");
+  }
+};
