@@ -44,3 +44,17 @@ backend/routes/openai_client.js
 backend/medplat_backup.tar.gz
 backend/medplat_backup.tar.gz
 backend_*.tar.gz
+# Node.js deps
+node_modules/
+
+# Python venv
+backend/venv/
+frontend/venv/
+
+# Build outputs
+dist/
+build/
+
+# Local env
+.env
+*.env
