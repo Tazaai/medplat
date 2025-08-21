@@ -1,79 +1,18 @@
-# Node / builds / caches
+# Node
 node_modules/
 dist/
-build/
-.vite/
-.cache/
+
+# Python
+venv/
+*.pyc
+__pycache__/
+
+# Archives / dumps
+*.tar.gz
+*.zip
+
+# Logs
 *.log
 npm-debug.log*
-
-# Env & local configs
-.env
-.env.*
-!.env.example
-frontend/.env
-frontend/.env.*
-backend/.env
-backend/.env.*
-
-# Credentials & secrets (DO NOT COMMIT)
-*serviceAccount*.json
-serviceAccountKey.json
-firebase-key.json
-drive-oauth.json
-credentials.json
-*.pem
-*.p12
-*.key
-*.crt
-
-# Firebase exports
-firebase_export/
-firestore-debug.log
-firebase-debug.log
-
-# OS / editor
-.DS_Store
-.vscode/
-.idea/
-*.swp
-
-# Misc local
-backup/
-backend/routes/openai_client.js
-backend/medplat_backup.tar.gz
-backend/medplat_backup.tar.gz
-backend_*.tar.gz
-# Node.js deps
-node_modules/
-
-# Python venv
-backend/venv/
-frontend/venv/
-
-# Build outputs
-dist/
-build/
-
-# Local env
-.env
-*.env
-
-# Backend node deps
-backend/node_modules/
-
-# Secrets
-backend/serviceAccountKey.json
-backend/google-translate-service-account.json
-backend/firebase-key.json
-backend/medplat-458911-*.json
-backend/oauth-token.json
-backend/.env
-
-# Logs & temp
-backend/*.log
-backend/nohup.out
-backend/tmp/
-backend/logs/
-backend/*.swp
-backend.bak.*/
+yarn-debug.log*
+yarn-error.log*

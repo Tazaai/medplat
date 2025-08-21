@@ -4,7 +4,7 @@
     "runtime": "nodejs20"  // <-- ENSURE NO COMMA HERE if it's the last line before "}"
   },
   "hosting": {
-    "public": "frontend/build",
+    "public": "frontend/dist",
     "ignore": [
       "firebase.json",
       "**/.*",
