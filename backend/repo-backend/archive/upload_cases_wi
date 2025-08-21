@@ -1,0 +1,80 @@
+import fs from "fs";
+import * as dotenv from "dotenv";
+import admin from "firebase-admin";
+import { google } from "googleapis";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Load config
+dotenv.config();
+const serviceAccount = JSON.parse(fs.readFileSync("serviceAccountKey.json", "utf8"));
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+const db = admin.firestore();
+
+// ✅ Opdaterede scopes med både Docs og Drive adgang
+const auth = new google.auth.GoogleAuth({
+  scopes: [
+    "https://www.googleapis.com/auth/documents.readonly",
+    "https://www.googleapis.com/auth/drive.readonly"
+  ],
+});
+
+const docs = google.docs({ version: "v1", auth });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Load docs
+const sourceList = JSON.parse(fs.readFileSync("case_sources.json", "utf8"));
+
+// 🔒 Rens personfølsomme data
+function cleanContent(text) {
+  return text
+    .replace(/\b\d{6}-\d{4}\b/g, "[CPR fjernet]")
+    .replace(/\b(\+45)?\s?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}\b/g, "[Tlf fjernet]")
+    .replace(/(adresse|vej|gade|allé)[^\n]{0,50}/gi, "[Adresse fjernet]")
+    .replace(/(navn|patientnavn|pt\.)[: ]+[A-ZÆØÅ][a-zæøå]+/gi, "[Navn fjernet]");
+}
+
+// 🤖 Brug Gemini til at finde kategori
+async function guessCategory(text) {
+  const prompt = `Du er en akutmediciner. Giv kun én kort kategori (fx 'Infektion', 'Kardiologi', 'Nefrologi', 'Endokrinologi') for følgende klinisk case:\n\n${text}\n\nSvar kun med én kategori:`;
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const result = await model.generateContent(prompt);
+  const cat = await result.response.text();
+  return cat.replace(/[^A-Za-zÆØÅæøå ]/g, "").trim();
+}
+
+// 📝 Uddrag tekst fra Google Doc
+async function getTextFromGoogleDoc(docId) {
+  const doc = await docs.documents.get({ documentId: docId });
+  return doc.data.body.content
+    .map(e => e.paragraph?.elements?.map(el => el.textRun?.content || "").join("") || "")
+    .join("\n");
+}
+
+// 🚚 Parse og upload cases
+async function processDoc(docId) {
+  const rawText = await getTextFromGoogleDoc(docId);
+  const rawCases = rawText.split(/#\s*Case\s*/i).slice(1);
+
+  for (const raw of rawCases) {
+    const [firstLine, ...rest] = raw.trim().split("\n");
+    const cleaned = cleanContent(rest.join("\n"));
+    const category = await guessCategory(cleaned);
+
+    const docData = {
+      title: firstLine.trim().substring(0, 100),
+      content: cleaned,
+      category: category || "Ukendt",
+      created_at: new Date().toISOString(),
+    };
+
+    await db.collection("cases").add(docData);
+    console.log(`✅ Uploadet case: ${docData.title} → ${docData.category}`);
+  }
+}
+
+// 🚀 Kør scriptet
+for (const src of sourceList) {
+  console.log(`🔍 Behandler dokument: ${src.id}`);
+  await processDoc(src.id);
+}
+console.log("🎉 Alle cases er nu AI-sorteret og uploadet.");

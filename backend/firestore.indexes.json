@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "saved_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "expiry_date", "order": "ASCENDING" }
+      ]
+    }
+  ]
+}
