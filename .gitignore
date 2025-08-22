@@ -23,3 +23,17 @@ frontend.bak.*/
 tmp_caseview_review/
 packages/
 
+
+# Secrets and logs
+*.log
+*.env
+.env.local
+serviceAccountKey.json
+firebase-key.json
+
+# Build artifacts
+dist/
+
+# OS cruft
+.DS_Store
+
