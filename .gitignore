@@ -22,3 +22,8 @@ frontend/node_modules/
 # Ignore junk
 backend/archive/tmp/
 backend/repo-backend/archive/tmp/
+
+# Ignore archives & venv
+*.tar.gz
+backend/venv/
+
