@@ -1,8 +1,9 @@
+// /workspaces/medplat/frontend/vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
   server: {
     port: 5173,
@@ -11,6 +12,6 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
-  // ✅ this makes sure refresh / direct links work in Cloud Run
-  base: "./"
-});
+  // ✅ Codespaces dev → "./", Cloud Run build → "/"
+  base: command === "serve" ? "./" : "/",
+}));

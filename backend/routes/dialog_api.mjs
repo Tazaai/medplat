@@ -1,7 +1,7 @@
 // ~/medplat/backend/routes/dialog_api.mjs
 import express from "express";
 import generateCase from "../generate_case_clinical.mjs";
-import admin from "../firebase.js"; // ✅ Firebase for case_id lookup
+import admin from "../firebase.js";
 
 console.log("✅ dialog_api.mjs LOADED");
 
@@ -14,10 +14,10 @@ export default function dialogApi(db) {
     const {
       area,
       topic,
-      language = "English",
-      niveau = "kompleks",
+      language = "en",
       model = "gpt-4o-mini",
-      region = "global"   // 🌍 default global if none provided
+      region = "global",
+      userLocation = null
     } = req.body;
 
     if (typeof area !== "string" || typeof topic !== "string" || !area || !topic) {
@@ -25,7 +25,6 @@ export default function dialogApi(db) {
     }
 
     try {
-      // 🔹 Lookup case_id from Firebase (topics2 or topics)
       let caseIdFromFirebase = null;
       if (admin.apps.length) {
         try {
@@ -34,7 +33,7 @@ export default function dialogApi(db) {
           for (const col of collections) {
             const snap = await fdb.collection(col).where("topic", "==", topic).limit(1).get();
             if (!snap.empty) {
-              caseIdFromFirebase = snap.docs[0].id; // use Firestore doc ID
+              caseIdFromFirebase = snap.docs[0].id;
               break;
             }
           }
@@ -43,17 +42,16 @@ export default function dialogApi(db) {
         }
       }
 
-      // 🔹 Generate case
       const result = await generateCase({
         area,
         topic,
         language,
         model,
         region,
+        userLocation,
         caseIdFromFirebase
       });
 
-      // ✅ Ensure JSON reply
       return res.status(200).json({
         ok: true,
         aiReply: result,

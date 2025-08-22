@@ -1,6 +1,5 @@
 // ~/medplat/backend/generate_case_clinical.mjs
 import openai from "./routes/openai_client.js";
-import { translateText } from "./utils/translate_util.mjs";
 import crypto from "crypto";
 
 export default async function generateCase({
@@ -9,7 +8,8 @@ export default async function generateCase({
   language,
   model = "gpt-4o-mini",
   region = "global",
-  caseIdFromFirebase = null
+  caseIdFromFirebase = null,
+  userLocation = null // 🌍 optional: pass in from frontend/IP if available
 }) {
   if (typeof topic === "object" && topic?.topic) {
     topic = topic.topic;
@@ -18,7 +18,6 @@ export default async function generateCase({
     throw new Error("Invalid topic input");
   }
 
-  // 🔑 Assign IDs
   const case_id = caseIdFromFirebase || topic.toLowerCase().replace(/\s+/g, "_");
   const instance_id = crypto.randomUUID();
 
@@ -35,9 +34,16 @@ Medical Specialty: ${area}
 Topic: "${topic}"
 Language: ${language}
 Region: ${region}
+UserLocation: ${userLocation || "unspecified"}
 
 Generate a structured clinical case for medical students or junior doctors.
 Difficulty_level: auto-classify as "easy", "medium", or "hard" depending on topic complexity.
+
+⚠️ For guidelines, follow this hierarchy:
+1. Local (hospital/region) if user location available
+2. National (country health authority)
+3. Regional (EU/continent-level)
+4. Global (WHO, NICE, UpToDate, PubMed)
 
 Sections required:
 
@@ -49,50 +55,45 @@ I. Patient History
 
 II. Objective Findings
   - Vitals
-  - Physical Exam (systematic, highlight positives/negatives)
+  - Physical Exam
   - Risk Factors, Exposures, Family Disposition
 
 III. Paraclinical Investigations
-  - Labs (with clinical reasoning why chosen)
-  - Imaging (Ultrasound, CT, MRI, LP etc — include reasoning why/why not, sensitivity/specificity, when they become positive)
-  - Other tests/procedures with rationale
-  - Region-specific preferences (e.g. Denmark → local/national guideline first, then EU, then global WHO/UpToDate)
+  - Labs (with reasoning why chosen)
+  - Imaging (with reasoning, sensitivity/specificity, timing)
+  - Other tests/procedures
+  - Region-aware preferences (local → national → regional → global)
 
 IV. Differential Diagnoses
-  - At least 3–5 differentials
-  - For each: Why it fits (reasoning) / Why less likely
-  - Red flags to consider
+  - 3–5 diagnoses
+  - Why fits / Why less likely / Red flags
 
 V. Final Diagnosis
-  - Name
-  - Diagnostic reasoning (why labs/imaging clinch the dx)
+  - Name + reasoning
 
 VI. Pathophysiology & Etiology
-  - Mechanism
-  - Underlying cause
-  - Systems/organs affected
 
 VII. Management
-  - Immediate management (ABC, supportive care)
-  - Specific treatment (drug names, doses, alternatives, monitoring)
-  - Escalation steps if wrong dx or complications
-  - Region-aware guideline snippet (local → regional → global)
-  - Timing windows (when intervention must occur)
+  - Immediate management
+  - Specific treatments (drug, dose, monitoring)
+  - Escalation
+  - Region-aware guideline snippet (local → national → regional → global)
+  - Timing windows
 
 VIII. Disposition
-  - Admit vs discharge, level of care
-  - Follow-up needs
-  - Social aspects (support, safety, access to care)
+  - Admit vs discharge
+  - Follow-up
+  - Social aspects
 
 IX. Evidence & References
-  - Test sensitivities/specificities with sources
+  - Sensitivity/specificity with sources
   - Prognosis
-  - Cite open references (WHO, PubMed, NICE, UpToDate, Danish Sundhedsstyrelsen etc depending on region)
+  - References (WHO, NICE, PubMed, national guidelines depending on region)
 
 X. Teaching & Reasoning Panel
   - Expert pearls
   - Mnemonics
-  - Panel-style reasoning: why certain labs, why CT vs MRI, why/when LP, thresholds for interventions
+  - Panel-style reasoning (CT vs MRI, thresholds, interventions)
 
 Return only JSON, no prose.
 `.trim();
@@ -109,7 +110,6 @@ Return only JSON, no prose.
 
     let raw = completion.choices[0]?.message?.content?.trim();
 
-    // ✅ Parse JSON safely
     let parsed;
     try {
       parsed = JSON.parse(raw);
@@ -119,7 +119,6 @@ Return only JSON, no prose.
       parsed = JSON.parse(raw);
     }
 
-    // 🔹 Add IDs for traceability
     parsed.meta = {
       ...(parsed.meta || {}),
       case_id,
@@ -128,15 +127,16 @@ Return only JSON, no prose.
       area,
       language,
       region,
+      userLocation,
       generated_at: new Date().toISOString()
     };
 
-    // 🔹 Translate if needed
-    if (language.toLowerCase() !== "en") {
-      parsed = await translateText(parsed, language);
-    }
-
-    return parsed;
+    return {
+      json: parsed,
+      rawText: raw,
+      aiReply: completion.choices[0].message,
+      meta: parsed.meta
+    };
   } catch (err) {
     console.error("❌ Error in generate_case_clinical:", err);
     throw err;
