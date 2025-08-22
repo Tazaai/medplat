@@ -16,3 +16,5 @@ serviceAccountKey.json
 # OS/editor junk
 .DS_Store
 *.swp
+backend/venv/
+frontend/node_modules/
