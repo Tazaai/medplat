@@ -16,3 +16,10 @@ __pycache__/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ignore backups and tmp
+backend.bak.*/
+frontend.bak.*/
+tmp_caseview_review/
+packages/
+
