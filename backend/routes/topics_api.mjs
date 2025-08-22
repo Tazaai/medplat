@@ -7,10 +7,12 @@ export default function topicsApi(db) {
 
   router.post("/", async (req, res) => {
     try {
-      const area = req.body?.area || "";
+      // ✅ Accept both `area` and `category`
+      const area = req.body?.area || req.body?.category || "";
+      const lang = req.body?.lang || "en";
       const collectionOverride = req.body?.collection;
 
-      console.log("🔍 /api/topics POST called with:", { area, collectionOverride });
+      console.log("🔍 /api/topics POST called with:", { area, lang, collectionOverride });
 
       // 🧠 Decide which Firestore collection to query
       let collectionName = "";
@@ -25,6 +27,9 @@ export default function topicsApi(db) {
         collectionName = "abg";
       } else if (area === "USMLE Step 1") {
         collectionName = "usmle1";
+      } else if (area) {
+        // Default: use topics2 for clinical specialties like Cardiology, etc.
+        collectionName = "topics2";
       } else {
         return res.status(400).json({ error: "Missing or invalid area/collection" });
       }
@@ -37,27 +42,21 @@ export default function topicsApi(db) {
         return res.status(404).json({ error: `No topics found in ${collectionName}` });
       }
 
+      // ✅ Apply category + lang filtering
       const topics = snapshot.docs
-        .map(doc => {
-          const data = doc.data();
+        .map(doc => doc.data())
+        .filter(
+          d =>
+            d &&
+            typeof d === "object" &&
+            d.category === area &&
+            (!lang || d.lang === lang)
+        );
 
-          if (typeof data !== "object" || data === null || Array.isArray(data)) {
-            console.warn("❌ Skipping malformed doc:", doc.id, data);
-            return null;
-          }
-
-          if (typeof data.next === "string" && data.next.trim() === "") {
-            delete data.next;
-          }
-
-          return data;
-        })
-        .filter(Boolean);
-
-      console.log(`✅ Fetched ${topics.length} topics from "${collectionName}"`);
+      console.log(`✅ Returning ${topics.length} filtered topics for "${area}" (${lang})`);
       if (topics.length) console.log("💡 First topic:", topics[0]);
 
-      return res.status(200).json({ topics });
+      return res.status(200).json({ ok: true, topics });
     } catch (err) {
       console.error("❌ Error in /api/topics:", err);
       return res.status(500).json({ error: "Server error" });
