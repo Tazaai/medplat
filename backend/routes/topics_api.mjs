@@ -5,60 +5,63 @@ console.log("🚨 THIS IS THE REAL topics_api.mjs RUNNING");
 export default function topicsApi(db) {
   const router = express.Router();
 
+  // ✅ Get topics by area/category
   router.post("/", async (req, res) => {
     try {
-      // ✅ Accept both `area` and `category`
       const area = req.body?.area || req.body?.category || "";
       const lang = req.body?.lang || "en";
-      const collectionOverride = req.body?.collection;
 
-      console.log("🔍 /api/topics POST called with:", { area, lang, collectionOverride });
+      console.log("🔍 /api/topics POST called with:", { area, lang });
 
-      // 🧠 Decide which Firestore collection to query
-      let collectionName = "";
-
-      if (collectionOverride) {
-        collectionName = collectionOverride;
-      } else if (area === "Medical Fields") {
-        collectionName = "topics2";
-      } else if (area === "ECG") {
-        collectionName = "ecg";
-      } else if (area === "ABG") {
-        collectionName = "abg";
-      } else if (area === "USMLE Step 1") {
-        collectionName = "usmle1";
-      } else if (area) {
-        // Default: use topics2 for clinical specialties like Cardiology, etc.
-        collectionName = "topics2";
-      } else {
-        return res.status(400).json({ error: "Missing or invalid area/collection" });
+      if (!area) {
+        return res.status(400).json({ error: "Missing area/category" });
       }
 
-      console.log("📂 Fetching from collection:", collectionName);
-      const topicsRef = db.collection(collectionName);
-      const snapshot = await topicsRef.get();
+      // Always query topics2 for clinical specialties
+      const queryRef = db.collection("topics2")
+        .where("category", "==", area)
+        .where("lang", "==", lang);
+
+      const snapshot = await queryRef.get();
 
       if (snapshot.empty) {
-        return res.status(404).json({ error: `No topics found in ${collectionName}` });
+        console.warn(`⚠️ No topics found for ${area} (${lang})`);
+        return res.status(200).json({ ok: true, topics: [] });
       }
 
-      // ✅ Apply category + lang filtering
-      const topics = snapshot.docs
-        .map(doc => doc.data())
-        .filter(
-          d =>
-            d &&
-            typeof d === "object" &&
-            d.category === area &&
-            (!lang || d.lang === lang)
-        );
+      const topics = snapshot.docs.map(doc => doc.data());
 
-      console.log(`✅ Returning ${topics.length} filtered topics for "${area}" (${lang})`);
+      console.log(`✅ Returning ${topics.length} topics for "${area}" (${lang})`);
       if (topics.length) console.log("💡 First topic:", topics[0]);
 
       return res.status(200).json({ ok: true, topics });
     } catch (err) {
       console.error("❌ Error in /api/topics:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // ✅ List all distinct categories
+  router.post("/categories", async (req, res) => {
+    try {
+      const lang = req.body?.lang || "en";
+      console.log("🔍 /api/topics/categories POST called with:", { lang });
+
+      const snapshot = await db.collection("topics2").where("lang", "==", lang).get();
+
+      if (snapshot.empty) {
+        console.warn("⚠️ No categories found");
+        return res.status(200).json({ ok: true, categories: [] });
+      }
+
+      const categories = [
+        ...new Set(snapshot.docs.map(doc => doc.data().category).filter(Boolean)),
+      ];
+
+      console.log(`✅ Returning ${categories.length} categories`);
+      return res.status(200).json({ ok: true, categories });
+    } catch (err) {
+      console.error("❌ Error in /api/topics/categories:", err);
       return res.status(500).json({ error: "Server error" });
     }
   });

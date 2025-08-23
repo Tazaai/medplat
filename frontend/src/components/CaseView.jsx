@@ -1,45 +1,46 @@
+// ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect } from "react";
+import Level2CaseLogic from "./Level2CaseLogic";
 
-const API_BASE = "https://medplat-backend-139218747785.europe-west1.run.app";
+const API_BASE = "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
 
 export default function CaseView() {
-  const [area, setArea] = useState("EM");
+  const [areas, setAreas] = useState([]);
+  const [area, setArea] = useState("");
   const [topics, setTopics] = useState([]);
-  const [category, setCategory] = useState("");
-  const [caseId, setCaseId] = useState("");
-  const [niveau, setNiveau] = useState("kompleks");
-  const [lang, setLang] = useState("da");
+  const [topic, setTopic] = useState("");
+  const [customTopic, setCustomTopic] = useState(""); // ✅ custom search input
+  const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
-  const [customTopic, setCustomTopic] = useState("");
-  const [caseData, setCaseData] = useState({});
+  const [model, setModel] = useState("gpt-4o-mini");
+  const [gamify, setGamify] = useState(false);
+  const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // load all categories (areas)
   useEffect(() => {
-    fetch(`${API_BASE}/api/topics?area=${area}`)
-      .then(res => res.json())
-      .then(data => setTopics(Array.isArray(data) ? data : []))
+    fetch(`${API_BASE}/api/topics/categories`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lang }),
+    })
+      .then((res) => res.json())
+      .then((data) => setAreas(data.categories || []))
+      .catch(() => setAreas([]));
+  }, [lang]);
+
+  // load topics for selected area
+  useEffect(() => {
+    if (!area) return;
+    fetch(`${API_BASE}/api/topics`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ area, lang }),
+    })
+      .then((res) => res.json())
+      .then((data) => setTopics(data.topics || []))
       .catch(() => setTopics([]));
-  }, [area]);
-
-  const safeTopics = Array.isArray(topics) ? topics : [];
-
-  const emTopics = safeTopics.filter(t => t.category === "Emergency Medicine");
-  const emCategories = [...new Set(emTopics.map(t => t.subcategory))].filter(Boolean);
-  const emCases = emTopics.filter(t => t.subcategory === category).map(t => ({ id: t.id, topic: t.topic }));
-  const specTopics = safeTopics.filter(t => t.category !== "Emergency Medicine");
-  const specCategories = [...new Set(specTopics.map(t => t.category))].filter(Boolean);
-  const specCases = specTopics.filter(t => t.category === category).map(t => ({ id: t.id, topic: t.topic }));
-
-  const languageOptions = [
-    { value: "da", label: "Dansk" },
-    { value: "en", label: "English" },
-    { value: "fa", label: "Farsi" },
-    { value: "ar", label: "Arabic" },
-    { value: "ur", label: "Urdu" },
-    { value: "es", label: "Spanish" },
-    { value: "de", label: "German" },
-    { value: "custom", label: "Other language..." }
-  ];
+  }, [area, lang]);
 
   const getLanguage = () => {
     if (lang !== "custom") return lang;
@@ -47,32 +48,30 @@ export default function CaseView() {
     return /^[a-z]{2}$/.test(trimmed) ? trimmed : "en";
   };
 
-  const selectedTopic = customTopic || (area === "EM"
-    ? emCases.find(c => c.id === caseId)?.topic
-    : specCases.find(c => c.id === caseId)?.topic) || "";
-
   const generateCase = async () => {
-    if (!selectedTopic) {
-      alert("Please select a valid case or enter a custom topic");
+    const chosenTopic = customTopic.trim() || topic;
+    if (!chosenTopic) {
+      alert("Please select or enter a topic");
       return;
     }
-
     setLoading(true);
-    setCaseData({});
+    setCaseData(null);
     try {
       const res = await fetch(`${API_BASE}/api/dialog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          topic: selectedTopic,
-          niveau: niveau,
-          lang: getLanguage()
+          area,
+          topic,               // dropdown value
+          customSearch: customTopic, // ✅ pass custom
+          language: getLanguage(),
+          model,
+          gamify,
         }),
       });
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      const parsed = typeof data.aiReply === "string" ? JSON.parse(data.aiReply) : data.aiReply;
-      setCaseData(parsed || {});
+      setCaseData(data.case || data.aiReply || {});
     } catch (err) {
       console.error(err);
     }
@@ -80,25 +79,107 @@ export default function CaseView() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">🧠 Generate Patient History</h1>
-      {/* input fields and selects */}
-      {/* same as your original layout */}
-      {/* ... */}
-      <button onClick={generateCase} disabled={!selectedTopic || loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded">
-        {loading ? "Generating..." : "🔄 Generate History"}
-      </button>
-      {caseData.history && (
-        <div className="mt-4 bg-gray-100 p-4 rounded whitespace-pre-wrap">
-          <h2>Anamnese</h2><p>{caseData.history}</p>
-          <h2>Objective</h2><p>{caseData.objective}</p>
-          <h2>Paraclinic</h2><ul>{caseData.paraclinic?.map((it, i) => <li key={i}>{it}</li>)}</ul>
-          <h2>Differential Diagnoser</h2><ul>{caseData.diff_diag?.map((it, i) => <li key={i}>{it}</li>)}</ul>
-          <h2>Diagnose</h2><p>{caseData.diagnose}</p>
-          <h2>Behandling</h2><p>{caseData.treatment}</p>
-          <h2>Konklusion</h2><p>{caseData.conclusion}</p>
-        </div>
+    <div className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
+
+      {/* Controls */}
+      <div className="flex flex-wrap gap-2">
+        <select
+          value={area}
+          onChange={(e) => setArea(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Choose area</option>
+          {areas.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Choose topic</option>
+          {topics.map((t) => (
+            <option key={t.id} value={t.topic}>
+              {t.topic}
+            </option>
+          ))}
+        </select>
+
+        {/* ✅ Custom Topic Search */}
+        <input
+          type="text"
+          value={customTopic}
+          onChange={(e) => setCustomTopic(e.target.value)}
+          placeholder="Custom search (e.g. IBD in pregnancy)"
+          className="border p-2 rounded w-64"
+        />
+
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="en">English</option>
+          <option value="da">Dansk</option>
+          <option value="fa">Farsi</option>
+          <option value="ar">Arabic</option>
+          <option value="ur">Urdu</option>
+          <option value="es">Spanish</option>
+          <option value="de">German</option>
+          <option value="custom">Other…</option>
+        </select>
+        {lang === "custom" && (
+          <input
+            type="text"
+            value={customLang}
+            onChange={(e) => setCustomLang(e.target.value)}
+            placeholder="ISO code (e.g. fr)"
+            className="border p-2 rounded"
+          />
+        )}
+
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="gpt-4o-mini">GPT-4o-mini (default)</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4">GPT-4</option>
+        </select>
+
+        <label className="flex items-center gap-1">
+          <input
+            type="checkbox"
+            checked={gamify}
+            onChange={(e) => setGamify(e.target.checked)}
+          />
+          Gamify
+        </label>
+
+        <button
+          onClick={generateCase}
+          disabled={loading || (!topic && !customTopic)}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? "Generating..." : "Generate Case"}
+        </button>
+      </div>
+
+      {/* Case rendering */}
+      {caseData && gamify && (
+        <Level2CaseLogic caseData={caseData} caseId={customTopic || topic} />
+      )}
+
+      {caseData && !gamify && (
+        <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap text-sm">
+          {JSON.stringify(caseData, null, 2)}
+        </pre>
       )}
     </div>
   );

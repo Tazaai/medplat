@@ -16,6 +16,8 @@
   },
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
+    "dev": "nodemon index.js",
     "lint": "echo 'No linting configured, skipping.'"
   },
   "devDependencies": {

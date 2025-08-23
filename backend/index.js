@@ -11,15 +11,17 @@ import casesApi from "./routes/cases_api.mjs"; // ✅ moved to top
 const app = express();
 app.set("trust proxy", true);
 
-// ✅ Cloud Run CORS: allow only your frontend origin
+// ✅ Allow both Cloud Run frontend + Codespaces frontend origins
 const allowedOrigins = [
-  "https://medplat-frontend-139218747785.europe-west1.run.app",
+  "https://medplat-frontend-139218747785.europe-west1.run.app",   // Cloud Run frontend
+  "https://super-zebra-g46xvpxqjrv5cwqg4-5173.app.github.dev",    // Codespace frontend port 5173
+  "https://super-zebra-g46xvpxqjrv5cwqg4-5174.app.github.dev",    // Codespace frontend port 5174
 ];
 
 const corsOptions = {
   origin(origin, cb) {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error("❌ Not allowed by CORS"));
+    return cb(new Error("❌ Not allowed by CORS: " + origin));
   },
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Origin", "Accept"],
