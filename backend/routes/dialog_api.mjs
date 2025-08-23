@@ -15,11 +15,14 @@ export default function dialogApi(db) {
       area,
       topic,
       customSearch,            // ✅ NEW field
-      language = "en",
+      language,
       model = "gpt-4o-mini",
       region = "global",
       userLocation = null
     } = req.body;
+
+    // ✅ force default language
+    const finalLang = (typeof language === "string" && language.trim()) || "en";
 
     // ✅ prefer customSearch if provided
     const finalTopic = (customSearch && customSearch.trim()) || topic;
@@ -35,7 +38,11 @@ export default function dialogApi(db) {
           const fdb = admin.firestore();
           const collections = ["topics2", "topics"];
           for (const col of collections) {
-            const snap = await fdb.collection(col).where("topic", "==", finalTopic).limit(1).get();
+            const snap = await fdb
+              .collection(col)
+              .where("topic", "==", finalTopic)
+              .limit(1)
+              .get();
             if (!snap.empty) {
               caseIdFromFirebase = snap.docs[0].id;
               break;
@@ -49,7 +56,7 @@ export default function dialogApi(db) {
       const result = await generateCase({
         area,
         topic: finalTopic,   // ✅ always send the chosen topic
-        language,
+        language: finalLang,
         model,
         region,
         userLocation,

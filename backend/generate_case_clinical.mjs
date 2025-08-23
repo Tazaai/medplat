@@ -5,20 +5,20 @@ import crypto from "crypto";
 export default async function generateCase({
   area,
   topic,
-  customSearch = null, // 🔍 NEW
+  customSearch = null, // 🔍 optional custom text
   language,
   model = "gpt-4o-mini",
   region = "global",
   caseIdFromFirebase = null,
   userLocation = null, // 🌍 optional
 }) {
-  // normalize topic
+  // ✅ normalize topic
   if (typeof topic === "object" && topic?.topic) {
     topic = topic.topic;
   }
   if (typeof topic !== "string") topic = "";
 
-  // 🔍 prefer customSearch if present
+  // ✅ prefer customSearch if provided
   const effectiveTopic = customSearch?.trim() || topic?.trim();
   if (!effectiveTopic) {
     throw new Error("Invalid topic/customSearch input");
@@ -39,10 +39,8 @@ Never use markdown, no backticks, no explanations outside JSON.
 Case_ID: ${case_id}
 Instance_ID: ${instance_id}
 Medical Specialty: ${area}
-Topic: "${effectiveTopic}"   ${
-    customSearch ? "(user custom search applied)" : ""
-  }
-Language: ${language}
+Topic: "${effectiveTopic}"   ${customSearch ? "(user custom search applied)" : ""}
+Language: ${language || "en"}
 Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 
@@ -135,14 +133,14 @@ Return only JSON, no prose.
       parsed = JSON.parse(raw);
     }
 
-    // attach meta info
+    // ✅ attach meta info
     parsed.meta = {
       ...(parsed.meta || {}),
       case_id,
       instance_id,
       topic: effectiveTopic,
       area,
-      language,
+      language: language || "en",
       region,
       userLocation,
       customSearch: customSearch || null,

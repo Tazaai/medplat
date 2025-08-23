@@ -9,7 +9,7 @@ export default function CaseView() {
   const [area, setArea] = useState("");
   const [topics, setTopics] = useState([]);
   const [topic, setTopic] = useState("");
-  const [customTopic, setCustomTopic] = useState(""); // ✅ custom search input
+  const [customTopic, setCustomTopic] = useState("");
   const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
@@ -17,30 +17,30 @@ export default function CaseView() {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // load all categories (areas)
+  // load categories (areas) – not tied to lang anymore
   useEffect(() => {
     fetch(`${API_BASE}/api/topics/categories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lang }),
+      body: JSON.stringify({}), // no lang → keep stable
     })
       .then((res) => res.json())
       .then((data) => setAreas(data.categories || []))
       .catch(() => setAreas([]));
-  }, [lang]);
+  }, []);
 
-  // load topics for selected area
+  // load topics for selected area – not tied to lang anymore
   useEffect(() => {
     if (!area) return;
     fetch(`${API_BASE}/api/topics`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ area, lang }),
+      body: JSON.stringify({ area }), // no lang → stable IDs
     })
       .then((res) => res.json())
       .then((data) => setTopics(data.topics || []))
       .catch(() => setTopics([]));
-  }, [area, lang]);
+  }, [area]);
 
   const getLanguage = () => {
     if (lang !== "custom") return lang;
@@ -62,9 +62,9 @@ export default function CaseView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           area,
-          topic,               // dropdown value
-          customSearch: customTopic, // ✅ pass custom
-          language: getLanguage(),
+          topic,
+          customSearch: customTopic,
+          language: getLanguage(), // ✅ lang only affects case gen
           model,
           gamify,
         }),
