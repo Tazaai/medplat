@@ -5,21 +5,22 @@ import admin from "firebase-admin";
 
 import topicsApi from "./routes/topics_api.mjs";
 import dialogApi from "./routes/dialog_api.mjs";
-import gamifyApi from "./routes/gamify_api.mjs"; 
-import casesApi from "./routes/cases_api.mjs"; // ✅ moved to top
+import gamifyApi from "./routes/gamify_api.mjs";
+import casesApi from "./routes/cases_api.mjs";
 
 const app = express();
 app.set("trust proxy", true);
 
 // ✅ Allow both Cloud Run frontend + Codespaces frontend origins
 const allowedOrigins = [
-  "https://medplat-frontend-139218747785.europe-west1.run.app",   // Cloud Run frontend
-  "https://super-zebra-g46xvpxqjrv5cwqg4-5173.app.github.dev",    // Codespace frontend port 5173
-  "https://super-zebra-g46xvpxqjrv5cwqg4-5174.app.github.dev",    // Codespace frontend port 5174
+  "https://medplat-frontend-458911.europe-west1.run.app",   // Cloud Run frontend
+  "https://super-zebra-g46xvpxqjrv5cwqg4-5173.app.github.dev", // Codespaces port 5173
+  "https://super-zebra-g46xvpxqjrv5cwqg4-5174.app.github.dev", // Codespaces port 5174
 ];
 
 const corsOptions = {
   origin(origin, cb) {
+    // allow server-to-server or curl with no origin
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     return cb(new Error("❌ Not allowed by CORS: " + origin));
   },
@@ -28,7 +29,7 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use(cors(corsOptions));
+app.use(cors({ origin: true, credentials: true }));
 app.options("*", cors(corsOptions));
 app.use(express.json());
 
@@ -50,7 +51,7 @@ app.get("/ping", (_req, res) =>
 app.use("/api/topics", topicsApi(db));
 app.use("/api/dialog", dialogApi(db));
 app.use("/api/gamify", gamifyApi);
-app.use("/api/cases", casesApi()); // ✅ now mounted correctly
+app.use("/api/cases", casesApi());
 
 // ✅ Global error guard
 process.on("unhandledRejection", (err) => {

@@ -16,12 +16,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   Lightbulb,
-  Timeline,
+  LineChart,
   Save,
   Globe,
 } from "lucide-react";
 
-const API_BASE = "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
 
 // Dynamic role → icon
 const roleIcons = {
@@ -68,10 +68,14 @@ export default function CaseView() {
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log("Fetched categories:", data); // debug
         const cats = data.categories || [];
         setAreas(cats.sort((a, b) => a.localeCompare(b)));
       })
-      .catch(() => setAreas([]));
+      .catch((err) => {
+        console.error("Error fetching categories:", err);
+        setAreas([]);
+      });
   }, []);
 
   // load topics for selected area
@@ -84,7 +88,10 @@ export default function CaseView() {
     })
       .then((res) => res.json())
       .then((data) => setTopics(data.topics || []))
-      .catch(() => setTopics([]));
+      .catch((err) => {
+        console.error("Error fetching topics:", err);
+        setTopics([]);
+      });
   }, [area]);
 
   const getLanguage = () => {
@@ -267,7 +274,7 @@ export default function CaseView() {
               {expandAll ? "Collapse All" : "Expand All"}
             </button>
             <button onClick={() => setTimelineMode(!timelineMode)} className="px-3 py-1 bg-gray-200 rounded text-sm">
-              <Timeline size={16} /> {timelineMode ? "Section Mode" : "Timeline Mode"}
+              <LineChart size={16} /> {timelineMode ? "Section Mode" : "Timeline Mode"}
             </button>
             <button onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
               <Save size={16} /> Save
@@ -426,4 +433,8 @@ export default function CaseView() {
       </div>
 
       {/* Case rendering */}
-      {caseData && gamify && <Level2CaseLogic caseData={case
+      {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
+      {caseData && !gamify && renderCase(caseData)}
+    </div>
+  );
+}
