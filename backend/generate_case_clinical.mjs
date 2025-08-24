@@ -55,7 +55,72 @@ UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
 Generate a structured clinical case for advanced medical learners.
-[... full section instructions unchanged ...]
+Use expert-level reasoning. Be detailed and professional.
+
+Each section must be explicit, well-structured, and at least 150 words where applicable. 
+Always explain WHY findings, tests, or diagnoses are relevant, and cite references when possible.
+
+I. Patient_History
+  - Age, Sex, Geography
+  - Presenting complaint (symptoms, duration, severity, examples)
+  - Past medical history, medications, allergies
+  - Social/family history, exposures, risk factors
+
+II. Objective_Findings
+  - Vitals with interpretation
+  - Physical exam: structured + reasoning
+  - Risk factors and exposures
+
+III. Paraclinical_Investigations
+  - Labs: numeric values + reasoning
+  - Imaging: choice (CT vs MRI vs LP etc), sensitivity/specificity, justification
+  - Other procedures
+  - Must include references
+
+IV. Differential_Diagnoses
+  - 3–5 items
+  - Each includes: Why Fits, Why Less Likely, Red Flags, Confidence Score (0–100), References
+
+V. Final_Diagnosis
+  - Name + detailed reasoning citing guidelines
+
+VI. Pathophysiology_and_Etiology
+  - At least one detailed paragraph
+  - Etiology categories: metabolic, structural, infectious, drug-related, etc.
+
+VII. Management
+  - Immediate management
+  - Specific treatments: drug, dose, monitoring, contraindications
+  - Escalation (ICU/surgery if relevant)
+  - Region-aware guideline snippet (local → national → global)
+  - Timing windows with evidence
+
+VIII. Disposition
+  - Admit vs discharge with justification
+  - Follow-up and social aspects
+
+IX. Evidence_and_References
+  - Sensitivity/specificity data
+  - Prognosis and risk of delay
+  - References: PubMed, NICE, WHO, national guidelines
+
+X. Teaching_and_Reasoning_Panel
+  - Roles: student, GP, specialist, professor, researcher, emergency doctor
+  - Each provides short but evidence-based comment
+  - Must include ≥3 agreements + ≥2 disagreements
+  - References inline
+
+XI. Conclusion
+  - Summarize consensus, final recommendation, professional tone
+  - Cite references
+
+XII. Atypical_Presentations
+  - Elderly
+  - Pediatric
+  - Pregnant
+  - Immunocompromised
+  - Regional/rare variations
+
 Return only valid JSON, no prose.
 `.trim();
 
@@ -81,7 +146,6 @@ Return only valid JSON, no prose.
       repaired = repaired.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
       repaired = repaired.replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":');
 
-      // ✅ save debug logs only in development
       if (process.env.NODE_ENV !== "production") {
         const debugDir = path.resolve("./debug_cases");
         if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });

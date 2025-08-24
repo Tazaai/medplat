@@ -1,47 +1,12 @@
 // ~/medplat/frontend/src/components/CaseView.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
-import {
-  User,
-  HeartPulse,
-  FlaskRound,
-  Stethoscope,
-  Activity,
-  ClipboardList,
-  BookOpen,
-  GraduationCap,
-  CheckCircle2,
-  FileText,
-  Users,
-  ThumbsUp,
-  ThumbsDown,
-  Lightbulb,
-  LineChart,
-  Save,
-  Globe,
-} from "lucide-react";
+import { Save, Copy, Share2, FileDown } from "lucide-react";
+import jsPDF from "jspdf";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
-
-// Dynamic role → icon
-const roleIcons = {
-  Student: "🧑‍🎓",
-  JuniorDoctor: "🧑‍⚕️",
-  GP: "👨‍⚕️",
-  Emergency: "🏥",
-  Specialist: "👩‍⚕️",
-  Professor: "👨‍🏫",
-  Researcher: "🔬",
-};
-
-// Assign roles based on specialty (dynamic)
-function getPanelRoles(area) {
-  if (!area) return ["Student", "JuniorDoctor", "Professor"];
-  if (area.includes("Cardio")) return ["Cardiologist", "GP", "Emergency", "Professor"];
-  if (area.includes("Neuro")) return ["Neurologist", "GP", "Researcher", "Professor"];
-  if (area.includes("Infect")) return ["ID Specialist", "Microbiologist", "Emergency", "Researcher"];
-  return ["Student", "GP", "Specialist", "Professor", "Researcher"];
-}
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
 
 export default function CaseView() {
   const [areas, setAreas] = useState([]);
@@ -55,11 +20,10 @@ export default function CaseView() {
   const [gamify, setGamify] = useState(false);
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [expandAll, setExpandAll] = useState(false);
-  const [timelineMode, setTimelineMode] = useState(false);
-  const [guidelineSource, setGuidelineSource] = useState("global");
 
-  // load categories (areas) – sorted alphabetically
+  const caseRef = useRef(null);
+
+  // load categories
   useEffect(() => {
     fetch(`${API_BASE}/api/topics/categories`, {
       method: "POST",
@@ -67,18 +31,11 @@ export default function CaseView() {
       body: JSON.stringify({}),
     })
       .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched categories:", data); // debug
-        const cats = data.categories || [];
-        setAreas(cats.sort((a, b) => a.localeCompare(b)));
-      })
-      .catch((err) => {
-        console.error("Error fetching categories:", err);
-        setAreas([]);
-      });
+      .then((data) => setAreas((data.categories || []).sort()))
+      .catch(() => setAreas([]));
   }, []);
 
-  // load topics for selected area
+  // load topics
   useEffect(() => {
     if (!area) return;
     fetch(`${API_BASE}/api/topics`, {
@@ -88,24 +45,18 @@ export default function CaseView() {
     })
       .then((res) => res.json())
       .then((data) => setTopics(data.topics || []))
-      .catch((err) => {
-        console.error("Error fetching topics:", err);
-        setTopics([]);
-      });
+      .catch(() => setTopics([]));
   }, [area]);
 
   const getLanguage = () => {
     if (lang !== "custom") return lang;
-    const trimmed = customLang.trim().toLowerCase();
-    return /^[a-z]{2}$/.test(trimmed) ? trimmed : "en";
+    return /^[a-z]{2}$/.test(customLang.trim()) ? customLang.trim() : "en";
   };
 
   const generateCase = async () => {
     const chosenTopic = customTopic.trim() || topic;
-    if (!chosenTopic) {
-      alert("Please select or enter a topic");
-      return;
-    }
+    if (!chosenTopic) return alert("Please select or enter a topic");
+
     setLoading(true);
     setCaseData(null);
     try {
@@ -121,18 +72,10 @@ export default function CaseView() {
           gamify,
         }),
       });
-      if (!res.ok) throw new Error("API error");
       const data = await res.json();
-
-      if (data?.aiReply?.json) {
-        setCaseData(data.aiReply.json);
-      } else if (data?.aiReply) {
-        setCaseData(data.aiReply);
-      } else {
-        setCaseData({});
-      }
+      setCaseData(data?.aiReply?.json || data?.aiReply || {});
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error generating case:", err);
     }
     setLoading(false);
   };
@@ -145,221 +88,120 @@ export default function CaseView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(caseData),
       });
-      alert("Case saved to My Cases ✅");
+      alert("✅ Case saved to My Cases");
     } catch {
       alert("⚠️ Failed to save case");
     }
   };
 
-  // ✅ Collapsible section
-  const Section = ({ icon: Icon, title, children, defaultOpen = false }) => {
-    const [open, setOpen] = useState(defaultOpen);
-    useEffect(() => {
-      setOpen(expandAll);
-    }, [expandAll]);
-    return (
-      <div className="bg-white shadow rounded-2xl">
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center justify-between w-full p-4 border-b"
-        >
-          <span className="flex items-center gap-2 font-bold text-lg">
-            <Icon className="w-5 h-5 text-blue-600" /> {title}
-          </span>
-          <span className="text-gray-500">{open ? "−" : "+"}</span>
-        </button>
-        {open && <div className="p-4 text-sm space-y-2">{children}</div>}
-      </div>
-    );
+  const copyToClipboard = () => {
+    if (!caseRef.current) return;
+    navigator.clipboard.writeText(caseRef.current.innerText);
+    alert("📋 Case copied to clipboard!");
   };
 
-  // ✅ Consensus heatmap
-  const ConsensusMeter = ({ agreements = 0, disagreements = 0 }) => {
-    const total = agreements + disagreements;
-    const percentAgree = total ? Math.round((agreements / total) * 100) : 0;
-    return (
-      <div className="w-full bg-gray-200 rounded h-3 overflow-hidden">
-        <div
-          className={`h-3 ${percentAgree > 70 ? "bg-green-500" : percentAgree > 40 ? "bg-yellow-500" : "bg-red-500"}`}
-          style={{ width: `${percentAgree}%` }}
-        ></div>
-      </div>
-    );
+  const downloadPDF = () => {
+    if (!caseRef.current) return;
+    const doc = new jsPDF("p", "pt", "a4");
+    doc.setFontSize(12);
+    doc.text(doc.splitTextToSize(caseRef.current.innerText, 500), 40, 40);
+    doc.save("case.pdf");
   };
 
-  // ✅ References Tabs
-  const ReferencesTabs = ({ refs }) => {
-    const [tab, setTab] = useState("guidelines");
-    if (!refs) return null;
-
-    const grouped = {
-      guidelines: refs.filter((r) => /NICE|WHO|guideline|Sundhedsstyrelsen/i.test(r)),
-      research: refs.filter((r) => /PubMed|study|trial/i.test(r)),
-      textbooks: refs.filter((r) => /Harrison|Oxford|book/i.test(r)),
-      other: refs.filter(
-        (r) => !/NICE|WHO|guideline|Sundhedsstyrelsen|PubMed|study|trial|Harrison|Oxford|book/i.test(r)
-      ),
-    };
-
-    const categories = ["guidelines", "research", "textbooks", "other"];
-
-    return (
-      <div>
-        <div className="flex gap-2 border-b pb-2">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setTab(c)}
-              className={`px-3 py-1 rounded ${tab === c ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-        <ul className="list-disc ml-5 mt-2">
-          {grouped[tab].map((r, i) => (
-            <li key={i}>
-              {r.includes("http") ? (
-                <a href={r} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                  {r}
-                </a>
-              ) : (
-                r
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  // ✅ Atypical presentations
-  const AtypicalCards = ({ atypical }) => {
-    if (!atypical) return null;
-    const groups = {
-      Elderly: "bg-gray-100",
-      Pregnant: "bg-pink-100",
-      Pediatric: "bg-blue-100",
-      Immunocompromised: "bg-green-100",
-    };
-    return (
-      <div className="grid gap-3">
-        {Object.entries(atypical).map(([k, v]) => (
-          <div key={k} className={`p-3 rounded ${groups[k] || "bg-gray-50"}`}>
-            <b>{k}:</b> {v}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // ✅ Renderer
-  const renderCase = (c) => {
+  // ---------- Narrative Renderer ----------
+  const renderBookCase = (c) => {
     if (!c) return null;
-    if (timelineMode) {
-      return (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">🕒 Case Timeline</h2>
-          <p>Patient arrives → History → Findings → Investigations → Differential → Management → Conclusion</p>
-        </div>
-      );
-    }
 
+    // Helpers
+    const fmtList = (obj) =>
+      obj && typeof obj === "object"
+        ? Object.entries(obj)
+            .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
+            .join(", ")
+        : String(obj || "");
+
+    // Sections
+    const history = fmtList(c.Patient_History);
+    const findings = fmtList(c.Objective_Findings);
+    const investigations = fmtList(c.Paraclinical_Investigations);
+
+    const differentials = Array.isArray(c.Differential_Diagnoses)
+      ? c.Differential_Diagnoses.map((d) => {
+          let str = d.Diagnosis || d;
+          if (d.Why_Fits) str += ` — fits: ${d.Why_Fits}`;
+          if (d.Why_Less_Likely) str += ` — less likely: ${d.Why_Less_Likely}`;
+          if (d.Red_Flags)
+            str += ` 🚩 (${Array.isArray(d.Red_Flags) ? d.Red_Flags.join(", ") : d.Red_Flags})`;
+          return str;
+        })
+      : [];
+
+    const management = fmtList(c.Management);
+    const references = Array.isArray(c.References)
+      ? c.References.map((r, i) => `[${i + 1}] ${r}`).join("\n")
+      : String(c.References || "");
+
+    // Narrative
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">📋 Case: {c.Topic}</h2>
-          <div className="flex gap-2">
-            <button onClick={() => setExpandAll(!expandAll)} className="px-3 py-1 bg-gray-200 rounded text-sm">
-              {expandAll ? "Collapse All" : "Expand All"}
-            </button>
-            <button onClick={() => setTimelineMode(!timelineMode)} className="px-3 py-1 bg-gray-200 rounded text-sm">
-              <LineChart size={16} /> {timelineMode ? "Section Mode" : "Timeline Mode"}
-            </button>
-            <button onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
-              <Save size={16} /> Save
-            </button>
-            <button onClick={() => window.print()} className="px-3 py-1 bg-gray-200 rounded text-sm">
-              🖨️ Export/Print
-            </button>
-          </div>
-        </div>
+      <div className="space-y-4 leading-relaxed" ref={caseRef}>
+        <h2 className="text-xl font-semibold">📖 Case: {c.Topic}</h2>
 
-        <Section icon={User} title="Patient History" defaultOpen>
-          <pre className="whitespace-pre-wrap text-sm">{JSON.stringify(c.Patient_History, null, 2)}</pre>
-        </Section>
+        {history && (
+          <p>
+            <b>History:</b> {history.replace(/, /g, ". ")}.
+          </p>
+        )}
 
-        <Section icon={Stethoscope} title="Objective Findings">
-          <pre className="whitespace-pre-wrap text-sm">{JSON.stringify(c.Objective_Findings, null, 2)}</pre>
-        </Section>
+        {findings && (
+          <p>
+            <b>Examination:</b> On assessment, {findings.replace(/, /g, ". ")}.
+          </p>
+        )}
 
-        <Section icon={FlaskRound} title="Paraclinical Investigations">
-          <pre className="whitespace-pre-wrap text-sm">{JSON.stringify(c.Paraclinical_Investigations, null, 2)}</pre>
-        </Section>
+        {investigations && (
+          <p>
+            <b>Investigations:</b> {investigations.replace(/, /g, ". ")}.
+          </p>
+        )}
 
-        <Section icon={ClipboardList} title="Differential Diagnoses">
-          <pre className="whitespace-pre-wrap text-sm">{JSON.stringify(c.Differential_Diagnoses, null, 2)}</pre>
-        </Section>
-
-        <Section icon={CheckCircle2} title="Final Diagnosis" defaultOpen>
-          <p className="text-lg font-bold">{c.Final_Diagnosis?.Name}</p>
-          <p className="italic">{c.Final_Diagnosis?.Reasoning}</p>
-        </Section>
-
-        <Section icon={Activity} title="Management">
-          <pre className="whitespace-pre-wrap text-sm">{JSON.stringify(c.Management, null, 2)}</pre>
-          <p className="text-xs text-gray-500">Guideline Source: {guidelineSource}</p>
-          <div className="flex gap-2 mt-2">
-            {["local", "national", "regional", "global"].map((src) => (
-              <button
-                key={src}
-                onClick={() => setGuidelineSource(src)}
-                className={`px-2 py-1 rounded text-sm ${
-                  guidelineSource === src ? "bg-blue-600 text-white" : "bg-gray-200"
-                }`}
-              >
-                <Globe size={14} className="inline" /> {src}
-              </button>
+        {differentials.length > 0 && (
+          <p>
+            <b>Differential Diagnoses:</b>{" "}
+            {differentials.map((d, i) => (
+              <span key={i}>
+                {d}
+                {i < differentials.length - 1 ? "; " : ""}
+              </span>
             ))}
-          </div>
-        </Section>
+          </p>
+        )}
 
-        <Section icon={Users} title="Teaching & Panel Debate">
-          {c.Teaching_and_Reasoning_Panel?.Panel_Debate?.map((p, i) => (
-            <div key={i} className="p-2 border rounded flex gap-2 items-start">
-              <span className="text-xl">{roleIcons[p.Role] || "👤"}</span>
-              <div>
-                <p>
-                  <b>{p.Role}:</b> {p.Comment}
-                </p>
-              </div>
-            </div>
-          ))}
-          <ConsensusMeter
-            agreements={c.Teaching_and_Reasoning_Panel?.Agreements?.length || 0}
-            disagreements={c.Teaching_and_Reasoning_Panel?.Disagreements?.length || 0}
-          />
-        </Section>
+        <p>
+          <b>Final Diagnosis:</b>{" "}
+          {c.Final_Diagnosis?.Diagnosis
+            ? `The final diagnosis was **${c.Final_Diagnosis.Diagnosis}**.`
+            : "No confirmed final diagnosis."}
+        </p>
 
-        <Section icon={Lightbulb} title="Teaching Pearls & Mnemonics">
-          <ul className="list-disc ml-5 text-blue-700">
-            {c.Teaching_and_Reasoning_Panel?.Expert_Pearls && <li>{c.Teaching_and_Reasoning_Panel.Expert_Pearls}</li>}
-            {c.Teaching_and_Reasoning_Panel?.Mnemonics && <li>{c.Teaching_and_Reasoning_Panel.Mnemonics}</li>}
-          </ul>
-        </Section>
+        {management && (
+          <p>
+            <b>Management:</b> The treatment plan included: {management}.
+          </p>
+        )}
 
-        <Section icon={BookOpen} title="Conclusion" defaultOpen>
-          <p className="text-green-700 font-semibold">{c.Conclusion?.Summary}</p>
-          <p className="italic">{c.Conclusion?.Recommendation}</p>
-        </Section>
+        {c.Conclusion?.Summary && (
+          <p>
+            <b>Conclusion:</b> {c.Conclusion.Summary}
+          </p>
+        )}
 
-        <Section icon={FileText} title="Evidence & References">
-          <ReferencesTabs refs={c.Evidence_and_References?.References || []} />
-        </Section>
-
-        <Section icon={BookOpen} title="Atypical Presentations">
-          <AtypicalCards atypical={c.Atypical_Presentations} />
-        </Section>
+        {references && (
+          <p>
+            <b>References:</b>
+            <br />
+            <span className="whitespace-pre-line">{references}</span>
+          </p>
+        )}
       </div>
     );
   };
@@ -384,13 +226,7 @@ export default function CaseView() {
           ))}
         </select>
 
-        <input
-          type="text"
-          value={customTopic}
-          onChange={(e) => setCustomTopic(e.target.value)}
-          placeholder="Custom search (e.g. IBD in pregnancy)"
-          className="border p-2 rounded w-64"
-        />
+        <input type="text" value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} placeholder="Custom search" className="border p-2 rounded w-64" />
 
         <select value={lang} onChange={(e) => setLang(e.target.value)} className="border p-2 rounded">
           <option value="en">English</option>
@@ -403,38 +239,45 @@ export default function CaseView() {
           <option value="custom">Other…</option>
         </select>
         {lang === "custom" && (
-          <input
-            type="text"
-            value={customLang}
-            onChange={(e) => setCustomLang(e.target.value)}
-            placeholder="ISO code (e.g. fr)"
-            className="border p-2 rounded"
-          />
+          <input type="text" value={customLang} onChange={(e) => setCustomLang(e.target.value)} placeholder="ISO code (e.g. fr)" className="border p-2 rounded" />
         )}
 
         <select value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded">
-          <option value="gpt-4o-mini">GPT-4o-mini (default)</option>
+          <option value="gpt-4o-mini">GPT-4o-mini</option>
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-4">GPT-4</option>
         </select>
 
         <label className="flex items-center gap-1">
-          <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} />
-          Gamify
+          <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
         </label>
 
-        <button
-          onClick={generateCase}
-          disabled={loading || (!topic && !customTopic)}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+        <button onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
           {loading ? "Generating..." : "Generate Case"}
         </button>
       </div>
 
       {/* Case rendering */}
       {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
-      {caseData && !gamify && renderCase(caseData)}
+      {caseData && !gamify && renderBookCase(caseData)}
+
+      {/* Actions */}
+      {caseData && (
+        <div className="flex gap-2 mt-4">
+          <button onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
+            <Save size={16} /> Save
+          </button>
+          <button onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
+            <Copy size={16} /> Copy
+          </button>
+          <button onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
+            <FileDown size={16} /> PDF
+          </button>
+          <button onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
+            <Share2 size={16} /> Share
+          </button>
+        </div>
+      )}
     </div>
   );
 }
