@@ -14,7 +14,7 @@ export default function dialogApi(db) {
     const {
       area,
       topic,
-      customSearch,            // ✅ NEW field
+      customSearch,            // ✅ optional custom text
       language,
       model = "gpt-4o-mini",
       region = "global",
@@ -29,6 +29,28 @@ export default function dialogApi(db) {
 
     if (typeof area !== "string" || typeof finalTopic !== "string" || !area || !finalTopic) {
       return res.status(400).json({ error: "Missing or invalid area/topic/customSearch" });
+    }
+
+    // 🌍 Auto-detect location if not explicitly provided
+    let finalLocation = userLocation;
+    try {
+      if (!finalLocation) {
+        const forwardedFor = req.headers["x-forwarded-for"];
+        const ip =
+          (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor) ||
+          req.ip ||
+          null;
+
+        // For now, we just attach the IP; a geolocation service could be plugged in later
+        if (ip) {
+          finalLocation = `ip:${ip}`;
+        } else {
+          finalLocation = "unspecified";
+        }
+      }
+    } catch (e) {
+      console.warn("⚠️ Failed to auto-detect location:", e.message);
+      finalLocation = "unspecified";
     }
 
     try {
@@ -59,15 +81,21 @@ export default function dialogApi(db) {
         language: finalLang,
         model,
         region,
-        userLocation,
+        userLocation: finalLocation,
         caseIdFromFirebase
       });
+
+      // ✅ cleanup: remove Difficulty_Level if present
+      if (result?.json && "Difficulty_Level" in result.json) {
+        delete result.json.Difficulty_Level;
+      }
 
       // ✅ inject source marker
       if (result?.json) {
         result.json.meta = {
           ...(result.json.meta || {}),
-          source: customSearch ? "customSearch" : "dropdown"
+          source: customSearch ? "customSearch" : "dropdown",
+          detectedLocation: finalLocation
         };
       }
 
@@ -76,7 +104,8 @@ export default function dialogApi(db) {
         aiReply: result,
         case_id: result?.meta?.case_id || caseIdFromFirebase,
         instance_id: result?.meta?.instance_id || null,
-        usedCustomSearch: !!customSearch
+        usedCustomSearch: !!customSearch,
+        userLocation: finalLocation
       });
     } catch (err) {
       console.error("❌ Error in /api/dialog:", err);

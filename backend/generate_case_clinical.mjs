@@ -29,10 +29,21 @@ export default async function generateCase({
     effectiveTopic.toLowerCase().replace(/\s+/g, "_");
   const instance_id = crypto.randomUUID();
 
+  // 🌍 location interpretation
+  let locationNote = "";
+  if (userLocation && typeof userLocation === "string") {
+    if (userLocation.startsWith("ip:")) {
+      locationNote = `User location detected by IP (${userLocation}). Interpret this as the likely geographic region for applying local guidelines. If unclear, fallback to national, then regional, then global.`;
+    } else if (userLocation !== "unspecified") {
+      locationNote = `User specified location: ${userLocation}. Prefer local guidelines first.`;
+    }
+  }
+
   const systemPrompt = `
-You are a multidisciplinary panel of senior doctors (internal medicine, emergency medicine, surgery).
-Always return a full structured clinical case as valid JSON.
-Never use markdown, no backticks, no explanations outside JSON.
+You are a multidisciplinary expert panel that generates structured clinical cases.
+Always return a complete structured case as **valid JSON only**.
+Never use markdown, no backticks, no free text outside JSON.
+The JSON must be globally valid and parseable.
 `.trim();
 
   const userPrompt = `
@@ -43,9 +54,10 @@ Topic: "${effectiveTopic}"   ${customSearch ? "(user custom search applied)" : "
 Language: ${language || "en"}
 Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
+${locationNote}
 
-Generate a structured clinical case for medical students or junior doctors.
-Difficulty_level: auto-classify as "easy", "medium", or "hard" depending on topic complexity.
+Generate a structured clinical case for advanced medical learners (medical students, residents, doctors).
+Always use **expert-level reasoning** – do not classify as easy/medium/hard.
 
 ⚠️ For guidelines, follow this hierarchy:
 1. Local (hospital/region) if user location available
@@ -55,61 +67,75 @@ Difficulty_level: auto-classify as "easy", "medium", or "hard" depending on topi
 
 Sections required:
 
-I. Patient History
-  - Presenting Complaint (symptoms, duration, severity)
-  - Past Medical History
-  - Medications and Allergies
-  - Social & Family history if relevant
+I. Patient_History
+  - Age, Sex, Geography (always include)
+  - Presenting_Complaint (symptoms, duration, severity, detailed examples)
+  - Past_Medical_History
+  - Medications_and_Allergies
+  - Social_and_Family_History
 
-II. Objective Findings
+II. Objective_Findings
   - Vitals
-  - Physical Exam
-  - Risk Factors, Exposures, Family Disposition
+  - Physical_Exam (structured, detailed)
+  - Risk_Factors, Exposures, Family_Disposition
 
-III. Paraclinical Investigations
-  - Labs (with reasoning why chosen; include realistic numeric values where possible)
-  - Imaging (with reasoning, sensitivity/specificity, timing)
-  - Other tests/procedures
-  - Region-aware preferences (local → national → regional → global)
+III. Paraclinical_Investigations
+  - Labs (with reasoning why chosen; include realistic numeric values and CRP, renal, liver, thyroid when relevant)
+  - Imaging (reasoning, sensitivity/specificity, timing; e.g. CT vs MRI vs LP; justify choice)
+  - Other_Tests_Procedures
+  - Each choice must include evidence-based reasoning and guideline references
 
-IV. Differential Diagnoses
-  - 3–5 diagnoses
-  - Why fits / Why less likely / Red flags
-  - Confidence score (0–100%)
+IV. Differential_Diagnoses
+  - 3–5 differential diagnoses
+  - For each: Why_Fits / Why_Less_Likely / Red_Flags (with examples)
+  - Confidence_Score (0–100)
+  - Each entry should include counterarguments and references
 
-V. Final Diagnosis
-  - Name + reasoning
+V. Final_Diagnosis
+  - Name + detailed reasoning with evidence/guidelines
 
-VI. Pathophysiology & Etiology
-  - Pathophysiology
-  - Etiology
+VI. Pathophysiology_and_Etiology
+  - Detailed pathophysiology (for medical student/USMLE prep level)
+  - Etiology with categories (metabolic, structural, infectious, drug-related)
 
 VII. Management
-  - Immediate management
-  - Specific treatments (drug, dose, monitoring)
-  - Escalation
-  - Region-aware guideline snippet
-  - Timing windows
+  - Immediate_Management
+  - Specific_Treatments (drug, dose, monitoring; include warnings/contraindications)
+  - Escalation (ICU transfer, advanced imaging, surgical options if relevant)
+  - Region_Aware_Guideline_Snippet (local → national → global)
+  - Timing_Windows (include evidence/references)
 
 VIII. Disposition
-  - Admit vs discharge
-  - Follow-up
-  - Social aspects
+  - Admit_vs_Discharge (with justification)
+  - Follow_Up
+  - Social_Aspects
 
-IX. Evidence & References
-  - Sensitivity/specificity with sources
-  - Prognosis
-  - References (WHO, NICE, PubMed, national guidelines depending on region)
+IX. Evidence_and_References
+  - Sensitivity/Specificity with sources
+  - Prognosis (with evidence, risks of delay)
+  - References (PubMed, NICE, WHO, national guidelines)
 
-X. Teaching & Reasoning Panel
-  - Expert pearls
-  - Mnemonics
-  - Panel-style reasoning (CT vs MRI, thresholds, interventions)
+X. Teaching_and_Reasoning_Panel
+  - Panel_Debate: multiple roles chosen dynamically based on case context (e.g. neurologist, cardiologist, obstetrician, GP, emergency physician, professor, researcher, medical student, junior doctor). 
+  - Each role should give a short but professional, evidence-based opinion. Some should agree, others disagree.
+  - Agreements: explicit list of consensus points
+  - Disagreements: explicit list of controversies
+  - References: cited in-line
+  - This should read like a high-level conference discussion.
 
-XI. Atypical_Presentations
-  - Describe how this condition may present differently in elderly, pregnant, immunocompromised patients
+XI. Conclusion
+  - Synthesized expert consensus and evidence-based recommendation.
+  - Must summarize the debate clearly, give a professional conclusion, and final recommendation so user is not left with unresolved arguments.
+  - Include references.
 
-Return only JSON, no prose.
+XII. Atypical_Presentations
+  - Elderly
+  - Pediatric
+  - Pregnant
+  - Immunocompromised
+  - Regional/rare variations if relevant
+
+Return only valid JSON, no prose.
 `.trim();
 
   try {
@@ -131,6 +157,11 @@ Return only JSON, no prose.
       console.warn("⚠️ GPT returned invalid JSON, attempting fallback…");
       raw = raw.replace(/^[^{[]+/, "").replace(/[^}\]]+$/, "");
       parsed = JSON.parse(raw);
+    }
+
+    // ✅ sanity filter: remove Difficulty_Level if GPT sneaks it in
+    if (parsed && "Difficulty_Level" in parsed) {
+      delete parsed.Difficulty_Level;
     }
 
     // ✅ attach meta info
