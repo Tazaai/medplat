@@ -1,54 +1,59 @@
-// ~/workspaces/medplat/backend/generate_case_clinical.mjs
+// ~/medplat/backend/generate_case_clinical.mjs
 import openai from "./routes/openai_client.js";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
-export default async function generateCase({
-  area,
-  topic,
-  customSearch = null,
-  language,
-  model = "gpt-4o-mini",
-  region = "global",
-  caseIdFromFirebase = null,
-  userLocation = null,
-}) {
-  // ✅ normalize topic
-  if (typeof topic === "object" && topic?.topic) {
-    topic = topic.topic;
-  }
-  if (typeof topic !== "string") topic = "";
+export default async function generateCase(opts) {
+  const {
+    area,
+    topic,
+    customSearch = null,
+    language,
+    model = "gpt-4o-mini", // ✅ dynamic from frontend
+    region: inputRegion,
+    caseIdFromFirebase = null,
+    userLocation = null,
+  } = opts;
 
-  const effectiveTopic = customSearch?.trim() || topic?.trim();
+  // ✅ normalize topic
+  let t = typeof topic === "object" && topic?.topic ? topic.topic : topic || "";
+  const effectiveTopic = customSearch?.trim() || t.trim();
   if (!effectiveTopic) throw new Error("Invalid topic/customSearch input");
 
   const case_id =
     caseIdFromFirebase || effectiveTopic.toLowerCase().replace(/\s+/g, "_");
   const instance_id = crypto.randomUUID();
 
-  // 🌍 location interpretation
-  let locationNote = "";
-  if (userLocation && typeof userLocation === "string") {
+  // 🌍 region handling
+  let region = inputRegion || "global";
+  if (!inputRegion && userLocation) {
     if (userLocation.startsWith("ip:")) {
-      locationNote = `User location detected by IP (${userLocation}). Interpret this as the likely geographic region for applying local guidelines.`;
+      region = "by_ip"; // can later resolve geo-IP
     } else if (userLocation !== "unspecified") {
-      locationNote = `User specified location: ${userLocation}. Prefer local guidelines first.`;
+      region = userLocation;
     }
+  }
+
+  // 🌍 location note for prompt
+  let locationNote = "";
+  if (userLocation?.startsWith("ip:")) {
+    locationNote = `User location detected by IP (${userLocation}). Interpret this as the likely geographic region for applying local guidelines.`;
+  } else if (userLocation && userLocation !== "unspecified") {
+    locationNote = `User specified location: ${userLocation}. Prefer local guidelines first.`;
   }
 
   const systemPrompt = `
 You are a multidisciplinary expert panel that generates structured clinical cases.
-Always return a complete structured case as **valid JSON only**.
-Never use markdown, no backticks, no free text outside JSON.
-The JSON must be globally valid and parseable.
+Always return a complete structured case as valid JSON only.
+No markdown, no prose outside JSON.
 `.trim();
 
   const userPrompt = `
 Case_ID: ${case_id}
 Instance_ID: ${instance_id}
-Medical Specialty: ${area}
-Topic: "${effectiveTopic}"   ${customSearch ? "(user custom search applied)" : ""}
+Medical_Specialty: ${area}
+Topic: "${effectiveTopic}" ${customSearch ? "(user custom search applied)" : ""}
 Language: ${language || "en"}
 Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
@@ -57,69 +62,22 @@ ${locationNote}
 Generate a structured clinical case for advanced medical learners.
 Use expert-level reasoning. Be detailed and professional.
 
-Each section must be explicit, well-structured, and at least 150 words where applicable. 
-Always explain WHY findings, tests, or diagnoses are relevant, and cite references when possible.
+Each section must be explicit, well-structured, and ≥150 words where applicable.
+Always explain WHY findings, tests, or diagnoses are relevant, and cite references inline where possible.
 
 I. Patient_History
-  - Age, Sex, Geography
-  - Presenting complaint (symptoms, duration, severity, examples)
-  - Past medical history, medications, allergies
-  - Social/family history, exposures, risk factors
-
 II. Objective_Findings
-  - Vitals with interpretation
-  - Physical exam: structured + reasoning
-  - Risk factors and exposures
-
 III. Paraclinical_Investigations
-  - Labs: numeric values + reasoning
-  - Imaging: choice (CT vs MRI vs LP etc), sensitivity/specificity, justification
-  - Other procedures
-  - Must include references
-
 IV. Differential_Diagnoses
-  - 3–5 items
-  - Each includes: Why Fits, Why Less Likely, Red Flags, Confidence Score (0–100), References
-
-V. Final_Diagnosis
-  - Name + detailed reasoning citing guidelines
-
+V. Provisional_Diagnosis
 VI. Pathophysiology_and_Etiology
-  - At least one detailed paragraph
-  - Etiology categories: metabolic, structural, infectious, drug-related, etc.
-
 VII. Management
-  - Immediate management
-  - Specific treatments: drug, dose, monitoring, contraindications
-  - Escalation (ICU/surgery if relevant)
-  - Region-aware guideline snippet (local → national → global)
-  - Timing windows with evidence
-
 VIII. Disposition
-  - Admit vs discharge with justification
-  - Follow-up and social aspects
-
 IX. Evidence_and_References
-  - Sensitivity/specificity data
-  - Prognosis and risk of delay
-  - References: PubMed, NICE, WHO, national guidelines
-
 X. Teaching_and_Reasoning_Panel
-  - Roles: student, GP, specialist, professor, researcher, emergency doctor
-  - Each provides short but evidence-based comment
-  - Must include ≥3 agreements + ≥2 disagreements
-  - References inline
-
-XI. Conclusion
-  - Summarize consensus, final recommendation, professional tone
-  - Cite references
-
-XII. Atypical_Presentations
-  - Elderly
-  - Pediatric
-  - Pregnant
-  - Immunocompromised
-  - Regional/rare variations
+XI. Expert_Panel_Consensus
+XII. Conclusion
+XIII. Atypical_Presentations
 
 Return only valid JSON, no prose.
 `.trim();
@@ -135,16 +93,20 @@ Return only valid JSON, no prose.
     });
 
     let raw = completion.choices[0]?.message?.content?.trim();
-    let parsed;
+    let parsed = {};
 
+    // 🛠 JSON parsing + repair logic
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw || "{}");
     } catch (err) {
-      console.warn("⚠️ GPT returned invalid JSON, attempting repair…", err.message);
+      console.warn("⚠️ JSON parse fail, repairing…", err.message);
 
-      let repaired = raw.replace(/^[^{[]+/, "").replace(/[^}\]]+$/, "");
-      repaired = repaired.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
-      repaired = repaired.replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":');
+      let repaired = (raw || "{}")
+        .replace(/^[^{[]+/, "")
+        .replace(/[^}\]]+$/, "")
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":');
 
       if (process.env.NODE_ENV !== "production") {
         const debugDir = path.resolve("./debug_cases");
@@ -152,7 +114,6 @@ Return only valid JSON, no prose.
         const fileBase = path.join(debugDir, `${case_id}_${instance_id}`);
         fs.writeFileSync(`${fileBase}_raw.json`, raw, "utf-8");
         fs.writeFileSync(`${fileBase}_repaired.json`, repaired, "utf-8");
-        console.log(`💾 Debug saved to ${fileBase}_*.json`);
       }
 
       try {
@@ -161,13 +122,16 @@ Return only valid JSON, no prose.
         console.log(`✅ JSON repair successful for case ${case_id} (${instance_id})`);
       } catch (err2) {
         console.error("❌ Still invalid JSON after repair:", err2.message);
-        throw err2;
+        parsed = {}; // fallback so server never crashes
       }
     }
 
-    if (parsed && "Difficulty_Level" in parsed) {
-      delete parsed.Difficulty_Level;
-    }
+    // ✅ Ensure required fields always exist
+    parsed.Provisional_Diagnosis ??= { Diagnosis: "Not specified" };
+    parsed.Expert_Panel_Consensus ??= { Members: [], Consensus: "Not provided" };
+    parsed.Evidence_and_References ??= [];
+
+    if ("Difficulty_Level" in parsed) delete parsed.Difficulty_Level;
 
     parsed.meta = {
       ...(parsed.meta || {}),

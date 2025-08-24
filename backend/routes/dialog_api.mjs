@@ -5,7 +5,7 @@ import admin from "../firebase.js";
 
 console.log("✅ dialog_api.mjs LOADED");
 
-export default function dialogApi(db) {
+export default function dialogApi() {
   const router = express.Router();
 
   router.post("/", async (req, res) => {
@@ -14,21 +14,29 @@ export default function dialogApi(db) {
     const {
       area,
       topic,
-      customSearch,            // ✅ optional custom text
+      customSearch, // optional custom text
       language,
       model = "gpt-4o-mini",
       region = "global",
-      userLocation = null
+      userLocation = null,
     } = req.body;
 
     // ✅ force default language
-    const finalLang = (typeof language === "string" && language.trim()) || "en";
+    const finalLang =
+      (typeof language === "string" && language.trim()) || "en";
 
     // ✅ prefer customSearch if provided
     const finalTopic = (customSearch && customSearch.trim()) || topic;
 
-    if (typeof area !== "string" || typeof finalTopic !== "string" || !area || !finalTopic) {
-      return res.status(400).json({ error: "Missing or invalid area/topic/customSearch" });
+    if (
+      typeof area !== "string" ||
+      typeof finalTopic !== "string" ||
+      !area ||
+      !finalTopic
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Missing or invalid area/topic/customSearch" });
     }
 
     // 🌍 Auto-detect location if not explicitly provided
@@ -41,7 +49,6 @@ export default function dialogApi(db) {
           req.ip ||
           null;
 
-        // For now, we just attach the IP; a geolocation service could be plugged in later
         if (ip) {
           finalLocation = `ip:${ip}`;
         } else {
@@ -54,6 +61,7 @@ export default function dialogApi(db) {
     }
 
     try {
+      // 🔎 Look up caseId from Firebase (topics2 → topics)
       let caseIdFromFirebase = null;
       if (admin.apps.length) {
         try {
@@ -75,14 +83,16 @@ export default function dialogApi(db) {
         }
       }
 
+      // 🧠 Generate case
       const result = await generateCase({
         area,
-        topic: finalTopic,   // ✅ always send the chosen topic
+        topic: finalTopic,
+        customSearch,
         language: finalLang,
         model,
         region,
         userLocation: finalLocation,
-        caseIdFromFirebase
+        caseIdFromFirebase,
       });
 
       // ✅ cleanup: remove Difficulty_Level if present
@@ -90,12 +100,12 @@ export default function dialogApi(db) {
         delete result.json.Difficulty_Level;
       }
 
-      // ✅ inject source marker
+      // ✅ inject metadata marker
       if (result?.json) {
         result.json.meta = {
           ...(result.json.meta || {}),
           source: customSearch ? "customSearch" : "dropdown",
-          detectedLocation: finalLocation
+          detectedLocation: finalLocation,
         };
       }
 
@@ -105,7 +115,7 @@ export default function dialogApi(db) {
         case_id: result?.meta?.case_id || caseIdFromFirebase,
         instance_id: result?.meta?.instance_id || null,
         usedCustomSearch: !!customSearch,
-        userLocation: finalLocation
+        userLocation: finalLocation,
       });
     } catch (err) {
       console.error("❌ Error in /api/dialog:", err);

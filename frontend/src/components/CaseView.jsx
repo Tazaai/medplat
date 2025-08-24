@@ -21,7 +21,23 @@ export default function CaseView() {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // 🌍 location (auto + manual override)
+  const [userLocation, setUserLocation] = useState("unspecified");
+  const [manualRegion, setManualRegion] = useState("");
+
   const caseRef = useRef(null);
+
+  // detect approximate location from IP
+  useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.country_name) setUserLocation(d.country_name);
+        else if (d?.country) setUserLocation(d.country);
+        else if (d?.ip) setUserLocation(`ip:${d.ip}`);
+      })
+      .catch(() => setUserLocation("unspecified"));
+  }, []);
 
   // load categories
   useEffect(() => {
@@ -53,6 +69,8 @@ export default function CaseView() {
     return /^[a-z]{2}$/.test(customLang.trim()) ? customLang.trim() : "en";
   };
 
+  const getEffectiveRegion = () => manualRegion || userLocation || "global";
+
   const generateCase = async () => {
     const chosenTopic = customTopic.trim() || topic;
     if (!chosenTopic) return alert("Please select or enter a topic");
@@ -70,6 +88,7 @@ export default function CaseView() {
           language: getLanguage(),
           model,
           gamify,
+          userLocation: getEffectiveRegion(), // ✅ send final region
         }),
       });
       const data = await res.json();
@@ -108,11 +127,45 @@ export default function CaseView() {
     doc.save("case.pdf");
   };
 
+  // ---------- Expert Panel Renderer ----------
+  const renderPanelConsensus = (panel) => {
+    if (!panel) return null;
+    let parsed = panel;
+    if (typeof panel === "string") {
+      try {
+        parsed = JSON.parse(panel);
+      } catch {
+        return <p>{panel}</p>;
+      }
+    }
+    const members = Array.isArray(parsed?.Members) ? parsed.Members : [];
+    const summary = parsed?.Consensus || parsed?.Summary;
+
+    return (
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">👩‍⚕️ Expert Panel Consensus</h3>
+        <div className="space-y-2 mt-2">
+          {members.map((m, i) => (
+            <div key={i} className="p-2 border rounded-lg bg-gray-50 shadow-sm">
+              <p className="font-semibold">{m.Role || `Expert ${i + 1}`}:</p>
+              <p className="text-sm whitespace-pre-line">{m.Comment || ""}</p>
+            </div>
+          ))}
+        </div>
+        {summary && (
+          <div className="mt-3 p-3 border-l-4 border-blue-500 bg-blue-50 rounded">
+            <p className="font-semibold">Final Consensus:</p>
+            <p className="whitespace-pre-line">{summary}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ---------- Narrative Renderer ----------
   const renderBookCase = (c) => {
     if (!c) return null;
 
-    // Helpers
     const fmtList = (obj) =>
       obj && typeof obj === "object"
         ? Object.entries(obj)
@@ -120,7 +173,6 @@ export default function CaseView() {
             .join(", ")
         : String(obj || "");
 
-    // Sections
     const history = fmtList(c.Patient_History);
     const findings = fmtList(c.Objective_Findings);
     const investigations = fmtList(c.Paraclinical_Investigations);
@@ -137,30 +189,42 @@ export default function CaseView() {
       : [];
 
     const management = fmtList(c.Management);
-    const references = Array.isArray(c.References)
-      ? c.References.map((r, i) => `[${i + 1}] ${r}`).join("\n")
-      : String(c.References || "");
+    const references = Array.isArray(c.Evidence_and_References)
+      ? c.Evidence_and_References.map((r, i) => `[${i + 1}] ${r}`).join("\n")
+      : String(c.Evidence_and_References || c.References || "");
 
-    // Narrative
     return (
       <div className="space-y-4 leading-relaxed" ref={caseRef}>
         <h2 className="text-xl font-semibold">📖 Case: {c.Topic}</h2>
 
-        {history && (
-          <p>
-            <b>History:</b> {history.replace(/, /g, ". ")}.
+        {/* 🌍 Guideline badge */}
+        {c.meta?.region && (
+          <p className="text-sm text-gray-600 italic">
+            🌍 Guidelines applied: {c.meta.region}
           </p>
         )}
+
+        {history && <p><b>History:</b> {history.replace(/, /g, ". ")}.</p>}
 
         {findings && (
           <p>
             <b>Examination:</b> On assessment, {findings.replace(/, /g, ". ")}.
+            {c.Objective_Findings?.References && (
+              <span className="block text-xs text-gray-500">
+                📚 {c.Objective_Findings.References.join("; ")}
+              </span>
+            )}
           </p>
         )}
 
         {investigations && (
           <p>
             <b>Investigations:</b> {investigations.replace(/, /g, ". ")}.
+            {c.Paraclinical_Investigations?.References && (
+              <span className="block text-xs text-gray-500">
+                📚 {c.Paraclinical_Investigations.References.join("; ")}
+              </span>
+            )}
           </p>
         )}
 
@@ -173,32 +237,45 @@ export default function CaseView() {
                 {i < differentials.length - 1 ? "; " : ""}
               </span>
             ))}
+            {c.Differential_Diagnoses?.References && (
+              <span className="block text-xs text-gray-500">
+                📚 {c.Differential_Diagnoses.References.join("; ")}
+              </span>
+            )}
+          </p>
+        )}
+
+        {c.Provisional_Diagnosis?.Diagnosis && (
+          <p>
+            <b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}
           </p>
         )}
 
         <p>
           <b>Final Diagnosis:</b>{" "}
           {c.Final_Diagnosis?.Diagnosis
-            ? `The final diagnosis was **${c.Final_Diagnosis.Diagnosis}**.`
+            ? `The final diagnosis was ${c.Final_Diagnosis.Diagnosis}.`
             : "No confirmed final diagnosis."}
         </p>
 
         {management && (
           <p>
             <b>Management:</b> The treatment plan included: {management}.
+            {c.Management?.References && (
+              <span className="block text-xs text-gray-500">
+                📚 {c.Management.References.join("; ")}
+              </span>
+            )}
           </p>
         )}
 
-        {c.Conclusion?.Summary && (
-          <p>
-            <b>Conclusion:</b> {c.Conclusion.Summary}
-          </p>
-        )}
+        {c.Expert_Panel_Consensus && renderPanelConsensus(c.Expert_Panel_Consensus)}
+
+        {c.Conclusion?.Summary && <p><b>Conclusion:</b> {c.Conclusion.Summary}</p>}
 
         {references && (
           <p>
-            <b>References:</b>
-            <br />
+            <b>Global References:</b><br />
             <span className="whitespace-pre-line">{references}</span>
           </p>
         )}
@@ -208,10 +285,10 @@ export default function CaseView() {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
+      <h1 className="text-2xl font-bold">�� MedPlat Case Generator</h1>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <select value={area} onChange={(e) => setArea(e.target.value)} className="border p-2 rounded">
           <option value="">Choose area</option>
           {areas.map((a) => (
@@ -246,6 +323,20 @@ export default function CaseView() {
           <option value="gpt-4o-mini">GPT-4o-mini</option>
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-4">GPT-4</option>
+        </select>
+
+        {/* ✅ Manual region override */}
+        <select
+          value={manualRegion}
+          onChange={(e) => setManualRegion(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Auto ({userLocation})</option>
+          <option value="Denmark">Denmark</option>
+          <option value="United States">United States</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="Germany">Germany</option>
+          <option value="WHO">WHO (global)</option>
         </select>
 
         <label className="flex items-center gap-1">
