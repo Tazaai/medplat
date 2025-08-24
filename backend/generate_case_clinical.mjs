@@ -74,10 +74,16 @@ VI. Pathophysiology_and_Etiology
 VII. Management
 VIII. Disposition
 IX. Evidence_and_References
-X. Teaching_and_Reasoning_Panel
-XI. Expert_Panel_Consensus
-XII. Conclusion
-XIII. Atypical_Presentations
+X. Expert_Panel_and_Teaching
+   - Simulate a dynamic expert panel tailored to the specialty/topic:
+     • Always include a medical student, a GP, and a senior professor/researcher.
+     • Add specialists relevant to the topic (e.g., Cardiologist, Neurologist, Immunologist, Emergency Physician).
+     • Each member provides 2–3 sentences of evidence-based reasoning with references.
+     • Include agreements AND disagreements.
+     • Always provide at least one teaching pearl or mnemonic.
+   - Finish with a unified "Final_Consensus" summary.
+XI. Conclusion
+XII. Atypical_Presentations
 
 Return only valid JSON, no prose.
 `.trim();
@@ -128,7 +134,10 @@ Return only valid JSON, no prose.
 
     // ✅ Ensure required fields always exist
     parsed.Provisional_Diagnosis ??= { Diagnosis: "Not specified" };
-    parsed.Expert_Panel_Consensus ??= { Members: [], Consensus: "Not provided" };
+    parsed.Expert_Panel_and_Teaching ??= {
+      Members: [],
+      Final_Consensus: "Not provided",
+    };
     parsed.Evidence_and_References ??= [];
 
     if ("Difficulty_Level" in parsed) delete parsed.Difficulty_Level;

@@ -4,9 +4,24 @@ import Level2CaseLogic from "./Level2CaseLogic";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 
+// ✅ Auto-detect backend API base (Codespaces + local)
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
-  "https://super-zebra-g46xvpxqjrv5cwqg4-8080.app.github.dev";
+  (window.location.hostname.endsWith(".github.dev")
+    ? window.location.origin.replace("-5173", "-8080") // Codespaces: map frontend→backend
+    : "http://localhost:8080"); // Local dev
+
+// ✅ helper to flatten GPT sections (I, II, III …) into root
+function normalizeCaseData(raw) {
+  if (!raw) return raw;
+  const flattened = { ...raw };
+  for (const key of Object.keys(raw)) {
+    if (/^[IVXLC]+$/.test(key) && typeof raw[key] === "object") {
+      Object.assign(flattened, raw[key]);
+    }
+  }
+  return flattened;
+}
 
 export default function CaseView() {
   const [areas, setAreas] = useState([]);
@@ -88,11 +103,13 @@ export default function CaseView() {
           language: getLanguage(),
           model,
           gamify,
-          userLocation: getEffectiveRegion(), // ✅ send final region
+          userLocation: getEffectiveRegion(),
         }),
       });
       const data = await res.json();
-      setCaseData(data?.aiReply?.json || data?.aiReply || {});
+      setCaseData(
+        normalizeCaseData(data?.aiReply?.json || data?.aiReply || {})
+      );
     } catch (err) {
       console.error("❌ Error generating case:", err);
     }
@@ -143,7 +160,7 @@ export default function CaseView() {
 
     return (
       <div className="mt-4">
-        <h3 className="text-lg font-semibold">👩‍⚕️ Expert Panel Consensus</h3>
+        <h3 className="text-lg font-semibold">👩‍⚕️ Expert Panel & Teaching</h3>
         <div className="space-y-2 mt-2">
           {members.map((m, i) => (
             <div key={i} className="p-2 border rounded-lg bg-gray-50 shadow-sm">
@@ -197,7 +214,7 @@ export default function CaseView() {
       <div className="space-y-4 leading-relaxed" ref={caseRef}>
         <h2 className="text-xl font-semibold">📖 Case: {c.Topic}</h2>
 
-        {/* 🌍 Guideline badge */}
+        {/* �� Guideline badge */}
         {c.meta?.region && (
           <p className="text-sm text-gray-600 italic">
             🌍 Guidelines applied: {c.meta.region}
@@ -205,29 +222,8 @@ export default function CaseView() {
         )}
 
         {history && <p><b>History:</b> {history.replace(/, /g, ". ")}.</p>}
-
-        {findings && (
-          <p>
-            <b>Examination:</b> On assessment, {findings.replace(/, /g, ". ")}.
-            {c.Objective_Findings?.References && (
-              <span className="block text-xs text-gray-500">
-                📚 {c.Objective_Findings.References.join("; ")}
-              </span>
-            )}
-          </p>
-        )}
-
-        {investigations && (
-          <p>
-            <b>Investigations:</b> {investigations.replace(/, /g, ". ")}.
-            {c.Paraclinical_Investigations?.References && (
-              <span className="block text-xs text-gray-500">
-                📚 {c.Paraclinical_Investigations.References.join("; ")}
-              </span>
-            )}
-          </p>
-        )}
-
+        {findings && <p><b>Examination:</b> On assessment, {findings.replace(/, /g, ". ")}.</p>}
+        {investigations && <p><b>Investigations:</b> {investigations.replace(/, /g, ". ")}.</p>}
         {differentials.length > 0 && (
           <p>
             <b>Differential Diagnoses:</b>{" "}
@@ -237,42 +233,21 @@ export default function CaseView() {
                 {i < differentials.length - 1 ? "; " : ""}
               </span>
             ))}
-            {c.Differential_Diagnoses?.References && (
-              <span className="block text-xs text-gray-500">
-                📚 {c.Differential_Diagnoses.References.join("; ")}
-              </span>
-            )}
           </p>
         )}
 
         {c.Provisional_Diagnosis?.Diagnosis && (
-          <p>
-            <b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}
-          </p>
+          <p><b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}</p>
         )}
-
         <p>
           <b>Final Diagnosis:</b>{" "}
           {c.Final_Diagnosis?.Diagnosis
             ? `The final diagnosis was ${c.Final_Diagnosis.Diagnosis}.`
             : "No confirmed final diagnosis."}
         </p>
-
-        {management && (
-          <p>
-            <b>Management:</b> The treatment plan included: {management}.
-            {c.Management?.References && (
-              <span className="block text-xs text-gray-500">
-                📚 {c.Management.References.join("; ")}
-              </span>
-            )}
-          </p>
-        )}
-
+        {management && <p><b>Management:</b> The treatment plan included: {management}.</p>}
         {c.Expert_Panel_Consensus && renderPanelConsensus(c.Expert_Panel_Consensus)}
-
         {c.Conclusion?.Summary && <p><b>Conclusion:</b> {c.Conclusion.Summary}</p>}
-
         {references && (
           <p>
             <b>Global References:</b><br />
@@ -285,7 +260,7 @@ export default function CaseView() {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">�� MedPlat Case Generator</h1>
+      <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
 
       {/* Controls */}
       <div className="flex flex-wrap gap-2 items-center">
@@ -326,11 +301,7 @@ export default function CaseView() {
         </select>
 
         {/* ✅ Manual region override */}
-        <select
-          value={manualRegion}
-          onChange={(e) => setManualRegion(e.target.value)}
-          className="border p-2 rounded"
-        >
+        <select value={manualRegion} onChange={(e) => setManualRegion(e.target.value)} className="border p-2 rounded">
           <option value="">Auto ({userLocation})</option>
           <option value="Denmark">Denmark</option>
           <option value="United States">United States</option>
