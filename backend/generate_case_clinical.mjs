@@ -28,109 +28,118 @@ export default async function generateCase(opts) {
   // 🌍 region handling
   let region = inputRegion || "global";
   if (!inputRegion && userLocation) {
-    if (userLocation.startsWith("ip:")) {
-      region = "by_ip";
-    } else if (userLocation !== "unspecified") {
-      region = userLocation;
-    }
+    if (userLocation.startsWith("ip:")) region = "by_ip";
+    else if (userLocation !== "unspecified") region = userLocation;
   }
 
   // 🌍 location note for prompt
   let locationNote = "";
   if (userLocation?.startsWith("ip:")) {
-    locationNote = `User location detected by IP (${userLocation}). Interpret this as the likely geographic region for applying local guidelines.`;
+    locationNote = `User location detected by IP (${userLocation}). Use this as likely region for guidelines.`;
   } else if (userLocation && userLocation !== "unspecified") {
     locationNote = `User specified location: ${userLocation}. Prefer local guidelines first.`;
   }
 
+  // >>> systemPrompt START <<<
   const systemPrompt = `
-You are a multidisciplinary expert panel generating structured clinical cases
-for advanced medical learners (residents, specialists, professors).
-Always return JSON only. No markdown, no prose outside JSON.
-Cases must be professional, detailed, and reasoning-based.
+You are a multidisciplinary expert panel generating structured clinical cases.
+Audience: advanced learners (residents, specialists, professors).
+Always return **valid JSON only** (no markdown, no prose outside JSON).
+Cases must be **professional, detailed, evidence-based, and structured**.
 `.trim();
+  // >>> systemPrompt END <<<
 
+  // >>> userPrompt START <<<
   const userPrompt = `
 Case_ID: ${case_id}
 Instance_ID: ${instance_id}
 Medical_Specialty: ${area}
-Topic: "${effectiveTopic}" ${customSearch ? "(user custom search applied)" : ""}
+Topic: "${effectiveTopic}" ${customSearch ? "(custom search applied)" : ""}
 Language: ${language || "en"}
 Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
-Generate a structured clinical case at expert level.
-Each section must be ≥150 words where appropriate.
-Explain WHY findings, tests, or management choices matter.
-Never use placeholder text.
+Generate a **comprehensive structured clinical case** at expert level.
+Every section must be ≥150 words where applicable.
+Explain **why** findings, tests, or management choices matter.
+No placeholders.
 
 Required sections:
 
-I. Patient_History
-   - Risk factors, family history, psychosocial context.
+I. Patient_History  
+- Risk factors, family history, psychosocial context.
 
-II. Objective_Findings
-   - Include vitals, exam findings, highlight urgent red flags.
+II. Objective_Findings  
+- Include vitals + exam.
+- Highlight urgent red flags explicitly.
 
-III. Paraclinical_Investigations
-   - Labs and imaging must include ACTUAL VALUES and reasons.
-   - Always include: Troponins & ECG (if cardiac), ABG & D-dimer (if pulmonary/critical care), Creatinine/eGFR (if renal).
-   - Provide context-appropriate imaging (CT, MRI, Ultrasound).
-   - Radiologist must interpret imaging findings and their clinical value.
+III. Paraclinical_Investigations  
+- Labs + imaging must include **actual values** + interpretation.
+- Always include:  
+  • Troponins + ECG (if cardiac)  
+  • ABG + D-dimer (if pulmonary/critical care)  
+  • Creatinine/eGFR (if renal)  
+- Radiologists must contribute explicit imaging reasoning.  
+- Provide contextual test results per specialty.
 
-IV. Differential_Diagnoses
-   - Each must include Why_Fits, Why_Less_Likely, Red_Flags.
+IV. Differential_Diagnoses  
+- Each includes: Why_Fits, Why_Less_Likely, Red_Flags.
 
-V. Provisional_Diagnosis
+V. Provisional_Diagnosis  
 
-VI. Pathophysiology_and_Etiology
-   - Explain underlying mechanism in detail.
+VI. Pathophysiology_and_Etiology  
+- Explicit mechanism → clinical decision link.
 
-VII. Management
-   - Immediate emergency care must include airway escalation (O₂ → CPAP/NIV → intubation if indicated).
-   - Must enforce time-critical bundles (e.g., antibiotics within 1h, fluids within 3h in sepsis).
-   - Then definitive management (drugs, long-term therapy).
-   - Always provide reasoning and mention controversies (when not to use a treatment).
-   - Include **tables** for drug dosing adjustments, IV fluids by weight, and treatment algorithms.
+VII. Management  
+- Immediate care must include **airway escalation** (O2 → CPAP/NIV → intubation).  
+- Enforce **time-critical bundles** (e.g., fluids <3h, antibiotics <1h in sepsis).  
+- Definitive management: drugs, surgery, long-term care.  
+- Always include **agreements + controversies**.  
+- Clinical Pharmacist must detail **drug choices, dosing, renal/hepatic adjustments, and alternatives**.  
+- Include at least **one management flowchart or table** (e.g., IV fluids by weight, sepsis 1h–3h bundle).
 
-VIII. Disposition
-   - Social aspects, follow-up.
-   - "Preventive & Long-Term Care" (lifestyle, vaccination, smoking cessation).
-   - Highlight multidisciplinary follow-up (GP, endocrinologist, nephrologist, etc.).
+VIII. Disposition  
+- Social aspects, follow-up.  
+- Preventive & Long-Term Care (lifestyle, vaccination, smoking cessation).  
+- Multidisciplinary follow-up plan (GP, specialists, rehab, nursing).
 
-IX. Evidence_and_References
-   - Must ONLY include major guidelines (ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, ATLS, UpToDate).
-   - No vague "studies".
+IX. Evidence_and_References  
+- Must ONLY include **major guidelines** (ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, UpToDate, ATLS).  
+- Exclude vague “studies”.
 
-X. Expert_Panel_and_Teaching
-   - Must include a **dynamic panel of 12+ clinical experts**, context-specific:
-     • Medical Student (with mnemonic or simplified pearl)
-     • General Practitioner / Family Doctor
-     • 2 Emergency Physicians
-     • 2–3 Specialists tailored to the case (e.g., Cardiologist, Pulmonologist, Nephrologist, Infectious Disease, Trauma Surgeon, Oncologist)
-     • Clinical Pharmacist (drug choices, dosing, alternatives, logic)
-     • Radiologist (interpret imaging, when to use CT vs MRI, pitfalls)
-     • ICU Nurse or Critical Care Team
-     • Paramedic / Disaster Medicine Expert (if trauma, mass casualty, disaster medicine)
-     • Field Researcher (public health or trial perspective)
-     • Professor of Medicine (explicitly link pathophysiology → teaching pearl)
-     • Competitor voice (flat guideline comparison)
-   - Each role must provide 2–3 sentences of reasoning.
-   - Must include Agreements AND Disagreements.
-   - Finish with unified "Final_Consensus".
+X. Expert_Panel_and_Teaching  
+- Always simulate a **dynamic 12+ expert panel** contextual to the case:  
+  • Medical Student (mnemonics/simplified pearls)  
+  • 2 General Practitioners / Family Doctors  
+  • 2 Emergency Physicians  
+  • 2–3 Specialists relevant to the case (e.g., Cardiologist, Pulmonologist, Nephrologist, Infectious Disease, Trauma Surgeon)  
+  • Radiologist  
+  • Clinical Pharmacist  
+  • ICU Nurse / Critical Care Team  
+  • Paramedic / Disaster Medicine Expert (if trauma/mass casualty)  
+  • Field Researcher  
+  • Professor of Medicine (must explicitly connect pathophysiology → clinical lesson)  
+  • Competitor voice (flat guideline perspective for contrast)  
+- Each member: 2–3 sentences of evidence-based reasoning with references.  
+- Must include **agreements + disagreements**.  
+- Always finish with unified **Final_Consensus**.
 
-XI. Conclusion
-   - Teaching summary with lessons.
+XI. Conclusion  
+- Teaching summary with lessons.
 
-XII. Atypical_Presentations
-   - Edge cases, elderly/atypical signs.
+XII. Atypical_Presentations  
+- Elderly, pediatric, immunocompromised, or other atypical.
 
-XIII. Summary
-   - Short abstract (3–4 sentences) for preview.
+XIII. Summary  
+- Abstract (3–4 sentences) for preview.
+
+XIV. Charts_and_Tables  
+- Always include at least 1 chart or table relevant to the case (drug dosing, fluid resuscitation per kg, clinical decision algorithm, or diagnostic criteria table).
 
 Return valid JSON only.
 `.trim();
+  // >>> userPrompt END <<<
 
   try {
     const completion = await openai.chat.completions.create({
