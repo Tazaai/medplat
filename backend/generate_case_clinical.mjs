@@ -10,7 +10,7 @@ export default async function generateCase(opts) {
     topic,
     customSearch = null,
     language,
-    model = "gpt-4o-mini", // ✅ dynamic from frontend
+    model = "gpt-4o-mini",
     region: inputRegion,
     caseIdFromFirebase = null,
     userLocation = null,
@@ -44,9 +44,10 @@ export default async function generateCase(opts) {
   }
 
   const systemPrompt = `
-You are a multidisciplinary expert panel that generates structured clinical cases.
-Always return a complete structured case as valid JSON only.
-No markdown, no prose outside JSON.
+You are a multidisciplinary expert panel generating structured clinical cases
+for advanced medical learners (residents, specialists, professors).
+Always return JSON only. No markdown, no prose outside JSON.
+Cases must be professional, detailed, and reasoning-based.
 `.trim();
 
   const userPrompt = `
@@ -59,33 +60,75 @@ Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
-Generate a structured clinical case for advanced medical learners.
-Use expert-level reasoning. Be detailed and professional.
+Generate a structured clinical case at expert level.
+Each section must be ≥150 words where appropriate.
+Explain WHY findings, tests, or management choices matter.
+Never use placeholder text.
 
-Each section must be explicit, well-structured, and ≥150 words where applicable.
-Always explain WHY findings, tests, or diagnoses are relevant, and cite references inline where possible.
+Required sections:
 
 I. Patient_History
-II. Objective_Findings
-III. Paraclinical_Investigations
-IV. Differential_Diagnoses
-V. Provisional_Diagnosis
-VI. Pathophysiology_and_Etiology
-VII. Management
-VIII. Disposition
-IX. Evidence_and_References
-X. Expert_Panel_and_Teaching
-   - Simulate a dynamic expert panel tailored to the specialty/topic:
-     • Always include a medical student, a GP, and a senior professor/researcher.
-     • Add specialists relevant to the topic (e.g., Cardiologist, Neurologist, Immunologist, Emergency Physician).
-     • Each member provides 2–3 sentences of evidence-based reasoning with references.
-     • Include agreements AND disagreements.
-     • Always provide at least one teaching pearl or mnemonic.
-   - Finish with a unified "Final_Consensus" summary.
-XI. Conclusion
-XII. Atypical_Presentations
+   - Risk factors, family history, psychosocial context.
 
-Return only valid JSON, no prose.
+II. Objective_Findings
+   - Include vitals, exam findings, highlight urgent red flags.
+
+III. Paraclinical_Investigations
+   - Labs and imaging must include ACTUAL VALUES and reasons.
+   - Always include: Troponins & ECG (if cardiac), ABG & D-dimer (if pulmonary/critical care), Creatinine/eGFR (if renal).
+   - Provide context-appropriate tests depending on specialty.
+
+IV. Differential_Diagnoses
+   - Each must include Why_Fits, Why_Less_Likely, Red_Flags.
+
+V. Provisional_Diagnosis
+
+VI. Pathophysiology_and_Etiology
+   - Explain underlying mechanism in detail.
+
+VII. Management
+   - Immediate emergency care must include airway escalation (O2 → CPAP/NIV → intubation → surgical airway if needed).
+   - Must enforce time-critical bundles (e.g., antibiotics within 1h, fluids within 3h in sepsis).
+   - Then definitive management (drugs, long-term therapy).
+   - Always provide reasoning and mention controversies (when not to use a treatment).
+   - When possible, include small tables or charts (e.g., IV fluid resuscitation per kg, dosing tables, diagnostic algorithms like Dix-Hallpike vs. HINTS).
+
+VIII. Disposition
+   - Social aspects, follow-up.
+   - "Preventive & Long-Term Care" (lifestyle, vaccination, smoking cessation).
+   - Highlight multidisciplinary follow-up (GP, physiotherapist, nephrologist, etc.).
+
+IX. Evidence_and_References
+   - Must ONLY include major guidelines RELEVANT to the case (ATLS, ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, UpToDate).
+   - No vague "studies" or irrelevant citations.
+
+X. Expert_Panel_and_Teaching
+   - Must include a **context-specific panel of clinical experts**:
+     • Medical Student (with mnemonic or simplified pearl)
+     • General Practitioner / Family Doctor
+     • 1–2 Emergency Physicians
+     • 2–3 Specialists tailored to the case (e.g., Cardiologist, Pulmonologist, Nephrologist, Infectious Disease, Trauma Surgeon, depending on case context)
+     • Clinical Pharmacist (must cover antibiotics, analgesics, transfusions/TXA, dosing, alternatives, reasoning)
+     • ICU Nurse or Critical Care Team (if critical care case)
+     • Paramedic / Disaster Medicine Expert (if trauma, mass casualty, disaster medicine)
+     • Field Researcher (public health or trial perspective)
+     • Professor of Medicine (explicitly link pathophysiology → teaching pearl)
+     • Competitor voice (compare to flat guideline sources like AMBOSS/UpToDate, and add scoring/triage systems relevant to the case: e.g., ISS, TRISS, CURB-65, CHA₂DS₂-VASc)
+   - Roles should be **dynamic to match the case context**.
+   - Each role must provide 2–3 sentences of reasoning.
+   - Must include Agreements AND Disagreements.
+   - Finish with unified "Final_Consensus".
+
+XI. Conclusion
+   - Teaching summary with lessons.
+
+XII. Atypical_Presentations
+   - Edge cases, elderly/atypical signs.
+
+XIII. Summary
+   - Short abstract (3–4 sentences) for preview.
+
+Return valid JSON only.
 `.trim();
 
   try {
@@ -101,7 +144,7 @@ Return only valid JSON, no prose.
     let raw = completion.choices[0]?.message?.content?.trim();
     let parsed = {};
 
-    // 🛠 JSON parsing + repair logic
+    // 🛠 JSON parsing + repair
     try {
       parsed = JSON.parse(raw || "{}");
     } catch (err) {
@@ -128,16 +171,13 @@ Return only valid JSON, no prose.
         console.log(`✅ JSON repair successful for case ${case_id} (${instance_id})`);
       } catch (err2) {
         console.error("❌ Still invalid JSON after repair:", err2.message);
-        parsed = {}; // fallback so server never crashes
+        parsed = {};
       }
     }
 
-    // ✅ Ensure required fields always exist
+    // ✅ Ensure required fields
     parsed.Provisional_Diagnosis ??= { Diagnosis: "Not specified" };
-    parsed.Expert_Panel_and_Teaching ??= {
-      Members: [],
-      Final_Consensus: "Not provided",
-    };
+    parsed.Expert_Panel_and_Teaching ??= { Members: [], Final_Consensus: "Not provided" };
     parsed.Evidence_and_References ??= [];
 
     if ("Difficulty_Level" in parsed) delete parsed.Difficulty_Level;
