@@ -61,7 +61,7 @@ ${locationNote}
 
 Generate a **comprehensive structured clinical case** at an expert level.
 Ensure each section is ≥150 words where applicable. Provide explanations for the significance of findings, tests, or management decisions.
-Avoid placeholders.
+Avoid placeholders and ensure data integrity.
 
 Required sections:
 
