@@ -59,7 +59,7 @@ Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
-Generate a **comprehensive structured clinical case** at expert level.
+Generate a **comprehensive structured clinical case** at an expert level.
 Every section must be ≥150 words where applicable.
 Explain **why** findings, tests, or management choices matter.
 No placeholders.
