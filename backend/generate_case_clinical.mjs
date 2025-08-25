@@ -29,7 +29,7 @@ export default async function generateCase(opts) {
   let region = inputRegion || "global";
   if (!inputRegion && userLocation) {
     if (userLocation.startsWith("ip:")) {
-      region = "by_ip"; // can later resolve geo-IP
+      region = "by_ip";
     } else if (userLocation !== "unspecified") {
       region = userLocation;
     }
@@ -76,7 +76,8 @@ II. Objective_Findings
 III. Paraclinical_Investigations
    - Labs and imaging must include ACTUAL VALUES and reasons.
    - Always include: Troponins & ECG (if cardiac), ABG & D-dimer (if pulmonary/critical care), Creatinine/eGFR (if renal).
-   - Provide context-appropriate tests depending on specialty.
+   - Provide context-appropriate imaging (CT, MRI, Ultrasound).
+   - Radiologist must interpret imaging findings and their clinical value.
 
 IV. Differential_Diagnoses
    - Each must include Why_Fits, Why_Less_Likely, Red_Flags.
@@ -87,34 +88,34 @@ VI. Pathophysiology_and_Etiology
    - Explain underlying mechanism in detail.
 
 VII. Management
-   - Immediate emergency care must include airway escalation (O2 → CPAP/NIV → intubation → surgical airway if needed).
+   - Immediate emergency care must include airway escalation (O₂ → CPAP/NIV → intubation if indicated).
    - Must enforce time-critical bundles (e.g., antibiotics within 1h, fluids within 3h in sepsis).
    - Then definitive management (drugs, long-term therapy).
    - Always provide reasoning and mention controversies (when not to use a treatment).
-   - When possible, include small tables or charts (e.g., IV fluid resuscitation per kg, dosing tables, diagnostic algorithms like Dix-Hallpike vs. HINTS).
+   - Include **tables** for drug dosing adjustments, IV fluids by weight, and treatment algorithms.
 
 VIII. Disposition
    - Social aspects, follow-up.
    - "Preventive & Long-Term Care" (lifestyle, vaccination, smoking cessation).
-   - Highlight multidisciplinary follow-up (GP, physiotherapist, nephrologist, etc.).
+   - Highlight multidisciplinary follow-up (GP, endocrinologist, nephrologist, etc.).
 
 IX. Evidence_and_References
-   - Must ONLY include major guidelines RELEVANT to the case (ATLS, ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, UpToDate).
-   - No vague "studies" or irrelevant citations.
+   - Must ONLY include major guidelines (ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, ATLS, UpToDate).
+   - No vague "studies".
 
 X. Expert_Panel_and_Teaching
-   - Must include a **context-specific panel of clinical experts**:
+   - Must include a **dynamic panel of 12+ clinical experts**, context-specific:
      • Medical Student (with mnemonic or simplified pearl)
      • General Practitioner / Family Doctor
-     • 1–2 Emergency Physicians
-     • 2–3 Specialists tailored to the case (e.g., Cardiologist, Pulmonologist, Nephrologist, Infectious Disease, Trauma Surgeon, depending on case context)
-     • Clinical Pharmacist (must cover antibiotics, analgesics, transfusions/TXA, dosing, alternatives, reasoning)
-     • ICU Nurse or Critical Care Team (if critical care case)
+     • 2 Emergency Physicians
+     • 2–3 Specialists tailored to the case (e.g., Cardiologist, Pulmonologist, Nephrologist, Infectious Disease, Trauma Surgeon, Oncologist)
+     • Clinical Pharmacist (drug choices, dosing, alternatives, logic)
+     • Radiologist (interpret imaging, when to use CT vs MRI, pitfalls)
+     • ICU Nurse or Critical Care Team
      • Paramedic / Disaster Medicine Expert (if trauma, mass casualty, disaster medicine)
      • Field Researcher (public health or trial perspective)
      • Professor of Medicine (explicitly link pathophysiology → teaching pearl)
-     • Competitor voice (compare to flat guideline sources like AMBOSS/UpToDate, and add scoring/triage systems relevant to the case: e.g., ISS, TRISS, CURB-65, CHA₂DS₂-VASc)
-   - Roles should be **dynamic to match the case context**.
+     • Competitor voice (flat guideline comparison)
    - Each role must provide 2–3 sentences of reasoning.
    - Must include Agreements AND Disagreements.
    - Finish with unified "Final_Consensus".
