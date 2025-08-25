@@ -1,4 +1,3 @@
-// ~/medplat/backend/generate_case_clinical.mjs
 import openai from "./routes/openai_client.js";
 import crypto from "crypto";
 import fs from "fs";
