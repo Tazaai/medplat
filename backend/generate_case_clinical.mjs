@@ -41,10 +41,10 @@ export default async function generateCase(opts) {
 
   // >>> systemPrompt START <<<
   const systemPrompt = `
-You are an expert panel creating structured clinical cases.
-Audience: advanced learners (residents, specialists, professors).
-Always return **valid JSON only** (no markdown, no prose outside JSON).
-Cases must be **detailed, evidence-based, and structured**.
+You are a medical expert panel tasked with creating structured clinical cases. 
+Your audience includes advanced learners such as residents, specialists, and professors. 
+Ensure that you provide **valid JSON only** (avoid markdown or prose outside JSON format). 
+All cases should be **detailed, evidence-based, and structured**. 
 `.trim();
   // >>> systemPrompt END <<<
 
@@ -59,56 +59,55 @@ Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
-Generate a **comprehensive structured clinical case** at an expert level.
-Every section must be ≥150 words where applicable.
-Explain **why** findings, tests, or management choices matter.
-No placeholders.
+Generate a **comprehensive structured clinical case** at an expert level. 
+Ensure each section is ≥150 words where applicable. Provide explanations for the significance of findings, tests, or management decisions. 
+Avoid placeholders.
 
 Required sections:
 
 I. Patient_History  
-- Risk factors, family history, psychosocial context.
+- Include risk factors, family history, and psychosocial context.
 
 II. Objective_Findings  
-- Include vitals + exam.
-- Highlight urgent red flags explicitly.
+- Cover vitals and examination findings.
+- Explicitly highlight urgent red flags.
 
 III. Paraclinical_Investigations  
-- Labs + imaging must include **actual values** + interpretation.
+- Provide labs and imaging with **actual values** and interpretations.
 - Always include:  
-  • Troponins + ECG (if cardiac)  
-  • ABG + D-dimer (if pulmonary/critical care)  
+  • Troponins and ECG (if cardiac)  
+  • ABG and D-dimer (if pulmonary/critical care)  
   • Creatinine/eGFR (if renal)  
-- Radiologists must contribute explicit imaging reasoning.  
-- Provide contextual test results per specialty.
+- Radiologists should provide explicit imaging analysis.  
+- Offer contextual test results per specialty.
 
 IV. Differential_Diagnoses  
-- Each includes: Why_Fits, Why_Less_Likely, Red_Flags.
+- For each: Explain Why_Fits, Why_Less_Likely, and Red_Flags.
 
 V. Provisional_Diagnosis  
 
 VI. Pathophysiology_and_Etiology  
-- Explicit mechanism → clinical decision link.
+- Describe mechanisms and their link to clinical decisions.
 
 VII. Management  
 - Immediate care must include **airway escalation** (O2 → CPAP/NIV → intubation).  
-- Enforce **time-critical bundles** (e.g., fluids <3h, antibiotics <1h in sepsis).  
-- Definitive management: drugs, surgery, long-term care.  
-- Always include **agreements + controversies**.  
-- Clinical Pharmacist must detail **drug choices, dosing, renal/hepatic adjustments, and alternatives**.  
+- Emphasize **time-critical bundles** (e.g., fluids <3h, antibiotics <1h in sepsis).  
+- Describe definitive management: drugs, surgery, long-term care.  
+- Include **agreements + controversies**.  
+- Clinical Pharmacist should detail **drug choices, dosing, renal/hepatic adjustments, and alternatives**.  
 - Include at least **one management flowchart or table** (e.g., IV fluids by weight, sepsis 1h–3h bundle).
 
 VIII. Disposition  
-- Social aspects, follow-up.  
-- Preventive & Long-Term Care (lifestyle, vaccination, smoking cessation).  
-- Multidisciplinary follow-up plan (GP, specialists, rehab, nursing).
+- Address social aspects and follow-up.  
+- Discuss preventive and long-term care (lifestyle, vaccination, smoking cessation).  
+- Outline a multidisciplinary follow-up plan (GP, specialists, rehab, nursing).
 
 IX. Evidence_and_References  
-- Must ONLY include **major guidelines** (ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, UpToDate, ATLS).  
-- Exclude vague “studies”.
+- Include ONLY **major guidelines** (ESC, ACC/AHA, NICE, WHO, Surviving Sepsis, UpToDate, ATLS).  
+- Avoid vague “studies”.
 
 X. Expert_Panel_and_Teaching  
-- Always simulate a **dynamic 12+ expert panel** contextual to the case:  
+- Simulate a **dynamic 12+ expert panel** contextual to the case:  
   • Medical Student (mnemonics/simplified pearls)  
   • 2 General Practitioners / Family Doctors  
   • 2 Emergency Physicians  
@@ -118,23 +117,23 @@ X. Expert_Panel_and_Teaching
   • ICU Nurse / Critical Care Team  
   • Paramedic / Disaster Medicine Expert (if trauma/mass casualty)  
   • Field Researcher  
-  • Professor of Medicine (must explicitly connect pathophysiology → clinical lesson)  
+  • Professor of Medicine (connect pathophysiology → clinical lesson)  
   • Competitor voice (flat guideline perspective for contrast)  
-- Each member: 2–3 sentences of evidence-based reasoning with references.  
-- Must include **agreements + disagreements**.  
-- Always finish with unified **Final_Consensus**.
+- Each member provides 2–3 sentences of evidence-based reasoning with references.  
+- Highlight **agreements + disagreements**.  
+- Conclude with a unified **Final_Consensus**.
 
 XI. Conclusion  
-- Teaching summary with lessons.
+- Offer a teaching summary with key lessons.
 
 XII. Atypical_Presentations  
-- Elderly, pediatric, immunocompromised, or other atypical.
+- Discuss elderly, pediatric, immunocompromised, or other atypical presentations.
 
 XIII. Summary  
-- Abstract (3–4 sentences) for preview.
+- Provide an abstract (3–4 sentences) for preview.
 
 XIV. Charts_and_Tables  
-- Always include at least 1 chart or table relevant to the case (drug dosing, fluid resuscitation per kg, clinical decision algorithm, or diagnostic criteria table).
+- Include at least 1 chart or table relevant to the case (drug dosing, fluid resuscitation per kg, clinical decision algorithm, or diagnostic criteria table).
 
 Return valid JSON only.
 `.trim();
