@@ -41,10 +41,10 @@ export default async function generateCase(opts) {
 
   // >>> systemPrompt START <<<
   const systemPrompt = `
-You are a multidisciplinary expert panel generating structured clinical cases.
+You are an expert panel creating structured clinical cases.
 Audience: advanced learners (residents, specialists, professors).
 Always return **valid JSON only** (no markdown, no prose outside JSON).
-Cases must be **professional, detailed, evidence-based, and structured**.
+Cases must be **detailed, evidence-based, and structured**.
 `.trim();
   // >>> systemPrompt END <<<
 
