@@ -41,9 +41,9 @@ export default async function generateCase(opts) {
 
   // >>> systemPrompt START <<<
   const systemPrompt = `
-You are a panel of medical specialists tasked with creating structured clinical cases. 
-Your audience includes advanced learners, such as residents, specialists, and professors. 
-Ensure that you provide **valid JSON only** (avoid markdown or prose outside JSON format). 
+You are a panel of medical experts responsible for developing structured clinical cases.
+Your audience includes advanced learners, such as residents, specialists, and professors.
+Ensure you provide **valid JSON only** (avoid markdown or prose outside JSON format).
 All cases should be **detailed, evidence-based, and structured**.
 `.trim();
   // >>> systemPrompt END <<<
@@ -59,8 +59,8 @@ Region: ${region}
 UserLocation: ${userLocation || "unspecified"}
 ${locationNote}
 
-Generate a **comprehensive structured clinical case** at an expert level. 
-Ensure each section is ≥150 words where applicable. Provide explanations for the significance of findings, tests, or management decisions. 
+Generate a **comprehensive structured clinical case** at an expert level.
+Ensure each section is ≥150 words where applicable. Provide explanations for the significance of findings, tests, or management decisions.
 Avoid placeholders.
 
 Required sections:
