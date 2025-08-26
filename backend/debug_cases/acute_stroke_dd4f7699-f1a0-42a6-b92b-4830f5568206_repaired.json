@@ -1,0 +1,262 @@
+{
+  "Case_ID": "acute_stroke",
+  "Instance_ID": "dd4f7699-f1a0-42a6-b92b-4830f5568206",
+  "Medical_Specialty": "Neurology",
+  "Topic": "Acute Stroke",
+  "Language": "en",
+  "Region": "global",
+  "UserLocation": "ip:127.0.0.1",
+  "Patient_History": {
+    "Risk_Factors": [
+      "Hypertension: Patient has a history of poorly controlled hypertension.",
+      "Hyperlipidemia: Elevated cholesterol levels noted.",
+      "Diabetes Mellitus: Type 2 diabetes managed with metformin.",
+      "Smoking: 20 pack-year history.",
+      "Atrial Fibrillation: Newly diagnosed, not on anticoagulation."
+    ],
+    "Family_History": "Family history of cardiovascular disease, with father dying of myocardial infarction at age 60.",
+    "Psychosocial_Context": "Patient lives alone, has limited social support, and expresses concern about financial stability due to inability to work.",
+    "Teaching_Pearls": [
+      "Hypertension is a leading risk factor for stroke.",
+      "Atrial fibrillation requires anticoagulation to prevent thromboembolic events.",
+      "Social determinants of health can impact patient outcomes post-stroke."
+    ]
+  },
+  "Objective_Findings": {
+    "Vitals": {
+      "Blood_Pressure": "180/100 mmHg",
+      "Heart_Rate": "110 bpm (irregularly irregular)",
+      "Respiratory_Rate": "20 breaths/min",
+      "Temperature": "98.6°F",
+      "Oxygen_Saturation": "95% on room air"
+    },
+    "Physical_Examination": {
+      "Neurological_Exam": "Right-sided weakness (upper and lower extremities), facial droop on right side, dysarthria.",
+      "Cardiovascular_Exam": "Irregular rhythm noted, no murmurs.",
+      "Respiratory_Exam": "Clear to auscultation bilaterally."
+    },
+    "Red_Flags": [
+      "**Rapid onset of neurological deficits**",
+      "**Atrial fibrillation noted on ECG**",
+      "**Severe hypertension (180/100 mmHg)**"
+    ]
+  },
+  "Paraclinical_Investigations": {
+    "Laboratory_Results": {
+      "Troponins": {
+        "Result": "0.05 ng/mL",
+        "Interpretation": "Within normal limits; unlikely acute coronary syndrome."
+      },
+      "ECG": {
+        "Description": "Atrial fibrillation with rapid ventricular response.",
+        "Interpretation": "Increased risk of thromboembolic events, requiring anticoagulation."
+      },
+      "ABG": {
+        "pH": 7.40,
+        "PaCO2": 40 mmHg,
+        "PaO2": 80 mmHg,
+        "HCO3": 24 mEq/L,
+        "A-a_Gradient": "25 mmHg; indicates a mild hypoxemia."
+      },
+      "D-dimer": {
+        "Result": "0.6 mcg/mL",
+        "Interpretation": "Not elevated; low likelihood of pulmonary embolism."
+      },
+      "Creatinine/eGFR": {
+        "Creatinine": "1.2 mg/dL",
+        "eGFR": "75 mL/min",
+        "Interpretation": "Normal renal function, no adjustment needed for medications."
+      }
+    },
+    "Imaging": {
+      "CT_Scan": {
+        "Choice": "Non-contrast CT head is the first-line imaging for acute stroke evaluation due to its speed and ability to rule out hemorrhage.",
+        "Sensitivity": "70-80% for detecting acute ischemic stroke within the first 24 hours.",
+        "Specificity": "High specificity for hemorrhagic strokes.",
+        "Limitations": "CT may miss early ischemic changes."
+      }
+    }
+  },
+  "Differential_Diagnoses": {
+    "Ischemic Stroke": {
+      "Why_Fits": "Classic presentation with acute onset of right-sided weakness and atrial fibrillation.",
+      "Why_Less_Likely": "Not all cases of atrial fibrillation result in stroke.",
+      "Red_Flags": "History of atrial fibrillation and acute neurological deficits."
+    },
+    "Intracerebral Hemorrhage": {
+      "Why_Fits": "Acute neurological change; however, CT scan shows no bleed.",
+      "Why_Less_Likely": "CT scan appears unremarkable for hemorrhage.",
+      "Red_Flags": "Severe headache or altered consciousness typically present."
+    },
+    "Subarachnoid Hemorrhage": {
+      "Why_Fits": "Sudden onset headache; however, neurological signs differ.",
+      "Why_Less_Likely": "Lack of classic symptoms (thunderclap headache, neck stiffness).",
+      "Red_Flags": "Presence of sudden severe headache."
+    },
+    "Transient Ischemic Attack (TIA)": {
+      "Why_Fits": "Similar symptoms but transient; however, symptoms are persistent.",
+      "Why_Less_Likely": "Symptoms lasting longer than 24 hours.",
+      "Red_Flags": "History of transient neurological symptoms."
+    }
+  },
+  "Provisional_Diagnosis": "Acute Ischemic Stroke secondary to embolism from atrial fibrillation.",
+  "Pathophysiology_and_Etiology": {
+    "Mechanism": "Atrial fibrillation leads to stasis of blood in the left atrium, particularly in the left atrial appendage, forming thrombi that can embolize to cerebral circulation, resulting in ischemia.",
+    "Clinical_Decision_Link": "Understanding the role of atrial fibrillation in ischemic stroke is crucial for initiating anticoagulation therapy to prevent further strokes.",
+    "Lesson": "Effective management of atrial fibrillation can significantly reduce the risk of stroke.",
+    "Historical_Pearl": "The AFFIRM trial demonstrated that rate control is effective but that rhythm control may provide additional benefits."
+  },
+  "Management": {
+    "Immediate_Care": "Ensure airway patency, breathing support, and circulation stabilization. Initiate IV access for potential thrombolysis.",
+    "Time_Critical_Bundles": {
+      "Fluids": "<3 hours",
+      "Antibiotics": "<1 hour if pneumonia is suspected"
+    },
+    "Antibiotics": {
+      "Drug": "Ceftriaxone 1g IV",
+      "Renal_Adjustment": "No adjustment needed.",
+      "Duration": "7-10 days based on clinical response."
+    },
+    "Clinical_Pharmacist": {
+      "Interactions": "Be cautious with anticoagulants and antiplatelet drugs.",
+      "Alternatives": "Consider apixaban or rivaroxaban if warfarin contraindicated."
+    },
+    "Pressor_Escalation_Algorithm": {
+      "Norepinephrine": "0.05-0.5 mcg/kg/min",
+      "Vasopressin": "0.01-0.04 units/min if norepinephrine insufficient",
+      "Epinephrine": "0.01-0.5 mcg/kg/min for refractory shock"
+    },
+    "Management_Flowchart": {
+      "Step_1": "Assess airway, breathing, and circulation.",
+      "Step_2": "Initiate IV access.",
+      "Step_3": "Administer thrombolytics if within 4.5 hours of symptom onset.",
+      "Step_4": "Monitor and adjust blood pressure."
+    }
+  },
+  "Disposition": {
+    "Social_Aspects": "Patient needs a rehabilitation plan post-stroke; consider occupational therapy.",
+    "Follow_Up": "Neurology follow-up within 1 week post-discharge.",
+    "Preventive_Care": "Start anticoagulation therapy and monitor for secondary stroke prevention.",
+    "Region_Adapted_Vaccines": "Influenza and pneumococcal vaccines recommended.",
+    "GP_Level_Recheck_Intervals": {
+      "Blood_Pressure": "Weekly for 1 month, then monthly.",
+      "HbA1c": "Every 3 months.",
+      "Renal_Labs": "Every 6 months."
+    },
+    "Resource_Limited_Adaptation": "Consider CT alternatives like ultrasound if CT is unavailable."
+  },
+  "Evidence_and_References": [
+    {
+      "Guideline": "ESC 2021",
+      "Description": "Management of acute ischemic stroke."
+    },
+    {
+      "Guideline": "ACC/AHA 2022",
+      "Description": "Guidelines for the management of patients with atrial fibrillation."
+    },
+    {
+      "Guideline": "NICE 2016",
+      "Description": "Stroke: diagnosis and initial management."
+    },
+    {
+      "Guideline": "WHO 2023",
+      "Description": "Global guidelines on stroke management."
+    },
+    {
+      "Guideline": "Surviving Sepsis 2021",
+      "Description": "Guidelines for sepsis management that can overlap with stroke care."
+    },
+    {
+      "Guideline": "ATLS 10th ed",
+      "Description": "Advanced Trauma Life Support protocols."
+    }
+  ],
+  "Expert_Panel_and_Teaching": {
+    "Medical_Student": {
+      "Response": "Understanding stroke mechanisms is critical for future practice. Early recognition can change outcomes.",
+      "Evidence": "Familiarity with risk factors aids in prevention strategies."
+    },
+    "General_Practitioner_1": {
+      "Response": "Primary care plays a vital role in managing hypertension and atrial fibrillation.",
+      "Evidence": "Regular monitoring can prevent strokes."
+    },
+    "General_Practitioner_2": {
+      "Response": "Education about lifestyle changes is crucial in stroke prevention.",
+      "Evidence": "Patient compliance can improve long-term outcomes."
+    },
+    "Emergency_Physician_1": {
+      "Response": "Rapid assessment and intervention are critical in acute stroke management.",
+      "Evidence": "Door-to-needle time affects reperfusion therapy outcomes."
+    },
+    "Emergency_Physician_2": {
+      "Response": "Awareness of the time-sensitive nature of stroke care is essential.",
+      "Evidence": "Informed consent for thrombolysis is crucial."
+    },
+    "Specialist_1": {
+      "Response": "Long-term anticoagulation is necessary for patients with atrial fibrillation.",
+      "Evidence": "Reduces recurrent stroke risk significantly."
+    },
+    "Specialist_2": {
+      "Response": "Rehabilitation should start as soon as the patient is stable.",
+      "Evidence": "Early rehabilitation leads to better functional outcomes."
+    },
+    "Radiologist": {
+      "Response": "CT is the first-line imaging to rule out hemorrhage in acute stroke cases.",
+      "Evidence": "Sensitivity for detecting ischemic changes increases with time."
+    },
+    "Clinical_Pharmacist": {
+      "Response": "Medication reconciliation is key for stroke prevention.",
+      "Evidence": "Monitor for potential drug-drug interactions."
+    },
+    "ICU_Nurse": {
+      "Response": "Close monitoring of neurological status is crucial.",
+      "Evidence": "Early detection of complications improves outcomes."
+    },
+    "Paramedic": {
+      "Response": "Pre-hospital assessment and rapid transport can save lives.",
+      "Evidence": "Time is brain; every minute counts in stroke management."
+    },
+    "Field_Researcher": {
+      "Response": "Community education on stroke signs can improve early recognition.",
+      "Evidence": "Awareness campaigns have shown to increase hospital presentations."
+    },
+    "Professor_of_Medicine": {
+      "Response": "Teaching future generations about stroke management is vital.",
+      "Evidence": "Curriculum must include updated evidence-based practices."
+    },
+    "Competitor_Voice": {
+      "Response": "Alternative treatment approaches should be explored.",
+      "Evidence": "Innovation can drive improvements in patient care."
+    },
+    "Final_Consensus": "Collaboration across specialties is essential for optimal stroke management."
+  },
+  "Conclusion": {
+    "Teaching_Summary": "Acute ischemic stroke requires rapid diagnosis and treatment. Recognition of risk factors, timely imaging, and appropriate management are crucial for improving patient outcomes. Continuous education and awareness are necessary for preventive strategies."
+  },
+  "Atypical_Presentations": {
+    "Elderly": "Elderly patients may present with atypical symptoms such as confusion rather than focal deficits.",
+    "Pediatric": "Children may exhibit different signs, such as seizures or altered level of consciousness, making diagnosis challenging.",
+    "Immunocompromised": "Patients with compromised immune systems may have atypical presentations due to underlying conditions or treatment effects."
+  },
+  "Summary": {
+    "Abstract": "This case presents an acute ischemic stroke in a patient with atrial fibrillation and multiple risk factors. Rapid assessment and intervention are critical in such cases for optimal outcomes. The importance of comprehensive management, including prevention and rehabilitation, is emphasized."
+  },
+  "Charts_and_Tables": {
+    "Drug_Dosing": {
+      "Anticoagulants": {
+        "Warfarin": "Initial dose 5 mg PO daily, adjust based on INR.",
+        "Apixaban": "5 mg PO BID, reduced to 2.5 mg if criteria met."
+      },
+      "Fluid_Resuscitation": {
+        "Normal_Saline": "500 mL bolus over 30 minutes, then re-evaluate.",
+        "Lactated_Ringer's": "500 mL bolus over 30 minutes, then re-evaluate."
+      }
+    },
+    "Guideline_Box": {
+      "Bullet_1": "Manage hypertension aggressively.",
+      "Bullet_2": "Start anticoagulation therapy for patients with atrial fibrillation.",
+      "Bullet_3": "Initiate rehabilitation as soon as clinically stable.",
+      "Bullet_4": "Educate patients on stroke symptoms and prevention."
+    }
+  }
+}

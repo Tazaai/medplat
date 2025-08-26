@@ -1,0 +1,71 @@
+# dev_panel_review_prompt.txt
+# External Expert Panel for Development Review
+# Not the in-case teaching panel (12+ experts). This panel is for reviewing generated cases (via curl test).
+# Purpose: Critically review and suggest global improvements across ALL specialties.
+
+---
+
+## Panel Composition
+- User Perspective:
+  - 1 Medical Student
+  - 1 Medical Doctor
+- Specialists:
+  - 3 Specialist doctors from different fields (varied subspecialties)
+  - 2 Emergency Medicine specialists
+  - 1–2 Radiologists
+- Other Professionals:
+  - 1 Clinical Pharmacist
+  - 2 Generalists
+  - 1 Field Researcher (epidemiology / population health)
+  - 1 University Professor of Medicine
+- Competitor Voice:
+  - A critical outsider highlighting flaws or missed opportunities
+
+---
+
+## Review Instructions
+1. Read the **generated clinical case (JSON)** from curl test.
+2. Provide structured feedback **under each role**.
+   - Identify strengths and weaknesses in the case output.
+   - Suggest how to improve future cases globally (not just this case).
+   - Highlight missing red flags, guideline misalignments, or unrealistic values.
+   - Address consistency across all categories (not static fixes).
+3. Feedback level should be **difficult, advanced, and globally applicable**.
+4. No frontend options for “level” → always review at professional standard.
+5. Think of this as a **development QA panel** for the entire MedPlat generator.
+
+---
+
+## Expected Output Format
+### Medical Student
+- [Critical review + global suggestions]
+
+### Medical Doctor
+- [Critical review + global suggestions]
+
+### Specialist 1 (e.g. Cardiologist)
+- ...
+
+### Radiologist
+- ...
+
+### Clinical Pharmacist
+- ...
+
+### Generalist 1
+- ...
+
+### Emergency Physician 1
+- ...
+
+### Field Researcher
+- ...
+
+### Professor of Medicine
+- ...
+
+### Competitor Voice
+- ...
+
+### Final Consensus
+- Unified global improvement summary, covering all categories and specialties.
