@@ -3,15 +3,24 @@ import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-// ✅ Auto-detect backend API base (Codespaces + local)
+// ✅ Auto-detect backend API base
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
   (window.location.hostname.endsWith(".github.dev")
-    ? window.location.origin.replace("-5173", "-8080") // Codespaces: map frontend→backend
-    : "http://localhost:8080"); // Local dev
+    ? window.location.origin.replace("-5173", "-8080")
+    : "http://localhost:8080");
 
-// ✅ helper to flatten GPT sections (I, II, III …) into root
+// ✅ helper to flatten GPT sections
 function normalizeCaseData(raw) {
   if (!raw) return raw;
   const flattened = { ...raw };
@@ -21,6 +30,83 @@ function normalizeCaseData(raw) {
     }
   }
   return flattened;
+}
+
+// ✅ recursive renderer for objects/arrays
+function renderContent(value) {
+  if (!value) return <i>Not specified</i>;
+
+  if (Array.isArray(value)) {
+    return (
+      <ul className="list-disc ml-6 space-y-1">
+        {value.map((item, idx) => (
+          <li key={idx}>{renderContent(item)}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (typeof value === "object") {
+    return (
+      <ul className="list-disc ml-6 space-y-1">
+        {Object.entries(value).map(([k, v], idx) => (
+          <li key={idx}>
+            <strong>{k.replace(/_/g, " ")}:</strong> {renderContent(v)}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return <span>{String(value)}</span>;
+}
+
+// ✅ subcomponent: single chart with local toggle
+function ChartBlock({ chart }) {
+  const [view, setView] = useState("graph");
+
+  if (!chart) return null;
+
+  return (
+    <div className="space-y-2 border rounded p-2 bg-white shadow">
+      <div className="flex justify-between items-center">
+        <h4 className="font-semibold">Chart</h4>
+        <button
+          onClick={() => setView(view === "graph" ? "table" : "graph")}
+          className="px-2 py-1 bg-gray-200 rounded text-sm"
+        >
+          Switch to {view === "graph" ? "Table" : "Graph"}
+        </button>
+      </div>
+
+      {view === "graph" && Array.isArray(chart) ? (
+        <div className="w-full h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chart}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Time" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="Value" stroke="#2563eb" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : typeof chart === "object" ? (
+        <table className="table-auto border-collapse border border-gray-400 text-sm w-full">
+          <tbody>
+            {Object.entries(chart).map(([k, v], i) => (
+              <tr key={i}>
+                <td className="border px-2 py-1 font-semibold">{k}</td>
+                <td className="border px-2 py-1">{String(v)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>{String(chart)}</p>
+      )}
+    </div>
+  );
 }
 
 export default function CaseView() {
@@ -36,13 +122,12 @@ export default function CaseView() {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🌍 location (auto + manual override)
   const [userLocation, setUserLocation] = useState("unspecified");
   const [manualRegion, setManualRegion] = useState("");
 
   const caseRef = useRef(null);
 
-  // detect approximate location from IP
+  // 🌍 detect location
   useEffect(() => {
     fetch("https://ipapi.co/json/")
       .then((res) => res.json())
@@ -145,7 +230,7 @@ export default function CaseView() {
   };
 
   // ---------- Expert Panel Renderer ----------
-  const renderPanelConsensus = (panel) => {
+  const renderPanel = (panel) => {
     if (!panel) return null;
     let parsed = panel;
     if (typeof panel === "string") {
@@ -155,24 +240,46 @@ export default function CaseView() {
         return <p>{panel}</p>;
       }
     }
-    const members = Array.isArray(parsed?.Members) ? parsed.Members : [];
-    const summary = parsed?.Consensus || parsed?.Summary;
+    const members = Array.isArray(parsed?.Panel) ? parsed.Panel : [];
+    const disagreements = parsed?.Disagreements || [];
+    const consensus = parsed?.Final_Consensus;
 
     return (
-      <div className="mt-4">
+      <div className="mt-6">
         <h3 className="text-lg font-semibold">👩‍⚕️ Expert Panel & Teaching</h3>
-        <div className="space-y-2 mt-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
           {members.map((m, i) => (
-            <div key={i} className="p-2 border rounded-lg bg-gray-50 shadow-sm">
-              <p className="font-semibold">{m.Role || `Expert ${i + 1}`}:</p>
-              <p className="text-sm whitespace-pre-line">{m.Comment || ""}</p>
+            <div key={i} className="p-3 border rounded bg-gray-50 shadow-sm">
+              <p className="font-semibold">{m.Role}:</p>
+              <div className="text-sm">{renderContent(m.Input || m.Comment)}</div>
             </div>
           ))}
         </div>
-        {summary && (
-          <div className="mt-3 p-3 border-l-4 border-blue-500 bg-blue-50 rounded">
+
+        {disagreements.length > 0 && (
+          <div className="mt-4">
+            <h4 className="font-semibold">⚖️ Debates:</h4>
+            <ul className="list-disc ml-6">
+              {disagreements.map((d, i) => (
+                <li key={i}>
+                  <strong>{d.Issue}:</strong>{" "}
+                  {d.Opinions?.map((op, j) => (
+                    <span key={j}>
+                      {op.Role}: {op.View}
+                      {j < d.Opinions.length - 1 ? " | " : ""}
+                    </span>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {consensus && (
+          <div className="mt-4 p-3 border-l-4 border-blue-600 bg-blue-50 rounded">
             <p className="font-semibold">Final Consensus:</p>
-            <p className="whitespace-pre-line">{summary}</p>
+            <p>{consensus}</p>
           </div>
         )}
       </div>
@@ -183,77 +290,50 @@ export default function CaseView() {
   const renderBookCase = (c) => {
     if (!c) return null;
 
-    const fmtList = (obj) =>
-      obj && typeof obj === "object"
-        ? Object.entries(obj)
-            .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
-            .join(", ")
-        : String(obj || "");
-
-    const history = fmtList(c.Patient_History);
-    const findings = fmtList(c.Objective_Findings);
-    const investigations = fmtList(c.Paraclinical_Investigations);
-
-    const differentials = Array.isArray(c.Differential_Diagnoses)
-      ? c.Differential_Diagnoses.map((d) => {
-          let str = d.Diagnosis || d;
-          if (d.Why_Fits) str += ` — fits: ${d.Why_Fits}`;
-          if (d.Why_Less_Likely) str += ` — less likely: ${d.Why_Less_Likely}`;
-          if (d.Red_Flags)
-            str += ` 🚩 (${Array.isArray(d.Red_Flags) ? d.Red_Flags.join(", ") : d.Red_Flags})`;
-          return str;
-        })
-      : [];
-
-    const management = fmtList(c.Management);
     const references = Array.isArray(c.Evidence_and_References)
-      ? c.Evidence_and_References.map((r, i) => `[${i + 1}] ${r}`).join("\n")
+      ? c.Evidence_and_References.map((r, i) =>
+          r.startsWith("http") ? (
+            <a key={i} href={r} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+              [{i + 1}] {r}
+            </a>
+          ) : (
+            <span key={i}>[{i + 1}] {r}</span>
+          )
+        )
       : String(c.Evidence_and_References || c.References || "");
+
+    const chartArray = Array.isArray(c.Charts) ? c.Charts : c.Charts ? [c.Charts] : [];
 
     return (
       <div className="space-y-4 leading-relaxed" ref={caseRef}>
         <h2 className="text-xl font-semibold">📖 Case: {c.Topic}</h2>
 
-        {/* �� Guideline badge */}
         {c.meta?.region && (
           <p className="text-sm text-gray-600 italic">
             🌍 Guidelines applied: {c.meta.region}
           </p>
         )}
 
-        {history && <p><b>History:</b> {history.replace(/, /g, ". ")}.</p>}
-        {findings && <p><b>Examination:</b> On assessment, {findings.replace(/, /g, ". ")}.</p>}
-        {investigations && <p><b>Investigations:</b> {investigations.replace(/, /g, ". ")}.</p>}
-        {differentials.length > 0 && (
-          <p>
-            <b>Differential Diagnoses:</b>{" "}
-            {differentials.map((d, i) => (
-              <span key={i}>
-                {d}
-                {i < differentials.length - 1 ? "; " : ""}
-              </span>
-            ))}
-          </p>
+        {c.Patient_History && <div><h3>📜 History</h3>{renderContent(c.Patient_History)}</div>}
+        {c.Objective_Findings && <div><h3>🩺 Examination</h3>{renderContent(c.Objective_Findings)}</div>}
+        {c.Paraclinical_Investigations && <div><h3>🧪 Investigations</h3>{renderContent(c.Paraclinical_Investigations)}</div>}
+        {c.Differential_Diagnoses && <div><h3>🔍 Differential Diagnoses</h3>{renderContent(c.Differential_Diagnoses)}</div>}
+        {c.Provisional_Diagnosis?.Diagnosis && <p><b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}</p>}
+        <p><b>Final Diagnosis:</b> {c.Final_Diagnosis?.Diagnosis || "No confirmed final diagnosis."}</p>
+        {c.Management && <div><h3>💊 Management</h3>{renderContent(c.Management)}</div>}
+        {renderPanel(c.Expert_Panel_and_Teaching)}
+        {chartArray.length > 0 && (
+          <div>
+            <h3>📊 Charts</h3>
+            <div className="space-y-4">
+              {chartArray.map((chart, idx) => (
+                <ChartBlock key={idx} chart={chart} />
+              ))}
+            </div>
+          </div>
         )}
-
-        {c.Provisional_Diagnosis?.Diagnosis && (
-          <p><b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}</p>
-        )}
-        <p>
-          <b>Final Diagnosis:</b>{" "}
-          {c.Final_Diagnosis?.Diagnosis
-            ? `The final diagnosis was ${c.Final_Diagnosis.Diagnosis}.`
-            : "No confirmed final diagnosis."}
-        </p>
-        {management && <p><b>Management:</b> The treatment plan included: {management}.</p>}
-        {c.Expert_Panel_Consensus && renderPanelConsensus(c.Expert_Panel_Consensus)}
-        {c.Conclusion?.Summary && <p><b>Conclusion:</b> {c.Conclusion.Summary}</p>}
-        {references && (
-          <p>
-            <b>Global References:</b><br />
-            <span className="whitespace-pre-line">{references}</span>
-          </p>
-        )}
+        {c.Conclusion && <div><h3>📌 Conclusion</h3>{renderContent(c.Conclusion)}</div>}
+        {references && <div><h3>📚 Global References</h3><div className="space-y-1">{references}</div></div>}
       </div>
     );
   };
@@ -264,6 +344,7 @@ export default function CaseView() {
 
       {/* Controls */}
       <div className="flex flex-wrap gap-2 items-center">
+        {/* area */}
         <select value={area} onChange={(e) => setArea(e.target.value)} className="border p-2 rounded">
           <option value="">Choose area</option>
           {areas.map((a) => (
@@ -271,6 +352,7 @@ export default function CaseView() {
           ))}
         </select>
 
+        {/* topic */}
         <select value={topic} onChange={(e) => setTopic(e.target.value)} className="border p-2 rounded">
           <option value="">Choose topic</option>
           {topics.map((t) => (
@@ -280,6 +362,7 @@ export default function CaseView() {
 
         <input type="text" value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} placeholder="Custom search" className="border p-2 rounded w-64" />
 
+        {/* language */}
         <select value={lang} onChange={(e) => setLang(e.target.value)} className="border p-2 rounded">
           <option value="en">English</option>
           <option value="da">Dansk</option>
@@ -294,13 +377,14 @@ export default function CaseView() {
           <input type="text" value={customLang} onChange={(e) => setCustomLang(e.target.value)} placeholder="ISO code (e.g. fr)" className="border p-2 rounded" />
         )}
 
+        {/* model */}
         <select value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded">
           <option value="gpt-4o-mini">GPT-4o-mini</option>
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-4">GPT-4</option>
         </select>
 
-        {/* ✅ Manual region override */}
+        {/* region */}
         <select value={manualRegion} onChange={(e) => setManualRegion(e.target.value)} className="border p-2 rounded">
           <option value="">Auto ({userLocation})</option>
           <option value="Denmark">Denmark</option>
@@ -310,6 +394,7 @@ export default function CaseView() {
           <option value="WHO">WHO (global)</option>
         </select>
 
+        {/* gamify */}
         <label className="flex items-center gap-1">
           <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
         </label>

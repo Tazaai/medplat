@@ -27,3 +27,8 @@ backend/repo-backend/archive/tmp/
 *.tar.gz
 backend/venv/
 
+# Ignore debug/test artifacts
+response.json
+review_*.json
+reviews/
+backend/debug_cases/
