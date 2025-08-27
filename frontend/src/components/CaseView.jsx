@@ -127,10 +127,10 @@ export default function CaseView() {
 
   const caseRef = useRef(null);
 
-  // 🌍 detect location
+  // 🌍 detect location (backend proxy if available)
   useEffect(() => {
-    fetch("https://ipapi.co/json/")
-      .then((res) => res.json())
+    fetch(`${API_BASE}/api/location`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((d) => {
         if (d?.country_name) setUserLocation(d.country_name);
         else if (d?.country) setUserLocation(d.country);
@@ -192,9 +192,7 @@ export default function CaseView() {
         }),
       });
       const data = await res.json();
-      setCaseData(
-        normalizeCaseData(data?.aiReply?.json || data?.aiReply || {})
-      );
+      setCaseData(normalizeCaseData(data?.aiReply?.json || data?.aiReply || {}));
     } catch (err) {
       console.error("❌ Error generating case:", err);
     }
@@ -293,7 +291,13 @@ export default function CaseView() {
     const references = Array.isArray(c.Evidence_and_References)
       ? c.Evidence_and_References.map((r, i) =>
           r.startsWith("http") ? (
-            <a key={i} href={r} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+            <a
+              key={i}
+              href={r}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 underline"
+            >
               [{i + 1}] {r}
             </a>
           ) : (

@@ -8,6 +8,20 @@ console.log("✅ dialog_api.mjs LOADED");
 export default function dialogApi() {
   const router = express.Router();
 
+  // 🌍 New location proxy (avoid CORS issues from frontend)
+  router.get("/location", async (_req, res) => {
+    try {
+      const response = await fetch("https://ipapi.co/json/");
+      if (!response.ok) throw new Error("Failed to fetch from ipapi.co");
+      const data = await response.json();
+      return res.json(data);
+    } catch (err) {
+      console.error("❌ Location fetch failed:", err.message);
+      return res.json({ country_name: "unspecified" });
+    }
+  });
+
+  // 🧠 Main dialog endpoint
   router.post("/", async (req, res) => {
     console.log("🎯 POST /api/dialog RECEIVED");
 

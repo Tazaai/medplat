@@ -49,7 +49,7 @@ app.get("/ping", (_req, res) =>
 
 // ✅ API Routes
 app.use("/api/topics", topicsApi(db));
-app.use("/api/dialog", dialogApi(db));
+app.use("/api/dialog", dialogApi(db));   // includes /location now
 app.use("/api/gamify", gamifyApi);
 app.use("/api/cases", casesApi());
 
