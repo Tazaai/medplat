@@ -1,3 +1,7 @@
 // ~/medplat/frontend/src/config.js
-export const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:8080";
+const API_BASE =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:8080"
+    : "https://medplat-backend-139218747785.europe-west1.run.app";
+
+export { API_BASE };

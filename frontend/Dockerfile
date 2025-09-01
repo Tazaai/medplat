@@ -1,24 +1,17 @@
-# ~/medplat/frontend/Dockerfile
-FROM node:18-alpine AS build
+# Use Node for build + serve
+FROM node:18-alpine
 WORKDIR /app
+
+# Install deps
 COPY package*.json ./
 RUN npm install
+
+# Copy source and build
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+# Cloud Run expects port 8080
+EXPOSE 8080
 
-# ✅ Replace default nginx.conf with dynamic PORT support
-RUN rm /etc/nginx/conf.d/default.conf
-RUN echo "server { \
-    listen       \$PORT; \
-    server_name  _; \
-    root   /usr/share/nginx/html; \
-    index  index.html; \
-    location / { \
-      try_files \$uri /index.html; \
-    } \
-}" > /etc/nginx/conf.d/default.conf
-
-CMD ["nginx", "-g", "daemon off;"]
+# Run vite preview dynamically
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "8080"]
