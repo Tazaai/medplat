@@ -12,7 +12,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Basic health endpoint
-app.get('/', (req, res) => res.json({ status: 'ok', pid: process.pid }));
+app.get('/', (req, res) => res.json({ status: 'MedPlat OK', pid: process.pid }));
 
 // Mount known routes if present. Fail gracefully if route files missing.
 (async () => {

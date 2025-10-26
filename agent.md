@@ -9,12 +9,12 @@
 ✅ .github/workflows/
 
 ## 🔐 Validating environment variables (GitHub Secrets expected)...
-✅ OPENAI_API_KEY present
-✅ GCP_PROJECT present
+❌ Missing OPENAI_API_KEY
+❌ Missing GCP_PROJECT
 ❌ Missing GCP_SA_KEY
-✅ FIREBASE_SERVICE_KEY present
-✅ VITE_API_BASE present
-🚨 1 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+❌ Missing FIREBASE_SERVICE_KEY
+❌ Missing VITE_API_BASE
+🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
 
 ## 🧱 Backend diagnostics...
 ✅ backend/index.js found
@@ -53,6 +53,6 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 4 / 5
+Secrets configured: 0 / 5
 =====================================================
 🚨 Deployment NOT READY — missing secrets.
