@@ -70,7 +70,6 @@ jobs:
 
       - name: 🔐 Ensure Firebase key secret in Secret Manager
         env:
-          
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
           printf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json
