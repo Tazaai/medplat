@@ -92,6 +92,10 @@ jobs:
 
       - name: 🚀 Deploy Backend
         run: |
+          # Generate .env.local for backend from secrets available in this job
+          echo "Generating .env.local for backend"
+          bash ./scripts/generate_env_local.sh .env.local
+          # Build and deploy backend
           cd backend
           gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/backend .
           gcloud run deploy medplat-backend \
@@ -106,7 +110,10 @@ jobs:
         run: |
           cd frontend
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
-          export VITE_API_BASE=$BACKEND_URL
+          echo "Backend URL: $BACKEND_URL"
+          # Generate .env.local with VITE_API_BASE so frontend build picks it up
+          export VITE_API_BASE="$BACKEND_URL"
+          bash ../scripts/generate_env_local.sh ../.env.local
           npm ci && npm run build
           gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend .
           gcloud run deploy medplat-frontend \
