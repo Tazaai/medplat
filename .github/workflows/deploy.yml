@@ -38,7 +38,7 @@ jobs:
               echo "❌ $name missing"
               MISSING=$((MISSING+1))
             else
-              echo "✅ $name present (${#val} chars)"
+              echo "✅ $name present (len=$(printf '%s' \"$val\" | wc -c))"
             fi
           done
           if [ $MISSING -eq 0 ]; then
@@ -54,8 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -70,14 +68,27 @@ jobs:
       - name: 🐳 Configure Artifact Registry
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
-      - name: 🔐 Ensure Firebase key in Secret Manager
+      - name: 🔐 Ensure Firebase key secret in Secret Manager
+        env:
+          
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
-          # create or update secret 'medplat-firebase-key' with the FIREBASE_SERVICE_KEY content
           printf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json
           if ! gcloud secrets describe medplat-firebase-key --project=$GCP_PROJECT >/dev/null 2>&1; then
             gcloud secrets create medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT
           else
             gcloud secrets versions add medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT
+          fi
+
+      - name: 🔐 Ensure OpenAI key secret in Secret Manager
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          printf '%s' "$OPENAI_API_KEY" > /tmp/openai_key.txt
+          if ! gcloud secrets describe medplat-openai-key --project=$GCP_PROJECT >/dev/null 2>&1; then
+            gcloud secrets create medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT
+          else
+            gcloud secrets versions add medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT
           fi
 
       - name: 🚀 Deploy Backend
@@ -89,8 +100,7 @@ jobs:
             --region europe-west1 \
             --allow-unauthenticated \
             --port 8080 \
-            --set-env-vars "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},GCP_PROJECT=${{ secrets.GCP_PROJECT }}" \
-            --set-secrets "FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
+            --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
             --project $GCP_PROJECT
 
       - name: 🎨 Build & Deploy Frontend
