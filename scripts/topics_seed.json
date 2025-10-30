@@ -1,0 +1,5 @@
+[
+  { "topic": "Pneumonia", "area": "Respiratory", "title": "Community-acquired pneumonia" },
+  { "topic": "Diabetes", "area": "Endocrinology", "title": "Type 2 diabetes management" },
+  { "topic": "Hypertension", "area": "Cardiology", "title": "Essential hypertension" }
+]

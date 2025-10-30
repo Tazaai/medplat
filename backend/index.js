@@ -22,6 +22,7 @@ app.get('/', (req, res) => res.json({ status: 'MedPlat OK', pid: process.pid }))
 		{ path: '/api/dialog', file: './routes/dialog_api.mjs' },
 		{ path: '/api/gamify', file: './routes/gamify_api.mjs' },
 		{ path: '/api/comment', file: './routes/comment_api.mjs' },
+		{ path: '/api/cases', file: './routes/cases_api.mjs' },
 	];
 
 	for (const r of routes) {

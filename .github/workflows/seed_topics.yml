@@ -1,0 +1,32 @@
+name: Seed Firestore topics (manual)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Verify FIREBASE_SERVICE_KEY is present
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_KEY }}" ]; then
+            echo "FIREBASE_SERVICE_KEY secret is not set — aborting. Add it to this repo's Secrets before running.";
+            exit 1;
+          fi
+
+      - name: Seed topics
+        env:
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          TOPICS_COLLECTION: topics2
+        run: |
+          node scripts/seed_topics.js
