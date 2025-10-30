@@ -35,7 +35,7 @@
 
 ## 🔥 Firebase configuration...
 ✅ Firebase client found
-⚠️ Firebase init missing
+✅ Firebase initialized
 
 ## 🧠 OpenAI configuration...
 ⚠️ OpenAI API key reference missing

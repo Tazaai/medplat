@@ -8,6 +8,7 @@ backend/dist/
 
 # Env + secrets
 *.env
+.env.local
 serviceAccountKey.json
 
 # OS / IDE

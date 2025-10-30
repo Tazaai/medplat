@@ -43,6 +43,11 @@ based on expert-panel reasoning.
   - OpenAI API (case generation + MCQs)
 - Deployment: Cloud Run container (`process.env.PORT || 8080`)
 
+Note: For local development the backend includes safe, non-throwing fallbacks when secrets or SDKs are missing:
+- `backend/firebaseClient.js` returns a noop `firestore()` client when `FIREBASE_SERVICE_KEY` or `firebase-admin` is not available.
+- `backend/openaiClient.js` provides a stubbed client when `OPENAI_API_KEY` or the OpenAI SDK is not present.
+These fallbacks keep local tests and the review scripts runnable without requiring production secrets.
+
 ### Frontend
 - **React (Vite + Tailwind)**
 - Components:

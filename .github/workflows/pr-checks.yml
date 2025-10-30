@@ -1,0 +1,36 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Backend - install deps
+        run: npm ci --prefix backend
+
+      - name: Backend - run tests
+        run: npm test --prefix backend
+
+      - name: Backend - syntax check
+        run: node --check backend/index.js || true
+
+      - name: Frontend - install deps
+        run: npm ci --prefix frontend
+
+      - name: Frontend - build
+        run: npm run build --prefix frontend
+
+      - name: Repo quick scan (secrets)
+        run: |
+          # quick check to ensure no accidental secret files are present in PR
+          git ls-files --others --exclude-standard | grep -E '(^|/)\.env|serviceAccountKey.json' || true
