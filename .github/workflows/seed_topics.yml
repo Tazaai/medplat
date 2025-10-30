@@ -29,4 +29,5 @@ jobs:
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
           TOPICS_COLLECTION: topics2
         run: |
-          node scripts/seed_topics.js
+          # Run the seeder as an ES module so imports work in this repo
+          node --input-type=module scripts/seed_topics.js
