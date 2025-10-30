@@ -178,6 +178,9 @@ jobs:
           TIMESTAMP=$(date +%s)
           IMAGE_TAG="europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend:$TIMESTAMP"
           echo "Building image $IMAGE_TAG"
+          # Ensure Cloud Build uses Kaniko-based execution so --no-cache is supported
+          # (some projects have builds/use_kaniko=false by default). Set it idempotently.
+          gcloud config set builds/use_kaniko true || true
           # Force a fresh Cloud Build (no cached layers) to avoid stale assets
           # and ensure the image contains the most recent `dist/` contents.
           gcloud builds submit --no-cache --tag "$IMAGE_TAG" .
