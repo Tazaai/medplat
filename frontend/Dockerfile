@@ -2,6 +2,12 @@
 FROM node:18-alpine
 WORKDIR /app
 
+# Allow a build-time cache-buster so CI can force a fresh image without
+# relying only on Cloud Build flags. This ARG is harmless and written to a
+# file to ensure it affects the image layer when changed.
+ARG BUILD_DATE=""
+RUN if [ -n "$BUILD_DATE" ]; then mkdir -p /buildmeta && echo "$BUILD_DATE" > /buildmeta/BUILD_DATE || true; fi
+
 # Install deps
 COPY package*.json ./
 RUN npm install
