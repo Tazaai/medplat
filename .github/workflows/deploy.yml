@@ -180,6 +180,54 @@ jobs:
             --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
             --project $GCP_PROJECT
 
+      - name: 🩺 Post-deploy health checks
+        run: |
+          set -euo pipefail
+          echo "Running post-deploy health checks"
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          echo "Backend URL: $BACKEND_URL"
+          echo "Frontend URL: $FRONTEND_URL"
+
+          check_url() {
+            url="$1"
+            name="$2"
+            echo "Checking $name -> $url"
+            # follow redirects, timeout 15s, show HTTP status only
+            status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$url" || true)
+            echo "$name responded with HTTP $status"
+            if [[ ! "$status" =~ ^2[0-9][0-9]$ ]]; then
+              echo "❌ $name health check failed with status $status"
+              exit 1
+            fi
+            echo "✅ $name OK"
+          }
+
+          # allow retry a few times for services that are still warming
+          retries=5
+          delay=4
+          attempt=0
+          until check_url "$FRONTEND_URL" "frontend"; do
+            attempt=$((attempt+1))
+            if [ $attempt -ge $retries ]; then
+              echo "Frontend failed health check after $retries attempts"
+              exit 1
+            fi
+            echo "Retrying frontend in $delay seconds..."
+            sleep $delay
+          done
+
+          attempt=0
+          until check_url "$BACKEND_URL" "backend"; do
+            attempt=$((attempt+1))
+            if [ $attempt -ge $retries ]; then
+              echo "Backend failed health check after $retries attempts"
+              exit 1
+            fi
+            echo "Retrying backend in $delay seconds..."
+            sleep $delay
+          done
+
       - name: 📊 Summary
         run: |
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
