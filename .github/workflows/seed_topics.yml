@@ -17,6 +17,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install firebase-admin for seeder
+        run: |
+          npm --prefix backend install firebase-admin --no-audit --no-fund
+
       - name: Seed topics
         env:
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
