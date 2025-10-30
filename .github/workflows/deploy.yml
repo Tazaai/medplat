@@ -211,14 +211,27 @@ jobs:
               if [ -z "$url" ]; then
                 echo "No URL returned yet for $svc"
               else
-                status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$url" || true)
-                echo "$name responded with HTTP $status"
-                if [[ "$status" =~ ^2[0-9][0-9]$ ]]; then
-                  echo "✅ $name OK"
-                  break
-                else
-                  echo "❌ $name health check returned $status"
-                fi
+                  status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$url" || true)
+                  echo "$name responded with HTTP $status"
+                  if [[ "$status" =~ ^2[0-9][0-9]$ ]]; then
+                    echo "✅ $name OK"
+                    break
+                  fi
+
+                  # Try fallback regional URL using project number (some Cloud Run hostnames differ)
+                  PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
+                  if [ -n "$PROJECT_NUMBER" ]; then
+                    alt_url="https://$svc-$PROJECT_NUMBER.europe-west1.run.app"
+                    echo "Trying fallback URL: $alt_url"
+                    alt_status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$alt_url" || true)
+                    echo "$name fallback URL responded with HTTP $alt_status"
+                    if [[ "$alt_status" =~ ^2[0-9][0-9]$ ]]; then
+                      echo "✅ $name OK via fallback URL ($alt_url)"
+                      break
+                    else
+                      echo "❌ $name fallback also returned $alt_status"
+                    fi
+                  fi
               fi
 
               attempt=$((attempt+1))
