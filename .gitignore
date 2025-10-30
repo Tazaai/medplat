@@ -16,3 +16,6 @@ serviceAccountKey.json
 *.swp
 .idea/
 .vscode/
+
+# Ignore downloaded GitHub Actions artifacts saved into the repo workspace
+.github/artifacts-*/
