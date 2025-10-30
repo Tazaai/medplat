@@ -56,3 +56,6 @@ Frontend: OK
 Secrets configured: 0 / 5
 =====================================================
 🚨 Deployment NOT READY — missing secrets.
+
+✅ Running in GitHub Actions (read-only mode)
+📖 Architecture: GitHub Secrets + Artifact Registry + Cloud Run

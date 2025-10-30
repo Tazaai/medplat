@@ -1,0 +1,57 @@
+name: Review Report (MedPlat)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧠 Run review_report.sh (CI-safe)
+        shell: bash
+        run: |
+          set -e
+          # Run in CI-safe mode to avoid requiring local secrets, but still produce agent.md
+          GITHUB_ACTIONS=true ./review_report.sh || true
+          echo "---"
+          echo "agent.md preview:"
+          test -f agent.md && sed -n '1,120p' agent.md || echo "agent.md not found"
+
+      - name: 📎 Upload agent.md artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-md
+          path: agent.md
+          if-no-files-found: warn
+
+      - name: 💬 Comment review report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'agent.md';
+            let body = fs.existsSync(path) ? fs.readFileSync(path, 'utf8') : 'agent.md not found';
+            // Truncate to avoid hitting GitHub comment limits
+            const MAX = 60000;
+            if (body.length > MAX) body = body.slice(0, MAX) + '\n\n… (truncated)';
+            const number = context.payload.pull_request?.number;
+            if (!number) {
+              core.info('No PR number — skipping comment');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                body: `🧠 MedPlat – review_report.sh output (CI mode)\n\n\n\n\n${'```'}\n${body}\n${'```'}`
+              });
+            }
