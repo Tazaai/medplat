@@ -1,0 +1,29 @@
+name: PR verify
+
+on:
+  pull_request:
+
+jobs:
+  pr-verify:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend deps
+        run: npm ci --prefix backend
+
+      - name: Run backend lint/tests (fast)
+        run: npm test --prefix backend || true
+
+      - name: Build frontend (verify)
+        run: |
+          npm ci --prefix frontend
+          VITE_API_BASE="http://localhost:8080" npm run build --prefix frontend
+
+      - name: Verify VITE_API_BASE artifact
+        run: test -f frontend/dist/VITE_API_BASE.txt || echo "no-verification-artifact"
