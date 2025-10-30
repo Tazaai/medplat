@@ -172,10 +172,15 @@ jobs:
         run: |
           BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
           cd frontend
-          # Build docker image and deploy to Cloud Run (this will rebuild the frontend into the container)
-          gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend .
+          # Force a fresh image by tagging with a timestamp. This avoids accidental reuse
+          # of older image tags or cached layers and guarantees Cloud Run receives the
+          # newly built image containing the latest frontend assets.
+          TIMESTAMP=$(date +%s)
+          IMAGE_TAG="europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend:$TIMESTAMP"
+          echo "Building image $IMAGE_TAG"
+          gcloud builds submit --tag "$IMAGE_TAG" .
           gcloud run deploy medplat-frontend \
-            --image europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend \
+            --image "$IMAGE_TAG" \
             --region europe-west1 \
             --allow-unauthenticated \
             --port 8080 \
