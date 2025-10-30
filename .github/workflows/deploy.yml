@@ -184,54 +184,59 @@ jobs:
         run: |
           set -euo pipefail
           echo "Running post-deploy health checks"
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
-          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
-          echo "Backend URL: $BACKEND_URL"
-          echo "Frontend URL: $FRONTEND_URL"
 
           # Ensure services allow unauthenticated invocations (idempotent)
           echo "Ensuring Cloud Run services allow unauthenticated invocations"
           gcloud run services add-iam-policy-binding medplat-frontend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
           gcloud run services add-iam-policy-binding medplat-backend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
 
-          check_url() {
-            url="$1"
-            name="$2"
-            echo "Checking $name -> $url"
-            # follow redirects, timeout 15s, show HTTP status only
-            status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$url" || true)
-            echo "$name responded with HTTP $status"
-            if [[ ! "$status" =~ ^2[0-9][0-9]$ ]]; then
-              echo "❌ $name health check failed with status $status"
-              exit 1
-            fi
-            echo "✅ $name OK"
+          resolve_url() {
+            svc="$1"
+            # re-query the service URL to avoid stale values
+            url=$(gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+            echo "$url"
           }
 
-          # allow retry a few times for services that are still warming
-          retries=5
-          delay=4
-          attempt=0
-          until check_url "$FRONTEND_URL" "frontend"; do
-            attempt=$((attempt+1))
-            if [ $attempt -ge $retries ]; then
-              echo "Frontend failed health check after $retries attempts"
-              exit 1
-            fi
-            echo "Retrying frontend in $delay seconds..."
-            sleep $delay
-          done
+          check_service() {
+            svc="$1"
+            name="$2"
+            echo "Checking service $svc (friendly name: $name)"
+            # allow retry a few times for services that are still warming
+            retries=6
+            delay=5
+            attempt=0
+            while : ; do
+              url=$(resolve_url "$svc")
+              echo "Resolved $svc -> $url"
+              if [ -z "$url" ]; then
+                echo "No URL returned yet for $svc"
+              else
+                status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$url" || true)
+                echo "$name responded with HTTP $status"
+                if [[ "$status" =~ ^2[0-9][0-9]$ ]]; then
+                  echo "✅ $name OK"
+                  break
+                else
+                  echo "❌ $name health check returned $status"
+                fi
+              fi
 
-          attempt=0
-          until check_url "$BACKEND_URL" "backend"; do
-            attempt=$((attempt+1))
-            if [ $attempt -ge $retries ]; then
-              echo "Backend failed health check after $retries attempts"
-              exit 1
-            fi
-            echo "Retrying backend in $delay seconds..."
-            sleep $delay
-          done
+              attempt=$((attempt+1))
+              if [ $attempt -ge $retries ]; then
+                echo "$name failed health check after $retries attempts"
+                # print some diagnostics
+                echo "Diagnostics: describe and IAM policy for $svc"
+                gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT || true
+                gcloud run services get-iam-policy "$svc" --region=europe-west1 --project=$GCP_PROJECT || true
+                exit 1
+              fi
+              echo "Retrying $name in $delay seconds... (attempt $attempt/$retries)"
+              sleep $delay
+            done
+          }
+
+          check_service medplat-frontend frontend
+          check_service medplat-backend backend
 
       - name: 📊 Summary
         run: |
