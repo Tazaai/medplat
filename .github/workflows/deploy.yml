@@ -178,7 +178,9 @@ jobs:
           TIMESTAMP=$(date +%s)
           IMAGE_TAG="europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend:$TIMESTAMP"
           echo "Building image $IMAGE_TAG"
-          gcloud builds submit --tag "$IMAGE_TAG" .
+          # Force a fresh Cloud Build (no cached layers) to avoid stale assets
+          # and ensure the image contains the most recent `dist/` contents.
+          gcloud builds submit --no-cache --tag "$IMAGE_TAG" .
           gcloud run deploy medplat-frontend \
             --image "$IMAGE_TAG" \
             --region europe-west1 \
