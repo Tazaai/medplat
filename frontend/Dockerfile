@@ -8,7 +8,13 @@ RUN npm install
 
 # Copy source and build
 COPY . .
-RUN npm run build
+# If a prebuilt `dist` directory exists (from the CI build step that baked
+# VITE_API_BASE into the static assets), use it. Otherwise run the build.
+RUN if [ -d "dist" ]; then \
+			echo "Using prebuilt dist/ (skip npm run build)"; \
+		else \
+			npm run build; \
+		fi
 
 # Cloud Run expects port 8080
 EXPOSE 8080
