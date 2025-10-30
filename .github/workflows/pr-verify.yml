@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Cache backend/node_modules
+      - name: Cache node_modules
         uses: actions/cache@v4
         with:
           path: |
@@ -35,7 +35,6 @@ jobs:
         run: npm ci --prefix frontend
 
       - name: Run repository readiness report (fast)
-        # run the project's local checks; they are written to be safe in PRs
         run: bash review_report.sh
         env:
           # force safe/no-op values so external integrations don't run
@@ -47,9 +46,11 @@ jobs:
         run: |
           npm run --prefix frontend build
           if [ -f frontend/dist/VITE_API_BASE.txt ]; then
-            echo "VITE_API_BASE artifact present:" && cat frontend/dist/VITE_API_BASE.txt
+            echo "VITE_API_BASE artifact present:"
+            cat frontend/dist/VITE_API_BASE.txt
           else
-            echo "ERROR: frontend/dist/VITE_API_BASE.txt not found" && ls -la frontend/dist || true
+            echo "ERROR: frontend/dist/VITE_API_BASE.txt not found"
+            ls -la frontend/dist || true
             exit 1
           fi
         env:
@@ -63,32 +64,88 @@ jobs:
           OPENAI_API_KEY: ""
           FIREBASE_SERVICE_KEY: ""
           VITE_API_BASE: "http://localhost:8080"
-name: PR verify
+name: PR Verify
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  pr-verify:
+  verify:
+    name: PR verification (frontend build + backend smoke)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install backend deps
-        run: npm ci --prefix backend
-
-      - name: Run backend lint/tests (fast)
-        run: npm test --prefix backend || true
-
       - name: Build frontend (verify)
-        run: |
-          npm ci --prefix frontend
-          VITE_API_BASE="http://localhost:8080" npm run build --prefix frontend
+        name: PR Verify
 
-      - name: Verify VITE_API_BASE artifact
-        run: test -f frontend/dist/VITE_API_BASE.txt || echo "no-verification-artifact"
+        on:
+          pull_request:
+            types: [opened, synchronize, reopened, ready_for_review]
+
+        jobs:
+          verify:
+            name: PR verification (frontend build + backend smoke)
+            runs-on: ubuntu-latest
+            timeout-minutes: 25
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v4
+
+              - name: Set up Node.js
+                uses: actions/setup-node@v4
+                with:
+                  node-version: '18'
+
+              - name: Cache node_modules
+                uses: actions/cache@v4
+                with:
+                  path: |
+                    backend/node_modules
+                    frontend/node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                    ${{ runner.os }}-node-
+
+              - name: Install backend deps
+                run: npm ci --prefix backend
+
+              - name: Install frontend deps
+                run: npm ci --prefix frontend
+
+              - name: Run repository readiness report (fast)
+                run: bash review_report.sh
+                env:
+                  # force safe/no-op values so external integrations don't run
+                  OPENAI_API_KEY: ""
+                  FIREBASE_SERVICE_KEY: ""
+                  VITE_API_BASE: "https://example.invalid"
+
+              - name: Build frontend and verify build-time API base
+                run: |
+                  npm run --prefix frontend build
+                  if [ -f frontend/dist/VITE_API_BASE.txt ]; then
+                    echo "VITE_API_BASE artifact present:"
+                    cat frontend/dist/VITE_API_BASE.txt
+                  else
+                    echo "ERROR: frontend/dist/VITE_API_BASE.txt not found"
+                    ls -la frontend/dist || true
+                    exit 1
+                  fi
+                env:
+                  # Provide a deterministic VITE_API_BASE for the build that will be written into the artifact
+                  VITE_API_BASE: "https://api.pr-verification.example"
+
+              - name: Run backend smoke tests
+                run: bash test_backend_local.sh
+                env:
+                  # Ensure no real external services are called during PR verification
+                  OPENAI_API_KEY: ""
+                  FIREBASE_SERVICE_KEY: ""
+                  VITE_API_BASE: "http://localhost:8080"
+      - name: Run backend lint/tests (fast)
