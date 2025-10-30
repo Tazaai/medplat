@@ -1,0 +1,81 @@
+name: Post-deploy smoke checks
+
+on:
+  workflow_run:
+    workflows: ["Deploy MedPlat (Local-First → Cloud Run)"]
+    types: [completed]
+
+concurrency:
+  group: smoke-post-deploy-${{ github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke checks after deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Check out repo (for logs)
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity)
+        if: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER && secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+
+      - name: Authenticate to Google Cloud (service account key)
+        if: ${{ secrets.GCP_SA_KEY }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run smoke checks (frontend + backend)
+        env:
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+        run: |
+          set -euo pipefail
+          echo "Resolving Cloud Run service URLs"
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+
+          echo "Frontend: $FRONTEND_URL"
+          echo "Backend: $BACKEND_URL"
+
+          if [ -z "$FRONTEND_URL" ] || [ -z "$BACKEND_URL" ]; then
+            echo "❌ Could not resolve service URLs"
+            exit 1
+          fi
+
+          echo "Checking frontend root"
+          status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$FRONTEND_URL" || true)
+          echo "Frontend responded with $status"
+          if ! [[ "$status" =~ ^2[0-9][0-9]$ ]]; then
+            echo "❌ Frontend root failed with HTTP $status"
+            exit 1
+          fi
+
+          echo "Checking backend health endpoint"
+          status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$BACKEND_URL/" || true)
+          echo "Backend root responded with $status"
+          if ! [[ "$status" =~ ^2[0-9][0-9]$ ]]; then
+            echo "❌ Backend root failed with HTTP $status"
+            exit 1
+          fi
+
+          echo "Testing POST /api/topics"
+          topics_status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 -X POST -H 'Content-Type: application/json' -d '{}' "$BACKEND_URL/api/topics" || true)
+          echo "/api/topics responded with $topics_status"
+          if ! [[ "$topics_status" =~ ^2[0-9][0-9]$ ]]; then
+            echo "❌ /api/topics failed with HTTP $topics_status"
+            exit 1
+          fi
+
+          echo "✅ Post-deploy smoke checks passed"
