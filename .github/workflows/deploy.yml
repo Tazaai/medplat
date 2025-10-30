@@ -102,12 +102,42 @@ jobs:
             --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
             --project $GCP_PROJECT
 
-      - name: 🎨 Build & Deploy Frontend
+      - name: 🎨 Build Frontend (generate artifact)
+        id: build_frontend
         run: |
           cd frontend
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          echo "Detected backend URL: $BACKEND_URL"
           export VITE_API_BASE=$BACKEND_URL
           npm ci && npm run build
+          echo "::set-output name=backend_url::$BACKEND_URL"
+
+      - name: 🔎 Verify Frontend Build contains VITE_API_BASE
+        run: |
+          BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
+          if [ -f frontend/dist/VITE_API_BASE.txt ]; then
+            FOUND=$(cat frontend/dist/VITE_API_BASE.txt)
+            echo "Found VITE_API_BASE in artifact: $FOUND"
+            if [ "$FOUND" != "$BACKEND_URL" ]; then
+              echo "❌ Mismatch: expected $BACKEND_URL but frontend/dist/VITE_API_BASE.txt contains $FOUND"
+              exit 1
+            fi
+          else
+            echo "❌ frontend/dist/VITE_API_BASE.txt not found — build step did not produce the verification artifact"
+            exit 1
+          fi
+
+      - name: 📦 Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      - name: 🚀 Deploy Frontend
+        run: |
+          BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
+          cd frontend
+          # Build docker image and deploy to Cloud Run (this will rebuild the frontend into the container)
           gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend .
           gcloud run deploy medplat-frontend \
             --image europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend \

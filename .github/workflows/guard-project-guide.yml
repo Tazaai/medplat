@@ -1,0 +1,95 @@
+name: Guard PROJECT_GUIDE edits
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  require-authorization:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch origin main:refs/remotes/origin/main
+
+      - name: Check for PROJECT_GUIDE.md edits
+        id: check_files
+        env:
+          PR_LABELS_JSON: "${{ toJson(github.event.pull_request.labels) }}"
+          ALLOWED_LABEL: "project-guide-edit"
+        run: |
+          set -euo pipefail
+          echo "Checking changed files compared to origin/main..."
+          CHANGED=$(git diff --name-only origin/main...HEAD || true)
+          echo "Changed files:\n$CHANGED"
+          echo "$CHANGED" > changed.txt
+          if echo "$CHANGED" | grep -q "^PROJECT_GUIDE.md$"; then
+            echo "PROJECT_GUIDE.md was modified in this PR. Verifying authorization via label '$ALLOWED_LABEL'..."
+            if echo "${PR_LABELS_JSON:-}" | grep -q "\"name\":\s*\"$ALLOWED_LABEL\""; then
+              echo "Authorization label '$ALLOWED_LABEL' present on PR. Allowing change."
+              echo "authorized=true" >> $GITHUB_OUTPUT
+            else
+              echo "PROJECT_GUIDE.md was changed but the PR does not have the required label '$ALLOWED_LABEL'. Will request manual approval via PR comment and fail the check."
+              echo "authorized=false" >> $GITHUB_OUTPUT
+              echo "need_comment=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "PROJECT_GUIDE.md not modified. No special authorization required."
+            echo "authorized=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for PG-approve comment by project lead
+        if: steps.check_files.outputs.need_comment == 'true'
+        uses: actions/github-script@v6
+        id: check_comment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number: pr.number });
+            const lead = 'Tazaai';
+            const marker = 'PG-approve';
+            let found = false;
+            for (const c of comments.data) {
+              if (c.user && c.user.login === lead && c.body && c.body.includes(marker)) {
+                found = true;
+                break;
+              }
+            }
+            return { found };
+
+      - name: Post approval request comment (if needed)
+        if: steps.check_files.outputs.need_comment == 'true' && steps.check_comment.outputs.found != 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = `Hello — this pull request modifies \`PROJECT_GUIDE.md\`, which is the repository's master guide.\n\nPer policy, edits to \`PROJECT_GUIDE.md\` require explicit approval. Please ask the project lead to either: (1) add the label \`project-guide-edit\` to this PR, or (2) post a comment with the exact text \`PG-approve\` (by the project lead's GitHub account) to approve the change.\n\nIf you are the project lead, replying with \`PG-approve\` here will approve the edit. Thank you!`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });
+            core.info('Posted approval request comment.');
+
+      - name: Fail when authorization missing
+        if: steps.check_files.outputs.authorized == 'false' && steps.check_comment.outputs.found != 'true'
+        run: |
+          echo "PROJECT_GUIDE.md change is not authorized. Please add the 'project-guide-edit' label or have the project lead comment 'PG-approve' to authorize." >&2
+          exit 1
+          else
+            echo "PROJECT_GUIDE.md not modified. No special authorization required."
+            echo "authorized=true" >> $GITHUB_OUTPUT
+          fi
