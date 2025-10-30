@@ -183,7 +183,8 @@ jobs:
           gcloud config set builds/use_kaniko true || true
           # Force a fresh Cloud Build (no cached layers) to avoid stale assets
           # and ensure the image contains the most recent `dist/` contents.
-          gcloud builds submit --no-cache --tag "$IMAGE_TAG" .
+          # Pass the BUILD_DATE build-arg so Docker/kaniko caches change when TIMESTAMP changes.
+          gcloud builds submit --no-cache --substitutions=_BUILD_DATE="$TIMESTAMP" --tag "$IMAGE_TAG" .
           gcloud run deploy medplat-frontend \
             --image "$IMAGE_TAG" \
             --region europe-west1 \
