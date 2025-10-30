@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ok: ${{ steps.validate.outputs.ok }}
+      auth: ${{ steps.validate.outputs.auth }}
     steps:
       - uses: actions/checkout@v4
       - name: 🔐 Validate Secrets
@@ -29,10 +30,13 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          WORKLOAD_IDENTITY_SERVICE_ACCOUNT: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
           MISSING=0
-          for name in OPENAI_API_KEY GCP_PROJECT GCP_SA_KEY FIREBASE_SERVICE_KEY; do
+          # Required always: OPENAI_API_KEY, GCP_PROJECT, FIREBASE_SERVICE_KEY
+          for name in OPENAI_API_KEY GCP_PROJECT FIREBASE_SERVICE_KEY; do
             val="$(printenv "$name")"
             if [ -z "$val" ]; then
               echo "❌ $name missing"
@@ -41,8 +45,29 @@ jobs:
               echo "✅ $name present (len=$(printf '%s' \"$val\" | wc -c))"
             fi
           done
+
+          # For GCP authentication we accept either a service account key JSON
+          # in GCP_SA_KEY, or Workload Identity Federation configuration via
+          # WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.
+          if [ -n "$(printenv GCP_SA_KEY)" ]; then
+            echo "✅ GCP_SA_KEY present (service-account key)"
+            AUTH="sa"
+          elif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
+            echo "✅ Workload Identity provider and service account present"
+            AUTH="wif"
+          else
+            echo "❌ GCP auth configuration missing: provide either GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT"
+            MISSING=$((MISSING+1))
+          fi
+
           if [ $MISSING -eq 0 ]; then
             echo "ok=true" >> $GITHUB_OUTPUT
+            # export which auth method to use: 'sa' or 'wif'
+            # default to 'sa' if both present prefer service-account key (we set AUTH above)
+            if [ -z "$AUTH" ]; then
+              AUTH="sa"
+            fi
+            echo "auth=$AUTH" >> $GITHUB_OUTPUT
           else
             echo "ok=false" >> $GITHUB_OUTPUT
             exit 1
@@ -57,7 +82,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ☁️ Authenticate to Google Cloud
+      - name: ☁️ Authenticate to Google Cloud (Workload Identity)
+        if: needs.validate-secrets.outputs.auth == 'wif'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+
+      - name: ☁️ Authenticate to Google Cloud (service account key)
+        if: needs.validate-secrets.outputs.auth == 'sa'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -102,12 +135,42 @@ jobs:
             --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
             --project $GCP_PROJECT
 
-      - name: 🎨 Build & Deploy Frontend
+      - name: 🎨 Build Frontend (generate artifact)
+        id: build_frontend
         run: |
           cd frontend
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          echo "Detected backend URL: $BACKEND_URL"
           export VITE_API_BASE=$BACKEND_URL
           npm ci && npm run build
+          echo "::set-output name=backend_url::$BACKEND_URL"
+
+      - name: 🔎 Verify Frontend Build contains VITE_API_BASE
+        run: |
+          BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
+          if [ -f frontend/dist/VITE_API_BASE.txt ]; then
+            FOUND=$(cat frontend/dist/VITE_API_BASE.txt)
+            echo "Found VITE_API_BASE in artifact: $FOUND"
+            if [ "$FOUND" != "$BACKEND_URL" ]; then
+              echo "❌ Mismatch: expected $BACKEND_URL but frontend/dist/VITE_API_BASE.txt contains $FOUND"
+              exit 1
+            fi
+          else
+            echo "❌ frontend/dist/VITE_API_BASE.txt not found — build step did not produce the verification artifact"
+            exit 1
+          fi
+
+      - name: 📦 Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      - name: 🚀 Deploy Frontend
+        run: |
+          BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
+          cd frontend
+          # Build docker image and deploy to Cloud Run (this will rebuild the frontend into the container)
           gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend .
           gcloud run deploy medplat-frontend \
             --image europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend \

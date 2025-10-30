@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node backend/index.js",
     "dev": "node --watch backend/index.js",
-    "test": "echo \"No backend tests defined\" && exit 0"
+  "test": "node test/test_firebase_client.cjs && node test/test_openai_client.cjs"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -1,3 +1,74 @@
+## Copilot / AI Agent Instructions — MedPlat (concise)
+
+Purpose: Short, actionable guidance for automated agents and reviewers working on MedPlat.
+
+1) Big picture (one-liner)
+- Backend: Node 18 + Express (entry: `backend/index.js`) — dynamic ESM route imports, Cloud Run friendly.
+- Frontend: React + Vite in `frontend/` (components under `frontend/src/components/`).
+- CI/CD: `.github/workflows/deploy.yml` builds containers, pushes to Artifact Registry and deploys to Cloud Run.
+
+2) First files to inspect
+- `PROJECT_GUIDE.md` — authoritative architecture and secret lists (do not edit automatically).
+- `backend/index.js` — dynamic import pattern for `backend/routes/*.mjs` and host/port contract (PORT, 0.0.0.0).
+- `backend/routes/*` — route modules (e.g. `topics_api.mjs`, `dialog_api.mjs`, `gamify_api.mjs`).
+- `review_report.sh` and `test_backend_local.sh` — required local checks; produce `agent.md` and basic diagnostics.
+
+3) Secrets & env (explicit)
+- Required secrets (GH Actions): `OPENAI_API_KEY`, `GCP_PROJECT`, `GCP_SA_KEY`, `FIREBASE_SERVICE_KEY`, `VITE_API_BASE`.
+- CI uses Secret Manager instead of embedding JSON credentials in files; do NOT commit service account JSONs.
+
+4) Agent contract (how to change safely)
+- Make small, focused PRs. Prefer stubs + tests over partial feature implementations.
+- Always run `bash review_report.sh` first; it writes `agent.md`. Include `agent.md` output in your PR description.
+- Run `bash test_backend_local.sh` to sanity-check the backend locally (health and key endpoints).
+
+5) Repo-specific patterns & examples
+- Dynamic ESM route loading: `backend/index.js` dynamically imports `backend/routes/*.mjs`; route modules should export an Express Router or factory function.
+- Frontend expects `VITE_API_BASE` at build time (used by `frontend/src/config.js` / components).
+- Local-first workflow: failing local checks block deployability.
+
+6) Quick commands (copyable)
+```bash
+# diagnostic (creates agent.md)
+bash review_report.sh
+# local backend smoke tests
+bash test_backend_local.sh
+# build frontend
+npm install --prefix frontend && npm run --prefix frontend build
+```
+
+7) Safety notes
+- Never write production secrets to repo files. Use GH Secrets + Secret Manager as in CI.
+- If a script (review/test) references a missing file, create a minimal stub with a TODO and tests rather than a full implementation.
+
+8) Where to add tests
+- Add lightweight route/unit tests under `backend/test/` near the implementation. Keep runs fast and deterministic.
+
+If anything here is unclear or you want more examples (route stub template, test runner setup), tell me which area and I will expand it.
+
+Last updated: October 29, 2025
+
+## MANDATORY PROCESS — do NOT skip
+These steps are required for every change that touches backend, CI/CD, or deployment-related code. Automated agents, reviewers, and developers must follow them exactly.
+
+1. Run diagnostics and smoke tests locally
+   - Execute `./scripts/run_local_checks.sh` (or `node ./scripts/run_with_env.js .env.local` if you have multiline JSON secrets). This runs `review_report.sh` (writes `agent.md`) and `test_backend_local.sh` (backend smoke tests).
+2. Do not commit secrets
+   - Never add API keys, service account JSONs, or `.env.local` to the repo. Confirm `.env.local` is in `.gitignore`.
+3. Use Secret Manager in CI/CD
+   - CI must use GitHub Actions secrets + Secret Manager. Do not change the workflow to inline JSON credentials or plain env values.
+4. Add safe fallbacks and small stubs
+   - If a referenced integration (Firebase, OpenAI) is missing in local dev, add a minimal non-breaking stub or graceful fallback (log a warning, return safe defaults). See `backend/firebaseClient.js` for the lightweight shim pattern — prefer non-throwing behavior.
+5. Tests and PR contents
+   - Include `agent.md` output in PR description (copy from `review_report.sh`).
+   - Add or update unit/integration tests under `backend/test/` when adding or changing route behavior. Keep tests fast and deterministic.
+6. Permanent solutions and automation
+   - Prefer permanent fixes over quick hacks. Examples of permanent actions we require:
+     - Add robust Firebase initialization with clear error handling and a no-op fallback for local dev.
+     - Ensure CI workflow continues to use Secret Manager and validates presence of required secrets before deploy.
+     - Use `scripts/run_with_env.js` (already added) for safe local execution with multiline secrets.
+
+Any PR that does not follow this mandatory process will be returned for remediation. If you need an exception, open an issue describing the exception and get an explicit approver.
 # Copilot / AI Agent Instructions — MedPlat
 
 **MedPlat** is an AI-driven medical case simulator and gamified learning platform for clinicians and students. It generates realistic cases, adaptive MCQs, and expert-panel reasoning using GPT-4o/mini.

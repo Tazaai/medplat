@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+  "dev": "vite",
+  "build": "node ./scripts/verify_build_env.js && vite build && node ./scripts/write_build_api_base.js",
+  "build:verify": "node ./scripts/verify_build_env.js && vite build --sourcemap && node ./scripts/write_build_api_base.js",
+  "preview": "vite preview"
   },
   "dependencies": {
     "jspdf": "^3.0.1",
