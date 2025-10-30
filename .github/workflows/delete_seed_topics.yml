@@ -1,0 +1,27 @@
+name: Delete seeded topics (manual)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install firebase-admin for delete
+        run: |
+          npm --prefix backend install firebase-admin --no-audit --no-fund
+
+      - name: Delete seeded topics
+        env:
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          TOPICS_COLLECTION: topics2
+        run: |
+          node scripts/delete_seeded_topics.mjs
