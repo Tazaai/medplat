@@ -29,10 +29,13 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          WORKLOAD_IDENTITY_SERVICE_ACCOUNT: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
           MISSING=0
-          for name in OPENAI_API_KEY GCP_PROJECT GCP_SA_KEY FIREBASE_SERVICE_KEY; do
+          # Required always: OPENAI_API_KEY, GCP_PROJECT, FIREBASE_SERVICE_KEY
+          for name in OPENAI_API_KEY GCP_PROJECT FIREBASE_SERVICE_KEY; do
             val="$(printenv "$name")"
             if [ -z "$val" ]; then
               echo "❌ $name missing"
@@ -41,6 +44,19 @@ jobs:
               echo "✅ $name present (len=$(printf '%s' \"$val\" | wc -c))"
             fi
           done
+
+          # For GCP authentication we accept either a service account key JSON
+          # in GCP_SA_KEY, or Workload Identity Federation configuration via
+          # WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.
+          if [ -n "$(printenv GCP_SA_KEY)" ]; then
+            echo "✅ GCP_SA_KEY present (service-account key)"
+          elif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
+            echo "✅ Workload Identity provider and service account present"
+          else
+            echo "❌ GCP auth configuration missing: provide either GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT"
+            MISSING=$((MISSING+1))
+          fi
+
           if [ $MISSING -eq 0 ]; then
             echo "ok=true" >> $GITHUB_OUTPUT
           else
@@ -57,7 +73,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ☁️ Authenticate to Google Cloud
+      - name: ☁️ Authenticate to Google Cloud (Workload Identity)
+        if: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER && secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+
+      - name: ☁️ Authenticate to Google Cloud (service account key)
+        if: ${{ !secrets.WORKLOAD_IDENTITY_PROVIDER }}
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
