@@ -189,6 +189,11 @@ jobs:
           echo "Backend URL: $BACKEND_URL"
           echo "Frontend URL: $FRONTEND_URL"
 
+          # Ensure services allow unauthenticated invocations (idempotent)
+          echo "Ensuring Cloud Run services allow unauthenticated invocations"
+          gcloud run services add-iam-policy-binding medplat-frontend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
+          gcloud run services add-iam-policy-binding medplat-backend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
+
           check_url() {
             url="$1"
             name="$2"
