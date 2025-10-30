@@ -4,6 +4,8 @@ on:
   workflow_run:
     workflows: ["Deploy MedPlat (Local-First → Cloud Run)"]
     types: [completed]
+  # Allow manual runs for testing and debugging
+  workflow_dispatch:
 
 concurrency:
   group: smoke-post-deploy-${{ github.run_id }}
@@ -11,6 +13,8 @@ concurrency:
 
 permissions:
   contents: read
+  # Needed for Workload Identity auth steps that request OIDC tokens
+  id-token: write
 
 jobs:
   smoke:
