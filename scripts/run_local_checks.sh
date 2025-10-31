@@ -10,6 +10,13 @@ if [ -f .env.local ]; then
   echo "Sourcing .env.local (ensure this file is gitignored and contains secrets only for local use)"
   # shellcheck disable=SC1091
   echo "Preparing sanitized env from .env.local (ensure this file is gitignored and contains secrets only for local use)"
+  # Validate common JSON secrets to provide clearer error messages early
+  if command -v node >/dev/null 2>&1; then
+    echo "Validating JSON secrets (FIREBASE_SERVICE_KEY, OPENAI_API_KEY) from .env.local..."
+    # Validate by pointing the validator at the file so it can read the vars from .env.local
+  node ./scripts/validate_secret_json.mjs FIREBASE_SERVICE_KEY .env.local || true
+  fi
+
   # Use Node helper to sanitize potential multiline JSON entries into single-line values
   # Use node runner to safely parse .env.local (handles multiline JSON) and run checks
   node ./scripts/run_with_env.js .env.local
