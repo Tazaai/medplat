@@ -1,0 +1,110 @@
+name: Scheduled smoke checks
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # daily at 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+jobs:
+  smoke:
+    name: Scheduled smoke checks
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      WORKLOAD_IDENTITY_SERVICE_ACCOUNT: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        id: validate
+        run: |
+          MISSING=0
+          for name in GCP_PROJECT OPENAI_API_KEY FIREBASE_SERVICE_KEY; do
+            val="$(printenv $name || true)"
+            if [ -z "$val" ]; then
+              echo "$name is missing"
+              MISSING=$((MISSING+1))
+            else
+              echo "$name present"
+            fi
+          done
+
+          if [ -n "$(printenv GCP_SA_KEY || true)" ]; then
+            echo "GCP_SA_KEY present"
+          elif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER || true)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT || true)" ]; then
+            echo "Workload Identity present"
+          else
+            echo "GCP auth info missing"
+            MISSING=$((MISSING+1))
+          fi
+
+          echo "missing=$MISSING" >> $GITHUB_OUTPUT
+
+      - name: Create issue if secrets missing
+        if: steps.validate.outputs.missing != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const missing = parseInt(core.getOutput('missing'))
+            const title = `Scheduled smoke checks aborted — missing secrets (${missing})`
+            const body = `The scheduled smoke checks were aborted because required repository secrets are missing or incomplete.\n\nPlease ensure the following secrets are configured: GCP_PROJECT, (GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER+WORKLOAD_IDENTITY_SERVICE_ACCOUNT), OPENAI_API_KEY, FIREBASE_SERVICE_KEY.\n\nThis workflow runs daily and can also be triggered manually via the Actions UI.`
+            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body })
+
+      - name: Authenticate to Google Cloud (Workload Identity)
+        if: steps.validate.outputs.missing == '0' && env.WORKLOAD_IDENTITY_PROVIDER != ''
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
+
+      - name: Authenticate to Google Cloud (service account key)
+        if: steps.validate.outputs.missing == '0' && env.GCP_SA_KEY != ''
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        if: steps.validate.outputs.missing == '0'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use Node 18
+        if: steps.validate.outputs.missing == '0'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run post-deploy smoke script
+        if: steps.validate.outputs.missing == '0'
+        run: |
+          set -euo pipefail
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
+          FRONTEND_FALLBACK=""
+          BACKEND_FALLBACK=""
+          if [ -n "$PROJECT_NUMBER" ]; then
+            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.europe-west1.run.app"
+            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.europe-west1.run.app"
+          fi
+          echo "Frontend: $FRONTEND_URL"
+          echo "Backend: $BACKEND_URL"
+          mkdir -p tmp
+          node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt || true
+          echo "artifact=tmp" >> $GITHUB_OUTPUT
+
+      - name: Upload smoke artifacts
+        if: steps.validate.outputs.missing == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-smoke-artifacts
+          path: ${{ steps.validate.outputs.artifact || 'tmp' }}
