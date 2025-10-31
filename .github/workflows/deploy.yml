@@ -274,3 +274,31 @@ jobs:
           echo "✅ Backend: $BACKEND_URL"
           echo "✅ Frontend: $FRONTEND_URL"
           echo "🎯 MedPlat deployment successful"
+
+      - name: 🧪 Post-deploy smoke tests
+        id: smoke
+        run: |
+          echo "Running post-deploy smoke tests"
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
+          PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
+          FRONTEND_FALLBACK=""
+          BACKEND_FALLBACK=""
+          if [ -n "$PROJECT_NUMBER" ]; then
+            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.europe-west1.run.app"
+            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.europe-west1.run.app"
+          fi
+          echo "Frontend URL: $FRONTEND_URL"
+          echo "Frontend fallback: $FRONTEND_FALLBACK"
+          echo "Backend URL: $BACKEND_URL"
+          echo "Backend fallback: $BACKEND_FALLBACK"
+          mkdir -p tmp
+          node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt
+          echo "artifact=tmp" >> $GITHUB_OUTPUT
+
+      - name: 📦 Upload smoke test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-artifacts
+          path: ${{ steps.smoke.outputs.artifact }}

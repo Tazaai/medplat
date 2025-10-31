@@ -1,6 +1,37 @@
 name: Delete seeded topics (manual)
 
 on:
+  workflow_dispatch:
+
+jobs:
+  delete:
+    name: Delete seeded topics from Firestore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend deps
+        run: npm --prefix backend ci
+
+      - name: Delete seeded topics
+        env:
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          TOPICS_COLLECTION: topics2
+        run: |
+          if [ -z "${FIREBASE_SERVICE_KEY:-}" ]; then
+            echo "FIREBASE_SERVICE_KEY not set — aborting"
+            exit 1
+          fi
+          node scripts/delete_seeded_topics.mjs
+name: Delete seeded topics (manual)
+
+on:
   workflow_dispatch: {}
 
 jobs:
