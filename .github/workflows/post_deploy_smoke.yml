@@ -139,3 +139,23 @@ jobs:
           fi
 
           echo "✅ Post-deploy smoke checks passed"
+
+      - name: Create issue on smoke failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const title = `Post-deploy smoke failed — run ${process.env.GITHUB_RUN_ID}`
+            const body = `Post-deploy smoke tests failed.\n\nRun: ${runUrl}\n\nArtifacts: post-deploy-smoke-artifacts (see Actions artifacts).`;
+            await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body })
+
+      - name: Notify Slack on failure (optional)
+        if: failure() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          TEXT="Post-deploy smoke tests failed for ${GITHUB_REPOSITORY} (run ${GITHUB_RUN_ID}). Check Actions run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          payload=$(printf '{"text":"%s"}' "$TEXT")
+          curl -s -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" || true
