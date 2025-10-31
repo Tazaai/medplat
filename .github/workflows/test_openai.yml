@@ -1,6 +1,36 @@
 name: Test OpenAI API key (manual)
 
 on:
+  workflow_dispatch:
+
+jobs:
+  openai-check:
+    name: Validate OPENAI_API_KEY
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend deps (if needed)
+        run: npm --prefix backend ci
+
+      - name: Run OpenAI key check
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "${OPENAI_API_KEY:-}" ]; then
+            echo "OPENAI_API_KEY not set — aborting"
+            exit 1
+          fi
+          node scripts/test_openai.mjs
+name: Test OpenAI API key (manual)
+
+on:
   workflow_dispatch: {}
 
 jobs:
@@ -17,7 +47,8 @@ jobs:
 
       - name: Install deps
         run: |
-          npm --prefix backend install node-fetch --no-audit --no-fund
+          # Install node-fetch at the repository root so scripts run from repo root can import it
+          npm install node-fetch --no-audit --no-fund
 
       - name: Test OpenAI key
         env:

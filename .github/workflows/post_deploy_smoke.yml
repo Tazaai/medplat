@@ -1,3 +1,59 @@
+name: Post-deploy smoke tests
+
+on:
+  workflow_run:
+    workflows: ["Deploy MedPlat (Local-First → Cloud Run)"]
+    types: [completed]
+
+jobs:
+  smoke-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ☁️ Authenticate to Google Cloud (service account key)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 🧰 Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run smoke test
+        id: smoke
+        run: |
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
+          FRONTEND_FALLBACK=""
+          BACKEND_FALLBACK=""
+          if [ -n "$PROJECT_NUMBER" ]; then
+            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.europe-west1.run.app"
+            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.europe-west1.run.app"
+          fi
+          echo "Frontend: $FRONTEND_URL"
+          echo "Frontend fallback: $FRONTEND_FALLBACK"
+          echo "Backend: $BACKEND_URL"
+          echo "Backend fallback: $BACKEND_FALLBACK"
+          mkdir -p tmp
+          node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt
+          echo "artifact=tmp" >> $GITHUB_OUTPUT
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-smoke-artifacts
+          path: ${{ steps.smoke.outputs.artifact }}
 name: Post-deploy smoke checks
 
 on:
