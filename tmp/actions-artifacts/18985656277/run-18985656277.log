@@ -1,0 +1,246 @@
+review	Set up job	﻿2025-10-31T21:27:01.8558067Z Current runner version: '2.329.0'
+review	Set up job	2025-10-31T21:27:01.8583492Z ##[group]Runner Image Provisioner
+review	Set up job	2025-10-31T21:27:01.8584571Z Hosted Compute Agent
+review	Set up job	2025-10-31T21:27:01.8585092Z Version: 20251016.436
+review	Set up job	2025-10-31T21:27:01.8585702Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+review	Set up job	2025-10-31T21:27:01.8586499Z Build Date: 2025-10-15T20:44:12Z
+review	Set up job	2025-10-31T21:27:01.8587076Z ##[endgroup]
+review	Set up job	2025-10-31T21:27:01.8587610Z ##[group]Operating System
+review	Set up job	2025-10-31T21:27:01.8588176Z Ubuntu
+review	Set up job	2025-10-31T21:27:01.8588688Z 24.04.3
+review	Set up job	2025-10-31T21:27:01.8589116Z LTS
+review	Set up job	2025-10-31T21:27:01.8589611Z ##[endgroup]
+review	Set up job	2025-10-31T21:27:01.8590134Z ##[group]Runner Image
+review	Set up job	2025-10-31T21:27:01.8590936Z Image: ubuntu-24.04
+review	Set up job	2025-10-31T21:27:01.8591633Z Version: 20251030.96.2
+review	Set up job	2025-10-31T21:27:01.8592656Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+review	Set up job	2025-10-31T21:27:01.8594057Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+review	Set up job	2025-10-31T21:27:01.8595259Z ##[endgroup]
+review	Set up job	2025-10-31T21:27:01.8596435Z ##[group]GITHUB_TOKEN Permissions
+review	Set up job	2025-10-31T21:27:01.8598228Z Contents: read
+review	Set up job	2025-10-31T21:27:01.8598755Z Metadata: read
+review	Set up job	2025-10-31T21:27:01.8599341Z PullRequests: write
+review	Set up job	2025-10-31T21:27:01.8599889Z ##[endgroup]
+review	Set up job	2025-10-31T21:27:01.8602110Z Secret source: Actions
+review	Set up job	2025-10-31T21:27:01.8602908Z Prepare workflow directory
+review	Set up job	2025-10-31T21:27:01.8922890Z Prepare all required actions
+review	Set up job	2025-10-31T21:27:01.8960461Z Getting action download info
+review	Set up job	2025-10-31T21:27:02.2108549Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+review	Set up job	2025-10-31T21:27:02.4040388Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+review	Set up job	2025-10-31T21:27:02.5841240Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+review	Set up job	2025-10-31T21:27:02.9925544Z Complete job name: review
+review	⬇️ Checkout	﻿2025-10-31T21:27:03.0745696Z ##[group]Run actions/checkout@v4
+review	⬇️ Checkout	2025-10-31T21:27:03.0747114Z with:
+review	⬇️ Checkout	2025-10-31T21:27:03.0747960Z   repository: Tazaai/medplat
+review	⬇️ Checkout	2025-10-31T21:27:03.0749318Z   token: ***
+review	⬇️ Checkout	2025-10-31T21:27:03.0750114Z   ssh-strict: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0751093Z   ssh-user: git
+review	⬇️ Checkout	2025-10-31T21:27:03.0751955Z   persist-credentials: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0752904Z   clean: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0753743Z   sparse-checkout-cone-mode: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0754770Z   fetch-depth: 1
+review	⬇️ Checkout	2025-10-31T21:27:03.0755581Z   fetch-tags: false
+review	⬇️ Checkout	2025-10-31T21:27:03.0756444Z   show-progress: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0757309Z   lfs: false
+review	⬇️ Checkout	2025-10-31T21:27:03.0758073Z   submodules: false
+review	⬇️ Checkout	2025-10-31T21:27:03.0758923Z   set-safe-directory: true
+review	⬇️ Checkout	2025-10-31T21:27:03.0760073Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:03.1911754Z Syncing repository: Tazaai/medplat
+review	⬇️ Checkout	2025-10-31T21:27:03.1915677Z ##[group]Getting Git version info
+review	⬇️ Checkout	2025-10-31T21:27:03.1917515Z Working directory is '/home/runner/work/medplat/medplat'
+review	⬇️ Checkout	2025-10-31T21:27:03.1919586Z [command]/usr/bin/git version
+review	⬇️ Checkout	2025-10-31T21:27:03.1970253Z git version 2.51.2
+review	⬇️ Checkout	2025-10-31T21:27:03.1998447Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:03.2013704Z Temporarily overriding HOME='/home/runner/work/_temp/ea763e5c-1200-4fb2-b3c1-5d0e69bdbf1d' before making global git config changes
+review	⬇️ Checkout	2025-10-31T21:27:03.2016593Z Adding repository directory to the temporary git global config as a safe directory
+review	⬇️ Checkout	2025-10-31T21:27:03.2019120Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+review	⬇️ Checkout	2025-10-31T21:27:03.2056806Z Deleting the contents of '/home/runner/work/medplat/medplat'
+review	⬇️ Checkout	2025-10-31T21:27:03.2060406Z ##[group]Initializing the repository
+review	⬇️ Checkout	2025-10-31T21:27:03.2064778Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+review	⬇️ Checkout	2025-10-31T21:27:03.2144702Z hint: Using 'master' as the name for the initial branch. This default branch name
+review	⬇️ Checkout	2025-10-31T21:27:03.2146736Z hint: is subject to change. To configure the initial branch name to use in all
+review	⬇️ Checkout	2025-10-31T21:27:03.2148595Z hint: of your new repositories, which will suppress this warning, call:
+review	⬇️ Checkout	2025-10-31T21:27:03.2150594Z hint:
+review	⬇️ Checkout	2025-10-31T21:27:03.2152105Z hint: 	git config --global init.defaultBranch <name>
+review	⬇️ Checkout	2025-10-31T21:27:03.2153330Z hint:
+review	⬇️ Checkout	2025-10-31T21:27:03.2154480Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+review	⬇️ Checkout	2025-10-31T21:27:03.2156555Z hint: 'development'. The just-created branch can be renamed via this command:
+review	⬇️ Checkout	2025-10-31T21:27:03.2158052Z hint:
+review	⬇️ Checkout	2025-10-31T21:27:03.2158971Z hint: 	git branch -m <name>
+review	⬇️ Checkout	2025-10-31T21:27:03.2159904Z hint:
+review	⬇️ Checkout	2025-10-31T21:27:03.2161602Z hint: Disable this message with "git config set advice.defaultBranchName false"
+review	⬇️ Checkout	2025-10-31T21:27:03.2163672Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+review	⬇️ Checkout	2025-10-31T21:27:03.2166799Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+review	⬇️ Checkout	2025-10-31T21:27:03.2199885Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:03.2201758Z ##[group]Disabling automatic garbage collection
+review	⬇️ Checkout	2025-10-31T21:27:03.2203831Z [command]/usr/bin/git config --local gc.auto 0
+review	⬇️ Checkout	2025-10-31T21:27:03.2232886Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:03.2234264Z ##[group]Setting up auth
+review	⬇️ Checkout	2025-10-31T21:27:03.2240219Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+review	⬇️ Checkout	2025-10-31T21:27:03.2270651Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+review	⬇️ Checkout	2025-10-31T21:27:03.2763221Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+review	⬇️ Checkout	2025-10-31T21:27:03.2796580Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+review	⬇️ Checkout	2025-10-31T21:27:03.3032152Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+review	⬇️ Checkout	2025-10-31T21:27:03.3077842Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:03.3087045Z ##[group]Fetching the repository
+review	⬇️ Checkout	2025-10-31T21:27:03.3092883Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +88b2963d7af2987f48db7d93937752358d3b2cd6:refs/remotes/pull/16/merge
+review	⬇️ Checkout	2025-10-31T21:27:04.6512251Z From https://github.com/Tazaai/medplat
+review	⬇️ Checkout	2025-10-31T21:27:04.6514191Z  * [new ref]         88b2963d7af2987f48db7d93937752358d3b2cd6 -> pull/16/merge
+review	⬇️ Checkout	2025-10-31T21:27:04.6550068Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:04.6551427Z ##[group]Determining the checkout info
+review	⬇️ Checkout	2025-10-31T21:27:04.6552500Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:04.6558982Z [command]/usr/bin/git sparse-checkout disable
+review	⬇️ Checkout	2025-10-31T21:27:04.6607890Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+review	⬇️ Checkout	2025-10-31T21:27:04.6645938Z ##[group]Checking out the ref
+review	⬇️ Checkout	2025-10-31T21:27:04.6646849Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/16/merge
+review	⬇️ Checkout	2025-10-31T21:27:04.7305100Z Note: switching to 'refs/remotes/pull/16/merge'.
+review	⬇️ Checkout	2025-10-31T21:27:04.7305817Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7306275Z You are in 'detached HEAD' state. You can look around, make experimental
+review	⬇️ Checkout	2025-10-31T21:27:04.7307405Z changes and commit them, and you can discard any commits you make in this
+review	⬇️ Checkout	2025-10-31T21:27:04.7308667Z state without impacting any branches by switching back to a branch.
+review	⬇️ Checkout	2025-10-31T21:27:04.7309472Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7309968Z If you want to create a new branch to retain commits you create, you may
+review	⬇️ Checkout	2025-10-31T21:27:04.7311199Z do so (now or later) by using -c with the switch command. Example:
+review	⬇️ Checkout	2025-10-31T21:27:04.7311825Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7312062Z   git switch -c <new-branch-name>
+review	⬇️ Checkout	2025-10-31T21:27:04.7312423Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7312630Z Or undo this operation with:
+review	⬇️ Checkout	2025-10-31T21:27:04.7312961Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7313173Z   git switch -
+review	⬇️ Checkout	2025-10-31T21:27:04.7313489Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7313976Z Turn off this advice by setting config variable advice.detachedHead to false
+review	⬇️ Checkout	2025-10-31T21:27:04.7314686Z 
+review	⬇️ Checkout	2025-10-31T21:27:04.7315666Z HEAD is now at 88b2963 Merge bb6294bd055564f41b725a54c225925d61ecd59e into e15b88c04ad7860110cfe7bfc5478b5e82e8e886
+review	⬇️ Checkout	2025-10-31T21:27:04.7318808Z ##[endgroup]
+review	⬇️ Checkout	2025-10-31T21:27:04.7355606Z [command]/usr/bin/git log -1 --format=%H
+review	⬇️ Checkout	2025-10-31T21:27:04.7378465Z 88b2963d7af2987f48db7d93937752358d3b2cd6
+review	🧠 Run review_report.sh (CI-safe)	﻿2025-10-31T21:27:04.7590111Z ##[group]Run set -e
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7590534Z [36;1mset -e[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7591104Z [36;1m# Run in CI-safe mode to avoid requiring local secrets, but still produce agent.md[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7591616Z [36;1mGITHUB_ACTIONS=true ./review_report.sh || true[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7591933Z [36;1mecho "---"[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7592186Z [36;1mecho "agent.md preview:"[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7592565Z [36;1mtest -f agent.md && sed -n '1,120p' agent.md || echo "agent.md not found"[0m
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7632746Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7633171Z ##[endgroup]
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7718016Z /home/runner/work/_temp/303c7bee-2ac9-4833-8ea2-5de6d71cfc1e.sh: line 3: ./review_report.sh: Permission denied
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7719507Z ---
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7720000Z agent.md preview:
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7733416Z =====================================================
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7734175Z 🧠 MedPlat Diagnostic & Readiness Review
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7734764Z =====================================================
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7735577Z 📘 PROJECT_GUIDE.md found — master documentation loaded
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7736092Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7736386Z ## 📁 Checking key directories...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7736954Z ✅ backend/
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7737338Z ✅ frontend/
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7737975Z ✅ .github/workflows/
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7738251Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7738709Z ## 🔐 Validating environment variables (GitHub Secrets expected)...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7739286Z ❌ Missing OPENAI_API_KEY
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7739635Z ❌ Missing GCP_PROJECT
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7739973Z ❌ Missing GCP_SA_KEY
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7740314Z ❌ Missing FIREBASE_SERVICE_KEY
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7740674Z ❌ Missing VITE_API_BASE
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7741465Z 🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7741942Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7742186Z ## 🧱 Backend diagnostics...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7742556Z ✅ backend/index.js found
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7742912Z ✅ Port binding OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7743214Z ✅ Host binding OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7743518Z ✅ Routes mounted
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7743684Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7743836Z ## 🧩 Backend routes...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7744182Z ✅ topics_api.mjs present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7744526Z ✅ dialog_api.mjs present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7744871Z ✅ gamify_api.mjs present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7745209Z ✅ comment_api.mjs present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7745415Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7745581Z ## 🎨 Frontend diagnostics...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7745940Z ✅ CaseView.jsx present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7746291Z ✅ Level2CaseLogic.jsx present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7746656Z ✅ DialogChat.jsx present
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7746848Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7747017Z ## 🔥 Firebase configuration...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7747415Z ✅ Firebase client found
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7747824Z ✅ Firebase initialized
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7748016Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7748180Z ## 🧠 OpenAI configuration...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7748569Z ⚠️ OpenAI API key reference missing
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7748828Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7749007Z ## 🐳 Docker & Cloud Run config...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7749388Z ✅ Backend Dockerfile OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7749675Z ✅ Frontend Dockerfile OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7749840Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7749978Z ## ⚙️ GitHub Actions workflow...
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7750260Z ✅ deploy.yml found
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7750537Z ✅ Artifact Registry configured
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7751056Z 
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7751191Z =====================================================
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7751524Z 📊 SUMMARY
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7751755Z =====================================================
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7752026Z Backend: OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7752234Z Frontend: OK
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7752461Z Secrets configured: 0 / 5
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7752989Z =====================================================
+review	🧠 Run review_report.sh (CI-safe)	2025-10-31T21:27:04.7753391Z 🚨 Deployment NOT READY — missing secrets.
+review	📎 Upload agent.md artifact	﻿2025-10-31T21:27:04.7819875Z ##[group]Run actions/upload-artifact@v4
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7820244Z with:
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7820454Z   name: agent-md
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7820923Z   path: agent.md
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7821186Z   if-no-files-found: warn
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7821443Z   compression-level: 6
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7821673Z   overwrite: false
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7821916Z   include-hidden-files: false
+review	📎 Upload agent.md artifact	2025-10-31T21:27:04.7822167Z ##[endgroup]
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.0067779Z With the provided path, there will be 1 file uploaded
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.0072691Z Artifact name is valid!
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.0074082Z Root directory input is valid!
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.1239062Z Beginning upload of artifact content to blob storage
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.1924224Z Uploaded bytes 818
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2116156Z Finished uploading artifact content to blob storage!
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2119405Z SHA256 digest of uploaded artifact zip is 98414c5a7cf08bd9e5cf32d50992f29ea89976afa111100e32be33e393b99bd0
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2121171Z Finalizing artifact upload
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2945577Z Artifact agent-md.zip successfully finalized. Artifact ID 4434431519
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2946878Z Artifact agent-md has been successfully uploaded! Final size is 818 bytes. Artifact ID is 4434431519
+review	📎 Upload agent.md artifact	2025-10-31T21:27:05.2954477Z Artifact download URL: https://github.com/Tazaai/medplat/actions/runs/18985656277/artifacts/4434431519
+review	💬 Comment review report on PR	﻿2025-10-31T21:27:05.3103488Z ##[group]Run actions/github-script@v7
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3103804Z with:
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3105654Z   script: const fs = require('fs');
+review	💬 Comment review report on PR	const path = 'agent.md';
+review	💬 Comment review report on PR	let body = fs.existsSync(path) ? fs.readFileSync(path, 'utf8') : 'agent.md not found';
+review	💬 Comment review report on PR	// Truncate to avoid hitting GitHub comment limits
+review	💬 Comment review report on PR	const MAX = 60000;
+review	💬 Comment review report on PR	if (body.length > MAX) body = body.slice(0, MAX) + '\n\n… (truncated)';
+review	💬 Comment review report on PR	const number = context.payload.pull_request?.number;
+review	💬 Comment review report on PR	if (!number) {
+review	💬 Comment review report on PR	  core.info('No PR number — skipping comment');
+review	💬 Comment review report on PR	} else {
+review	💬 Comment review report on PR	  await github.rest.issues.createComment({
+review	💬 Comment review report on PR	    owner: context.repo.owner,
+review	💬 Comment review report on PR	    repo: context.repo.repo,
+review	💬 Comment review report on PR	    issue_number: number,
+review	💬 Comment review report on PR	    body: `🧠 MedPlat – review_report.sh output (CI mode)\n\n\n\n\n${'```'}\n${body}\n${'```'}`
+review	💬 Comment review report on PR	  });
+review	💬 Comment review report on PR	}
+review	💬 Comment review report on PR	
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3107777Z   github-token: ***
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3107982Z   debug: false
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3108184Z   user-agent: actions/github-script
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3108439Z   result-encoding: json
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3108648Z   retries: 0
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3108915Z   retry-exempt-status-codes: 400,401,403,404,422
+review	💬 Comment review report on PR	2025-10-31T21:27:05.3109193Z ##[endgroup]
+review	Post ⬇️ Checkout	﻿2025-10-31T21:27:05.9986052Z Post job cleanup.
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.0981773Z [command]/usr/bin/git version
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1020943Z git version 2.51.2
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1074628Z Temporarily overriding HOME='/home/runner/work/_temp/697e3779-6c44-4e1d-b1f9-0418bca06bc9' before making global git config changes
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1075540Z Adding repository directory to the temporary git global config as a safe directory
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1081884Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1121567Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1156714Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1392772Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1417443Z http.https://github.com/.extraheader
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1431657Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+review	Post ⬇️ Checkout	2025-10-31T21:27:06.1464631Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+review	Complete job	﻿2025-10-31T21:27:06.1802286Z Cleaning up orphan processes

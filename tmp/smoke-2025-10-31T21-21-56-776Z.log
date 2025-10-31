@@ -1,0 +1,11 @@
+[2025-10-31T21:21:56.544Z] 
+1) Backend root /
+[2025-10-31T21:21:56.661Z] -> 200  (url: https://medplat-backend-2pr2rrffwq-ew.a.run.app/ )
+[2025-10-31T21:21:56.662Z] 
+2) Backend /api/topics (POST)
+[2025-10-31T21:21:56.696Z] -> 200  (url: https://medplat-backend-2pr2rrffwq-ew.a.run.app/api/topics )
+[2025-10-31T21:21:56.697Z] 
+3) Frontend /
+[2025-10-31T21:21:56.775Z] -> 200  (url: https://medplat-frontend-139218747785.europe-west1.run.app/ )
+[2025-10-31T21:21:56.776Z] 
+✅ Smoke tests passed
