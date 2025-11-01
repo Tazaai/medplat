@@ -1,0 +1,156 @@
+test	Set up job	﻿2025-10-31T20:06:08.6467380Z Current runner version: '2.328.0'
+test	Set up job	2025-10-31T20:06:08.6490870Z ##[group]Runner Image Provisioner
+test	Set up job	2025-10-31T20:06:08.6491694Z Hosted Compute Agent
+test	Set up job	2025-10-31T20:06:08.6492368Z Version: 20251016.436
+test	Set up job	2025-10-31T20:06:08.6493151Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+test	Set up job	2025-10-31T20:06:08.6493846Z Build Date: 2025-10-15T20:44:12Z
+test	Set up job	2025-10-31T20:06:08.6494517Z ##[endgroup]
+test	Set up job	2025-10-31T20:06:08.6495067Z ##[group]Operating System
+test	Set up job	2025-10-31T20:06:08.6495655Z Ubuntu
+test	Set up job	2025-10-31T20:06:08.6496200Z 24.04.3
+test	Set up job	2025-10-31T20:06:08.6496645Z LTS
+test	Set up job	2025-10-31T20:06:08.6497125Z ##[endgroup]
+test	Set up job	2025-10-31T20:06:08.6497629Z ##[group]Runner Image
+test	Set up job	2025-10-31T20:06:08.6498323Z Image: ubuntu-24.04
+test	Set up job	2025-10-31T20:06:08.6498855Z Version: 20251030.96.2
+test	Set up job	2025-10-31T20:06:08.6499888Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+test	Set up job	2025-10-31T20:06:08.6501311Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+test	Set up job	2025-10-31T20:06:08.6502786Z ##[endgroup]
+test	Set up job	2025-10-31T20:06:08.6503885Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2025-10-31T20:06:08.6505768Z Contents: read
+test	Set up job	2025-10-31T20:06:08.6506377Z Metadata: read
+test	Set up job	2025-10-31T20:06:08.6506868Z Packages: read
+test	Set up job	2025-10-31T20:06:08.6507439Z ##[endgroup]
+test	Set up job	2025-10-31T20:06:08.6509775Z Secret source: Actions
+test	Set up job	2025-10-31T20:06:08.6510676Z Prepare workflow directory
+test	Set up job	2025-10-31T20:06:08.6855185Z Prepare all required actions
+test	Set up job	2025-10-31T20:06:08.6912088Z Getting action download info
+test	Set up job	2025-10-31T20:06:09.1151883Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+test	Set up job	2025-10-31T20:06:09.2916388Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2025-10-31T20:06:09.4490487Z Complete job name: test
+test	Checkout	﻿2025-10-31T20:06:09.5244441Z ##[group]Run actions/checkout@v4
+test	Checkout	2025-10-31T20:06:09.5245278Z with:
+test	Checkout	2025-10-31T20:06:09.5245681Z   repository: Tazaai/medplat
+test	Checkout	2025-10-31T20:06:09.5246290Z   token: ***
+test	Checkout	2025-10-31T20:06:09.5246664Z   ssh-strict: true
+test	Checkout	2025-10-31T20:06:09.5247087Z   ssh-user: git
+test	Checkout	2025-10-31T20:06:09.5247495Z   persist-credentials: true
+test	Checkout	2025-10-31T20:06:09.5247937Z   clean: true
+test	Checkout	2025-10-31T20:06:09.5248327Z   sparse-checkout-cone-mode: true
+test	Checkout	2025-10-31T20:06:09.5248812Z   fetch-depth: 1
+test	Checkout	2025-10-31T20:06:09.5249202Z   fetch-tags: false
+test	Checkout	2025-10-31T20:06:09.5249593Z   show-progress: true
+test	Checkout	2025-10-31T20:06:09.5249996Z   lfs: false
+test	Checkout	2025-10-31T20:06:09.5250363Z   submodules: false
+test	Checkout	2025-10-31T20:06:09.5250775Z   set-safe-directory: true
+test	Checkout	2025-10-31T20:06:09.5251471Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:09.6346809Z Syncing repository: Tazaai/medplat
+test	Checkout	2025-10-31T20:06:09.6348552Z ##[group]Getting Git version info
+test	Checkout	2025-10-31T20:06:09.6349232Z Working directory is '/home/runner/work/medplat/medplat'
+test	Checkout	2025-10-31T20:06:09.6350232Z [command]/usr/bin/git version
+test	Checkout	2025-10-31T20:06:09.6455583Z git version 2.51.2
+test	Checkout	2025-10-31T20:06:09.6482862Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:09.6496390Z Temporarily overriding HOME='/home/runner/work/_temp/ed778197-6fce-4a84-91ae-8ea58ab8aaec' before making global git config changes
+test	Checkout	2025-10-31T20:06:09.6501642Z Adding repository directory to the temporary git global config as a safe directory
+test	Checkout	2025-10-31T20:06:09.6504701Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+test	Checkout	2025-10-31T20:06:09.6542143Z Deleting the contents of '/home/runner/work/medplat/medplat'
+test	Checkout	2025-10-31T20:06:09.6546154Z ##[group]Initializing the repository
+test	Checkout	2025-10-31T20:06:09.6550800Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+test	Checkout	2025-10-31T20:06:09.6665362Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	Checkout	2025-10-31T20:06:09.6666454Z hint: is subject to change. To configure the initial branch name to use in all
+test	Checkout	2025-10-31T20:06:09.6667433Z hint: of your new repositories, which will suppress this warning, call:
+test	Checkout	2025-10-31T20:06:09.6668200Z hint:
+test	Checkout	2025-10-31T20:06:09.6668709Z hint: 	git config --global init.defaultBranch <name>
+test	Checkout	2025-10-31T20:06:09.6669537Z hint:
+test	Checkout	2025-10-31T20:06:09.6670994Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	Checkout	2025-10-31T20:06:09.6672193Z hint: 'development'. The just-created branch can be renamed via this command:
+test	Checkout	2025-10-31T20:06:09.6673939Z hint:
+test	Checkout	2025-10-31T20:06:09.6674817Z hint: 	git branch -m <name>
+test	Checkout	2025-10-31T20:06:09.6675754Z hint:
+test	Checkout	2025-10-31T20:06:09.6677113Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	Checkout	2025-10-31T20:06:09.6679200Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+test	Checkout	2025-10-31T20:06:09.6685506Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+test	Checkout	2025-10-31T20:06:09.6721225Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:09.6722442Z ##[group]Disabling automatic garbage collection
+test	Checkout	2025-10-31T20:06:09.6726555Z [command]/usr/bin/git config --local gc.auto 0
+test	Checkout	2025-10-31T20:06:09.6754834Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:09.6756030Z ##[group]Setting up auth
+test	Checkout	2025-10-31T20:06:09.6762334Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Checkout	2025-10-31T20:06:09.6793279Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Checkout	2025-10-31T20:06:09.7150694Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Checkout	2025-10-31T20:06:09.7185532Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Checkout	2025-10-31T20:06:09.7423189Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	Checkout	2025-10-31T20:06:09.7461092Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:09.7461830Z ##[group]Fetching the repository
+test	Checkout	2025-10-31T20:06:09.7474578Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +712b18aeafcf9941f8d593c071b8ab067100d019:refs/remotes/origin/main
+test	Checkout	2025-10-31T20:06:11.8374628Z From https://github.com/Tazaai/medplat
+test	Checkout	2025-10-31T20:06:11.8377526Z  * [new ref]         712b18aeafcf9941f8d593c071b8ab067100d019 -> origin/main
+test	Checkout	2025-10-31T20:06:11.8408095Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:11.8409140Z ##[group]Determining the checkout info
+test	Checkout	2025-10-31T20:06:11.8410469Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:11.8417104Z [command]/usr/bin/git sparse-checkout disable
+test	Checkout	2025-10-31T20:06:11.8458934Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	Checkout	2025-10-31T20:06:11.8487442Z ##[group]Checking out the ref
+test	Checkout	2025-10-31T20:06:11.8491275Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+test	Checkout	2025-10-31T20:06:11.9140896Z Switched to a new branch 'main'
+test	Checkout	2025-10-31T20:06:11.9142845Z branch 'main' set up to track 'origin/main'.
+test	Checkout	2025-10-31T20:06:11.9149452Z ##[endgroup]
+test	Checkout	2025-10-31T20:06:11.9187098Z [command]/usr/bin/git log -1 --format=%H
+test	Checkout	2025-10-31T20:06:11.9209782Z 712b18aeafcf9941f8d593c071b8ab067100d019
+test	Setup Node.js	﻿2025-10-31T20:06:11.9505884Z ##[group]Run actions/setup-node@v4
+test	Setup Node.js	2025-10-31T20:06:11.9506972Z with:
+test	Setup Node.js	2025-10-31T20:06:11.9507718Z   node-version: 18
+test	Setup Node.js	2025-10-31T20:06:11.9508503Z   always-auth: false
+test	Setup Node.js	2025-10-31T20:06:11.9509320Z   check-latest: false
+test	Setup Node.js	2025-10-31T20:06:11.9510420Z   token: ***
+test	Setup Node.js	2025-10-31T20:06:11.9511146Z ##[endgroup]
+test	Setup Node.js	2025-10-31T20:06:12.1263312Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+test	Setup Node.js	2025-10-31T20:06:12.1268605Z ##[group]Environment details
+test	Setup Node.js	2025-10-31T20:06:17.2493566Z node: v18.20.8
+test	Setup Node.js	2025-10-31T20:06:17.2494501Z npm: 10.8.2
+test	Setup Node.js	2025-10-31T20:06:17.2495134Z yarn: 1.22.22
+test	Setup Node.js	2025-10-31T20:06:17.2496920Z ##[endgroup]
+test	Install deps	﻿2025-10-31T20:06:17.2614141Z ##[group]Run npm --prefix backend install node-fetch --no-audit --no-fund
+test	Install deps	2025-10-31T20:06:17.2614756Z [36;1mnpm --prefix backend install node-fetch --no-audit --no-fund[0m
+test	Install deps	2025-10-31T20:06:17.2723967Z shell: /usr/bin/bash -e {0}
+test	Install deps	2025-10-31T20:06:17.2724338Z ##[endgroup]
+test	Install deps	2025-10-31T20:06:22.9233753Z 
+test	Install deps	2025-10-31T20:06:22.9241874Z added 78 packages in 6s
+test	Test OpenAI key	﻿2025-10-31T20:06:22.9389292Z ##[group]Run node scripts/test_openai.mjs
+test	Test OpenAI key	2025-10-31T20:06:22.9389670Z [36;1mnode scripts/test_openai.mjs[0m
+test	Test OpenAI key	2025-10-31T20:06:22.9423429Z shell: /usr/bin/bash -e {0}
+test	Test OpenAI key	2025-10-31T20:06:22.9423716Z env:
+test	Test OpenAI key	2025-10-31T20:06:22.9424773Z   OPENAI_API_KEY: ***
+test	Test OpenAI key	2025-10-31T20:06:22.9425038Z ##[endgroup]
+test	Test OpenAI key	2025-10-31T20:06:22.9814138Z node:internal/errors:496
+test	Test OpenAI key	2025-10-31T20:06:22.9814682Z     ErrorCaptureStackTrace(err);
+test	Test OpenAI key	2025-10-31T20:06:22.9815094Z     ^
+test	Test OpenAI key	2025-10-31T20:06:22.9815383Z 
+test	Test OpenAI key	2025-10-31T20:06:22.9816443Z Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'node-fetch' imported from /home/runner/work/medplat/medplat/scripts/test_openai.mjs
+test	Test OpenAI key	2025-10-31T20:06:22.9817503Z     at new NodeError (node:internal/errors:405:5)
+test	Test OpenAI key	2025-10-31T20:06:22.9818280Z     at packageResolve (node:internal/modules/esm/resolve:916:9)
+test	Test OpenAI key	2025-10-31T20:06:22.9819157Z     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+test	Test OpenAI key	2025-10-31T20:06:22.9819873Z     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+test	Test OpenAI key	2025-10-31T20:06:22.9820763Z     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+test	Test OpenAI key	2025-10-31T20:06:22.9821588Z     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+test	Test OpenAI key	2025-10-31T20:06:22.9822387Z     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+test	Test OpenAI key	2025-10-31T20:06:22.9823581Z     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+test	Test OpenAI key	2025-10-31T20:06:22.9824302Z     at link (node:internal/modules/esm/module_job:75:36) {
+test	Test OpenAI key	2025-10-31T20:06:22.9824859Z   code: 'ERR_MODULE_NOT_FOUND'
+test	Test OpenAI key	2025-10-31T20:06:22.9825107Z }
+test	Test OpenAI key	2025-10-31T20:06:22.9825207Z 
+test	Test OpenAI key	2025-10-31T20:06:22.9825304Z Node.js v18.20.8
+test	Test OpenAI key	2025-10-31T20:06:22.9859217Z ##[error]Process completed with exit code 1.
+test	Post Checkout	﻿2025-10-31T20:06:22.9957464Z Post job cleanup.
+test	Post Checkout	2025-10-31T20:06:23.0969470Z [command]/usr/bin/git version
+test	Post Checkout	2025-10-31T20:06:23.1006664Z git version 2.51.2
+test	Post Checkout	2025-10-31T20:06:23.1050593Z Temporarily overriding HOME='/home/runner/work/_temp/9185938d-6bda-4189-b3bd-d33b742f4a1c' before making global git config changes
+test	Post Checkout	2025-10-31T20:06:23.1052249Z Adding repository directory to the temporary git global config as a safe directory
+test	Post Checkout	2025-10-31T20:06:23.1057385Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+test	Post Checkout	2025-10-31T20:06:23.1094803Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post Checkout	2025-10-31T20:06:23.1129078Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post Checkout	2025-10-31T20:06:23.1354007Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post Checkout	2025-10-31T20:06:23.1376661Z http.https://github.com/.extraheader
+test	Post Checkout	2025-10-31T20:06:23.1389745Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post Checkout	2025-10-31T20:06:23.1420730Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Complete job	﻿2025-10-31T20:06:23.1752431Z Cleaning up orphan processes

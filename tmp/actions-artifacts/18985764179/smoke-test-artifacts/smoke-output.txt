@@ -1,0 +1,13 @@
+Running smoke tests...
+[2025-10-31T21:36:17.673Z] 
+1) Backend root /
+[2025-10-31T21:36:17.976Z] -> 200  (url: https://medplat-backend-2pr2rrffwq-ew.a.run.app/ )
+[2025-10-31T21:36:17.976Z] 
+2) Backend /api/topics (POST)
+[2025-10-31T21:36:18.169Z] -> 200  (url: https://medplat-backend-2pr2rrffwq-ew.a.run.app/api/topics )
+[2025-10-31T21:36:18.169Z] 
+3) Frontend /
+[2025-10-31T21:36:18.553Z] -> 200  (url: https://medplat-frontend-139218747785.europe-west1.run.app/ )
+[2025-10-31T21:36:18.553Z] 
+✅ Smoke tests passed
+Wrote smoke artifacts: /home/runner/work/medplat/medplat/tmp/smoke-2025-10-31T21-36-18-554Z.log /home/runner/work/medplat/medplat/tmp/smoke-2025-10-31T21-36-18-554Z.json

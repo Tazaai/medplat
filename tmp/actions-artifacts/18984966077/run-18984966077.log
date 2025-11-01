@@ -1,0 +1,970 @@
+validate-secrets	Set up job	﻿2025-10-31T20:54:34.8720692Z Current runner version: '2.329.0'
+validate-secrets	Set up job	2025-10-31T20:54:34.8773594Z ##[group]Runner Image Provisioner
+validate-secrets	Set up job	2025-10-31T20:54:34.8774982Z Hosted Compute Agent
+validate-secrets	Set up job	2025-10-31T20:54:34.8775943Z Version: 20251016.436
+validate-secrets	Set up job	2025-10-31T20:54:34.8777281Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+validate-secrets	Set up job	2025-10-31T20:54:34.8778596Z Build Date: 2025-10-15T20:44:12Z
+validate-secrets	Set up job	2025-10-31T20:54:34.8779586Z ##[endgroup]
+validate-secrets	Set up job	2025-10-31T20:54:34.8780503Z ##[group]Operating System
+validate-secrets	Set up job	2025-10-31T20:54:34.8781408Z Ubuntu
+validate-secrets	Set up job	2025-10-31T20:54:34.8782262Z 24.04.3
+validate-secrets	Set up job	2025-10-31T20:54:34.8783093Z LTS
+validate-secrets	Set up job	2025-10-31T20:54:34.8783911Z ##[endgroup]
+validate-secrets	Set up job	2025-10-31T20:54:34.8784798Z ##[group]Runner Image
+validate-secrets	Set up job	2025-10-31T20:54:34.8785776Z Image: ubuntu-24.04
+validate-secrets	Set up job	2025-10-31T20:54:34.8786655Z Version: 20251030.96.2
+validate-secrets	Set up job	2025-10-31T20:54:34.8788286Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+validate-secrets	Set up job	2025-10-31T20:54:34.8790174Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+validate-secrets	Set up job	2025-10-31T20:54:34.8791923Z ##[endgroup]
+validate-secrets	Set up job	2025-10-31T20:54:34.8793672Z ##[group]GITHUB_TOKEN Permissions
+validate-secrets	Set up job	2025-10-31T20:54:34.8796351Z Contents: read
+validate-secrets	Set up job	2025-10-31T20:54:34.8797573Z Metadata: read
+validate-secrets	Set up job	2025-10-31T20:54:34.8798482Z ##[endgroup]
+validate-secrets	Set up job	2025-10-31T20:54:34.8801062Z Secret source: Actions
+validate-secrets	Set up job	2025-10-31T20:54:34.8802624Z Prepare workflow directory
+validate-secrets	Set up job	2025-10-31T20:54:34.9145380Z Prepare all required actions
+validate-secrets	Set up job	2025-10-31T20:54:34.9185705Z Getting action download info
+validate-secrets	Set up job	2025-10-31T20:54:35.2523698Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+validate-secrets	Set up job	2025-10-31T20:54:35.5397694Z Complete job name: validate-secrets
+validate-secrets	Run actions/checkout@v4	﻿2025-10-31T20:54:35.6089605Z ##[group]Run actions/checkout@v4
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6090703Z with:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6091359Z   repository: Tazaai/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6092239Z   token: ***
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6092869Z   ssh-strict: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6093512Z   ssh-user: git
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6094158Z   persist-credentials: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6094853Z   clean: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6095522Z   sparse-checkout-cone-mode: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6096253Z   fetch-depth: 1
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6097052Z   fetch-tags: false
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6097702Z   show-progress: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6098346Z   lfs: false
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6098952Z   submodules: false
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6099685Z   set-safe-directory: true
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.6100601Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7178393Z Syncing repository: Tazaai/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7180584Z ##[group]Getting Git version info
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7181570Z Working directory is '/home/runner/work/medplat/medplat'
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7182895Z [command]/usr/bin/git version
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7282665Z git version 2.51.2
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7310045Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7324480Z Temporarily overriding HOME='/home/runner/work/_temp/59c36470-5829-49b5-a218-578913c9d924' before making global git config changes
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7326164Z Adding repository directory to the temporary git global config as a safe directory
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7337894Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7375802Z Deleting the contents of '/home/runner/work/medplat/medplat'
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7379698Z ##[group]Initializing the repository
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7383358Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7502474Z hint: Using 'master' as the name for the initial branch. This default branch name
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7504153Z hint: is subject to change. To configure the initial branch name to use in all
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7505902Z hint: of your new repositories, which will suppress this warning, call:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7507867Z hint:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7508819Z hint: 	git config --global init.defaultBranch <name>
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7509904Z hint:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7510953Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7512706Z hint: 'development'. The just-created branch can be renamed via this command:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7514209Z hint:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7514827Z hint: 	git branch -m <name>
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7515521Z hint:
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7516428Z hint: Disable this message with "git config set advice.defaultBranchName false"
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7518223Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7520305Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7551079Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7552185Z ##[group]Disabling automatic garbage collection
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7554871Z [command]/usr/bin/git config --local gc.auto 0
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7582173Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7583222Z ##[group]Setting up auth
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7589107Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7617754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7964614Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.7996043Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.8214533Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.8249718Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.8251657Z ##[group]Fetching the repository
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:35.8260172Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e15b88c04ad7860110cfe7bfc5478b5e82e8e886:refs/remotes/origin/main
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3054843Z From https://github.com/Tazaai/medplat
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3057331Z  * [new ref]         e15b88c04ad7860110cfe7bfc5478b5e82e8e886 -> origin/main
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3090895Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3094763Z ##[group]Determining the checkout info
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3097135Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3098510Z [command]/usr/bin/git sparse-checkout disable
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3141423Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3172289Z ##[group]Checking out the ref
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3176256Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3834680Z Switched to a new branch 'main'
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3837428Z branch 'main' set up to track 'origin/main'.
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3842254Z ##[endgroup]
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3878996Z [command]/usr/bin/git log -1 --format=%H
+validate-secrets	Run actions/checkout@v4	2025-10-31T20:54:37.3902107Z e15b88c04ad7860110cfe7bfc5478b5e82e8e886
+validate-secrets	🔐 Validate Secrets	﻿2025-10-31T20:54:37.4145484Z ##[group]Run MISSING=0
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4147485Z [36;1mMISSING=0[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4149578Z [36;1m# Required always: OPENAI_API_KEY, GCP_PROJECT, FIREBASE_SERVICE_KEY[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4152247Z [36;1mfor name in OPENAI_API_KEY GCP_PROJECT FIREBASE_SERVICE_KEY; do[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4154454Z [36;1m  val="$(printenv "$name")"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4156253Z [36;1m  if [ -z "$val" ]; then[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4158173Z [36;1m    echo "❌ $name missing"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4159952Z [36;1m    MISSING=$((MISSING+1))[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4161666Z [36;1m  else[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4163503Z [36;1m    echo "✅ $name present (len=$(printf '%s' \"$val\" | wc -c))"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4165560Z [36;1m  fi[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4167199Z [36;1mdone[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4168656Z [36;1m[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4170555Z [36;1m# For GCP authentication we accept either a service account key JSON[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4173138Z [36;1m# in GCP_SA_KEY, or Workload Identity Federation configuration via[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4175753Z [36;1m# WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4178461Z [36;1mif [ -n "$(printenv GCP_SA_KEY)" ]; then[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4180479Z [36;1m  echo "✅ GCP_SA_KEY present (service-account key)"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4182366Z [36;1m  AUTH="sa"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4184824Z [36;1melif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4188015Z [36;1m  echo "✅ Workload Identity provider and service account present"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4190054Z [36;1m  AUTH="wif"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4191448Z [36;1melse[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4194089Z [36;1m  echo "❌ GCP auth configuration missing: provide either GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4197210Z [36;1m  MISSING=$((MISSING+1))[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4198786Z [36;1mfi[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4200091Z [36;1m[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4201452Z [36;1mif [ $MISSING -eq 0 ]; then[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4203139Z [36;1m  echo "ok=true" >> $GITHUB_OUTPUT[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4205029Z [36;1m  # export which auth method to use: 'sa' or 'wif'[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4207547Z [36;1m  # default to 'sa' if both present prefer service-account key (we set AUTH above)[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4209736Z [36;1m  if [ -z "$AUTH" ]; then[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4211294Z [36;1m    AUTH="sa"[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4272526Z [36;1m  fi[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4274305Z [36;1m  echo "auth=$AUTH" >> $GITHUB_OUTPUT[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4276021Z [36;1melse[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4277607Z [36;1m  echo "ok=false" >> $GITHUB_OUTPUT[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4279260Z [36;1m  exit 1[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4280615Z [36;1mfi[0m
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4320314Z shell: /usr/bin/bash -e ***0***
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4321988Z env:
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4325754Z   OPENAI_API_KEY: ***
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4327393Z   GCP_PROJECT: ***
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4362987Z   GCP_SA_KEY: ***
+validate-secrets	🔐 Validate Secrets	
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4365809Z   WORKLOAD_IDENTITY_PROVIDER: ***
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4368274Z   WORKLOAD_IDENTITY_SERVICE_ACCOUNT: ***
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4400835Z   FIREBASE_SERVICE_KEY: ***
+validate-secrets	🔐 Validate Secrets	
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4402321Z ##[endgroup]
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4692519Z ✅ OPENAI_API_KEY present (len=166)
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4721593Z ✅ GCP_PROJECT present (len=16)
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4751177Z ✅ FIREBASE_SERVICE_KEY present (len=2334)
+validate-secrets	🔐 Validate Secrets	2025-10-31T20:54:37.4763700Z ✅ GCP_SA_KEY present (service-account key)
+validate-secrets	Post Run actions/checkout@v4	﻿2025-10-31T20:54:37.4965113Z Post job cleanup.
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.5916131Z [command]/usr/bin/git version
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.5952678Z git version 2.51.2
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.5996115Z Temporarily overriding HOME='/home/runner/work/_temp/f8b22f1a-24cd-40d1-ae9f-f6bf1f5303af' before making global git config changes
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.5999314Z Adding repository directory to the temporary git global config as a safe directory
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6002392Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6037180Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6070301Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6298597Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6320412Z http.https://github.com/.extraheader
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6333740Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+validate-secrets	Post Run actions/checkout@v4	2025-10-31T20:54:37.6369068Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+validate-secrets	Complete job	﻿2025-10-31T20:54:37.6711649Z Evaluate and set job outputs
+validate-secrets	Complete job	2025-10-31T20:54:37.6720337Z Set output 'ok'
+validate-secrets	Complete job	2025-10-31T20:54:37.6723489Z Set output 'auth'
+validate-secrets	Complete job	2025-10-31T20:54:37.6725833Z Cleaning up orphan processes
+deploy	Set up job	﻿2025-10-31T20:54:42.5985111Z Current runner version: '2.329.0'
+deploy	Set up job	2025-10-31T20:54:42.6010279Z ##[group]Runner Image Provisioner
+deploy	Set up job	2025-10-31T20:54:42.6011387Z Hosted Compute Agent
+deploy	Set up job	2025-10-31T20:54:42.6012296Z Version: 20251016.436
+deploy	Set up job	2025-10-31T20:54:42.6013222Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+deploy	Set up job	2025-10-31T20:54:42.6014174Z Build Date: 2025-10-15T20:44:12Z
+deploy	Set up job	2025-10-31T20:54:42.6015049Z ##[endgroup]
+deploy	Set up job	2025-10-31T20:54:42.6015774Z ##[group]Operating System
+deploy	Set up job	2025-10-31T20:54:42.6016598Z Ubuntu
+deploy	Set up job	2025-10-31T20:54:42.6017334Z 24.04.3
+deploy	Set up job	2025-10-31T20:54:42.6018013Z LTS
+deploy	Set up job	2025-10-31T20:54:42.6018726Z ##[endgroup]
+deploy	Set up job	2025-10-31T20:54:42.6019620Z ##[group]Runner Image
+deploy	Set up job	2025-10-31T20:54:42.6020412Z Image: ubuntu-24.04
+deploy	Set up job	2025-10-31T20:54:42.6021210Z Version: 20251030.96.2
+deploy	Set up job	2025-10-31T20:54:42.6022430Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+deploy	Set up job	2025-10-31T20:54:42.6024076Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+deploy	Set up job	2025-10-31T20:54:42.6025484Z ##[endgroup]
+deploy	Set up job	2025-10-31T20:54:42.6026961Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2025-10-31T20:54:42.6029299Z Contents: read
+deploy	Set up job	2025-10-31T20:54:42.6030058Z Metadata: read
+deploy	Set up job	2025-10-31T20:54:42.6030867Z ##[endgroup]
+deploy	Set up job	2025-10-31T20:54:42.6033650Z Secret source: Actions
+deploy	Set up job	2025-10-31T20:54:42.6034605Z Prepare workflow directory
+deploy	Set up job	2025-10-31T20:54:42.6552659Z Prepare all required actions
+deploy	Set up job	2025-10-31T20:54:42.6589956Z Getting action download info
+deploy	Set up job	2025-10-31T20:54:43.0727921Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+deploy	Set up job	2025-10-31T20:54:43.2625961Z Download action repository 'google-github-actions/auth@v2' (SHA:c200f3691d83b41bf9bbd8638997a462592937ed)
+deploy	Set up job	2025-10-31T20:54:43.9757130Z Download action repository 'google-github-actions/setup-gcloud@v2' (SHA:e427ad8a34f8676edf47cf7d7925499adf3eb74f)
+deploy	Set up job	2025-10-31T20:54:44.6140983Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+deploy	Set up job	2025-10-31T20:54:44.8249302Z Complete job name: deploy
+deploy	Run actions/checkout@v4	﻿2025-10-31T20:54:44.9020418Z ##[group]Run actions/checkout@v4
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9022117Z with:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9023305Z   repository: Tazaai/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9024919Z   token: ***
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9026087Z   ssh-strict: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9027266Z   ssh-user: git
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9028491Z   persist-credentials: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9029896Z   clean: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9031129Z   sparse-checkout-cone-mode: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9032489Z   fetch-depth: 1
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9033692Z   fetch-tags: false
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9034886Z   show-progress: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9036095Z   lfs: false
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9037244Z   submodules: false
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9038472Z   set-safe-directory: true
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9040078Z env:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9041280Z   GCP_PROJECT: ***
+deploy	Run actions/checkout@v4	2025-10-31T20:54:44.9042460Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0087039Z Syncing repository: Tazaai/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0090432Z ##[group]Getting Git version info
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0092179Z Working directory is '/home/runner/work/medplat/medplat'
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0094757Z [command]/usr/bin/git version
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0130610Z git version 2.51.2
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0155812Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0169900Z Temporarily overriding HOME='/home/runner/work/_temp/a5502a0c-493b-4407-b28f-14ede7562694' before making global git config changes
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0175054Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0184759Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0216477Z Deleting the contents of '/home/runner/work/medplat/medplat'
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0220943Z ##[group]Initializing the repository
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0225413Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0315337Z hint: Using 'master' as the name for the initial branch. This default branch name
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0318266Z hint: is subject to change. To configure the initial branch name to use in all
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0322422Z hint: of your new repositories, which will suppress this warning, call:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0325464Z hint:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0327568Z hint: 	git config --global init.defaultBranch <name>
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0330246Z hint:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0332722Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0336125Z hint: 'development'. The just-created branch can be renamed via this command:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0337933Z hint:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0339251Z hint: 	git branch -m <name>
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0341148Z hint:
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0343698Z hint: Disable this message with "git config set advice.defaultBranchName false"
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0346132Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0350039Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0361895Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0365221Z ##[group]Disabling automatic garbage collection
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0367959Z [command]/usr/bin/git config --local gc.auto 0
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0391217Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0394291Z ##[group]Setting up auth
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0397213Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0421602Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0876382Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.0901732Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.1069549Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.1104755Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.1106716Z ##[group]Fetching the repository
+deploy	Run actions/checkout@v4	2025-10-31T20:54:45.1113015Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e15b88c04ad7860110cfe7bfc5478b5e82e8e886:refs/remotes/origin/main
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2093825Z From https://github.com/Tazaai/medplat
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2094475Z  * [new ref]         e15b88c04ad7860110cfe7bfc5478b5e82e8e886 -> origin/main
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2123741Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2124630Z ##[group]Determining the checkout info
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2125551Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2130842Z [command]/usr/bin/git sparse-checkout disable
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2166963Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2189286Z ##[group]Checking out the ref
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2193343Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2745142Z Switched to a new branch 'main'
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2746028Z branch 'main' set up to track 'origin/main'.
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2752207Z ##[endgroup]
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2786304Z [command]/usr/bin/git log -1 --format=%H
+deploy	Run actions/checkout@v4	2025-10-31T20:54:47.2804580Z e15b88c04ad7860110cfe7bfc5478b5e82e8e886
+deploy	☁️ Authenticate to Google Cloud (service account key)	﻿2025-10-31T20:54:47.3032505Z ##[group]Run google-github-actions/auth@v2
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3032941Z with:
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3041717Z   credentials_json: ***
+deploy	☁️ Authenticate to Google Cloud (service account key)	
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3042076Z   create_credentials_file: true
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3042430Z   export_environment_variables: true
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3042791Z   universe: googleapis.com
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3043126Z   cleanup_credentials: true
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3043454Z   access_token_lifetime: 3600s
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3043887Z   access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3044333Z   id_token_include_email: false
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3044653Z env:
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3044942Z   GCP_PROJECT: ***
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3045385Z ##[endgroup]
+deploy	☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:54:47.3857248Z Created credentials file at "/home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json"
+deploy	🧰 Setup gcloud	﻿2025-10-31T20:54:47.3978544Z ##[group]Run google-github-actions/setup-gcloud@v2
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3979248Z with:
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3979583Z   version: latest
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3979881Z   skip_install: false
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3980183Z   skip_tool_cache: false
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3980479Z env:
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3980797Z   GCP_PROJECT: ***
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3981320Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3982075Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3982758Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3983273Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3983626Z   CLOUDSDK_PROJECT: ***
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3983973Z   GCLOUD_PROJECT: ***
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3984297Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🧰 Setup gcloud	2025-10-31T20:54:47.3984608Z ##[endgroup]
+deploy	🧰 Setup gcloud	2025-10-31T20:54:49.1319680Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/debdaa6c-85ff-4a99-a83c-d12fbc0b9a7a -f /home/runner/work/_temp/de4a82ae-0185-4f38-9301-69bf6ac61faf
+deploy	🧰 Setup gcloud	2025-10-31T20:55:03.0195962Z Successfully authenticated
+deploy	🐳 Configure Artifact Registry	﻿2025-10-31T20:55:03.0339816Z ##[group]Run gcloud auth configure-docker europe-west1-docker.pkg.dev
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0340582Z [36;1mgcloud auth configure-docker europe-west1-docker.pkg.dev[0m
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0365429Z shell: /usr/bin/bash -e ***0***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0365798Z env:
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0366124Z   GCP_PROJECT: ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0366658Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0367407Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0368113Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0368633Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0369188Z   CLOUDSDK_PROJECT: ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0369527Z   GCLOUD_PROJECT: ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0369847Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0370237Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0370721Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:03.0371075Z ##[endgroup]
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3193705Z Adding credentials for: europe-west1-docker.pkg.dev
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3195685Z After update, the following will be written to your Docker config file located 
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3196451Z at [/home/runner/.docker/config.json]:
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3197113Z  ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3197525Z   "credHelpers": ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3198014Z     "europe-west1-docker.pkg.dev": "gcloud"
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3198541Z   ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3199086Z ***
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3199278Z 
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3199436Z Do you want to continue (Y/n)?  
+deploy	🐳 Configure Artifact Registry	2025-10-31T20:55:04.3421569Z Docker configuration file updated.
+deploy	🔐 Ensure Firebase key secret in Secret Manager	﻿2025-10-31T20:55:04.4275717Z ##[group]Run printf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4276302Z [36;1mprintf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4276923Z [36;1mif ! gcloud secrets describe medplat-firebase-key --project=$GCP_PROJECT >/dev/null 2>&1; then[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4277657Z [36;1m  gcloud secrets create medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4278186Z [36;1melse[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4278694Z [36;1m  gcloud secrets versions add medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4279376Z [36;1mfi[0m
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4298610Z shell: /usr/bin/bash -e ***0***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4299051Z env:
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4299362Z   GCP_PROJECT: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4300044Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4300798Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4301505Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4302007Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4302338Z   CLOUDSDK_PROJECT: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4302652Z   GCLOUD_PROJECT: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4302970Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4303352Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4303778Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4312552Z   FIREBASE_SERVICE_KEY: ***
+deploy	🔐 Ensure Firebase key secret in Secret Manager	
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:04.4312883Z ##[endgroup]
+deploy	🔐 Ensure Firebase key secret in Secret Manager	2025-10-31T20:55:06.6520755Z Created version [29] of the secret [medplat-firebase-key].
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	﻿2025-10-31T20:55:06.7553453Z ##[group]Run printf '%s' "$OPENAI_API_KEY" > /tmp/openai_key.txt
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7554043Z [36;1mprintf '%s' "$OPENAI_API_KEY" > /tmp/openai_key.txt[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7554629Z [36;1mif ! gcloud secrets describe medplat-openai-key --project=$GCP_PROJECT >/dev/null 2>&1; then[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7555331Z [36;1m  gcloud secrets create medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7555838Z [36;1melse[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7556328Z [36;1m  gcloud secrets versions add medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7556850Z [36;1mfi[0m
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7576763Z shell: /usr/bin/bash -e ***0***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7577112Z env:
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7577409Z   GCP_PROJECT: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7577941Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7578692Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7579666Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7580183Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7580527Z   CLOUDSDK_PROJECT: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7580850Z   GCLOUD_PROJECT: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7581170Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7581559Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7581997Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7582895Z   OPENAI_API_KEY: ***
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:06.7583191Z ##[endgroup]
+deploy	🔐 Ensure OpenAI key secret in Secret Manager	2025-10-31T20:55:08.7831950Z Created version [29] of the secret [medplat-openai-key].
+deploy	🚀 Deploy Backend	﻿2025-10-31T20:55:08.8900052Z ##[group]Run cd backend
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8900612Z [36;1mcd backend[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8901402Z [36;1mgcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/backend .[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8902277Z [36;1mgcloud run deploy medplat-backend \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8903002Z [36;1m  --image europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/backend \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8903758Z [36;1m  --region europe-west1 \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8904305Z [36;1m  --allow-unauthenticated \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8904817Z [36;1m  --port 8080 \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8905678Z [36;1m  --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8906656Z [36;1m  --project $GCP_PROJECT[0m
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8936615Z shell: /usr/bin/bash -e ***0***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8937178Z env:
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8937638Z   GCP_PROJECT: ***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8938497Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8940020Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8941206Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8942312Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8942884Z   CLOUDSDK_PROJECT: ***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8943401Z   GCLOUD_PROJECT: ***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8943943Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8944579Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8945309Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🚀 Deploy Backend	2025-10-31T20:55:08.8945907Z ##[endgroup]
+deploy	🚀 Deploy Backend	2025-10-31T20:55:09.8688331Z Creating temporary archive of 27 file(s) totalling 86.3 KiB before compression.
+deploy	🚀 Deploy Backend	2025-10-31T20:55:09.8847521Z Uploading tarball of [.] to [gs://***_cloudbuild/source/1761944109.679254-39171a268f734414ab21603d07b62cec.tgz]
+deploy	🚀 Deploy Backend	2025-10-31T20:55:11.6898171Z Created [https://cloudbuild.googleapis.com/v1/projects/***/locations/global/builds/94c119b0-a233-4081-bc6c-1eaa1aa2d764].
+deploy	🚀 Deploy Backend	2025-10-31T20:55:11.6899852Z Logs are available at [ https://console.cloud.google.com/cloud-build/builds/94c119b0-a233-4081-bc6c-1eaa1aa2d764?project=139218747785 ].
+deploy	🚀 Deploy Backend	2025-10-31T20:55:12.0239321Z Waiting for build to complete. Polling interval: 1 second(s).
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3208497Z ----------------------------- REMOTE BUILD OUTPUT ------------------------------
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3209699Z starting build "94c119b0-a233-4081-bc6c-1eaa1aa2d764"
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3210159Z 
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3210346Z FETCHSOURCE
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3211397Z Fetching storage object: gs://***_cloudbuild/source/1761944109.679254-39171a268f734414ab21603d07b62cec.tgz#1761944110047062
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3212740Z Copying gs://***_cloudbuild/source/1761944109.679254-39171a268f734414ab21603d07b62cec.tgz#1761944110047062...
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3213715Z / [0 files][    0.0 B/ 26.4 KiB]                                                
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3214495Z / [1 files][ 26.4 KiB/ 26.4 KiB]                                                
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3215171Z Operation completed over 1 objects/26.4 KiB.
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3215819Z BUILD
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3216384Z Already have image (with digest): gcr.io/cloud-builders/gcb-internal
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3217137Z Sending build context to Docker daemon  112.6kB
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3217577Z 
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3217806Z Step 1/7 : FROM node:18
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3218316Z 18: Pulling from library/node
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3218859Z 3e6b9d1a9511: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3219561Z 37927ed901b1: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3220060Z 79b2f47ad444: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3220554Z e23f099911d6: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3221041Z cda7f44f2bdd: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3221545Z c6b30c3f1696: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3222047Z 3697be50c98b: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3222562Z 461077a72fb7: Pulling fs layer
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3223463Z e23f099911d6: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3223932Z cda7f44f2bdd: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3224381Z c6b30c3f1696: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3224835Z 3697be50c98b: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3225302Z 461077a72fb7: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3225830Z 37927ed901b1: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3226449Z 37927ed901b1: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3227047Z 3e6b9d1a9511: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3227633Z 3e6b9d1a9511: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3228186Z 79b2f47ad444: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3228753Z 79b2f47ad444: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3229482Z cda7f44f2bdd: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3230097Z cda7f44f2bdd: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3230677Z 3697be50c98b: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3231262Z 3697be50c98b: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3231810Z c6b30c3f1696: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3232363Z c6b30c3f1696: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3232948Z 461077a72fb7: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3233523Z 461077a72fb7: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3234058Z e23f099911d6: Verifying Checksum
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3234609Z e23f099911d6: Download complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3235151Z 3e6b9d1a9511: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3235647Z 37927ed901b1: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3236392Z 79b2f47ad444: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3236937Z e23f099911d6: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3237480Z cda7f44f2bdd: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3238015Z c6b30c3f1696: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3238553Z 3697be50c98b: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3239238Z 461077a72fb7: Pull complete
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3240044Z Digest: sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3240964Z Status: Downloaded newer image for node:18
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3241623Z  ---> b50082bc3670
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3242139Z Step 2/7 : WORKDIR /usr/src/app
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3242719Z  ---> Running in c2caaf609e13
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3243348Z Removing intermediate container c2caaf609e13
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3243991Z  ---> 58cf8e80ce51
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3244538Z Step 3/7 : COPY package*.json ./
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3245109Z  ---> 524135cab31a
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3245623Z Step 4/7 : RUN npm install --production
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3246218Z  ---> Running in ff3f546e93f6
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3247155Z [91mnpm warn config production Use `--omit=dev` instead.
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3247871Z [0m
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3248408Z added 79 packages, and audited 80 packages in 2s
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3249235Z [91mnpm notice
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3249969Z npm notice New major version of npm available! 10.8.2 -> 11.6.2
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3250846Z npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3251648Z npm notice To update run: npm install -g npm@11.6.2
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3252223Z npm notice
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3252725Z [0m
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3253205Z 14 packages are looking for funding
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3253898Z   run `npm fund` for details
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3254209Z 
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3254407Z found 0 vulnerabilities
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3254940Z Removing intermediate container ff3f546e93f6
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3255527Z  ---> 2f515c0da8fb
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3255973Z Step 5/7 : COPY . .
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3256417Z  ---> fd592fe287cc
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3256873Z Step 6/7 : EXPOSE 8080
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3257360Z  ---> Running in ea98550dec6d
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3257917Z Removing intermediate container ea98550dec6d
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3258524Z  ---> e99ea9db86d3
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3259139Z Step 7/7 : CMD ["node", "index.js"]
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3259697Z  ---> Running in efefd373a165
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3260247Z Removing intermediate container efefd373a165
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3260788Z  ---> be63cc45bbf3
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3261247Z Successfully built be63cc45bbf3
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3262110Z Successfully tagged europe-west1-docker.pkg.dev/***/medplat/backend:latest
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3262831Z PUSH
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3263710Z Pushing europe-west1-docker.pkg.dev/***/medplat/backend
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3264646Z The push refers to repository [europe-west1-docker.pkg.dev/***/medplat/backend]
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3265423Z 68b61e5d932f: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3265910Z a3ca4f650097: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3266405Z afa0d7507e0e: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3266894Z 2d144d4a7431: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3267376Z d2a991bcab4d: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3267833Z b624aa2d5ea2: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3268298Z d399c9dc306f: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3268754Z 84f9fa179c1b: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3269391Z ce84ba212e49: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3269862Z e4dc8cd9ecc8: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3270336Z 6428cc293366: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3270799Z 2f7436e79a0b: Preparing
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3271262Z b624aa2d5ea2: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3271751Z d399c9dc306f: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3272211Z 84f9fa179c1b: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3272688Z 6428cc293366: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3273172Z 2f7436e79a0b: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3273625Z ce84ba212e49: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3274077Z e4dc8cd9ecc8: Waiting
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3274542Z d2a991bcab4d: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3275085Z b624aa2d5ea2: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3275617Z d399c9dc306f: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3303420Z 84f9fa179c1b: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3304035Z 2d144d4a7431: Pushed
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3304538Z afa0d7507e0e: Pushed
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3305044Z ce84ba212e49: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3305566Z a3ca4f650097: Pushed
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3306078Z e4dc8cd9ecc8: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3306660Z 6428cc293366: Layer already exists
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3307234Z 68b61e5d932f: Pushed
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3307742Z 2f7436e79a0b: Pushed
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3308626Z latest: digest: sha256:ce75f0f0da810052361e0240377c48d9110abf400a9c4d0673b83d03f4b9d663 size: 2839
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3309752Z DONE
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3310369Z --------------------------------------------------------------------------------
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3311414Z ID                                    CREATE_TIME                DURATION  SOURCE                                                                                        IMAGES                                                                STATUS
+deploy	🚀 Deploy Backend	2025-10-31T20:56:18.3313587Z 94c119b0-a233-4081-bc6c-1eaa1aa2d764  2025-10-31T20:55:10+00:00  1M5S      gs://***_cloudbuild/source/1761944109.679254-39171a268f734414ab21603d07b62cec.tgz  europe-west1-docker.pkg.dev/***/medplat/backend (+1 more)  SUCCESS
+deploy	🚀 Deploy Backend	2025-10-31T20:56:20.7532211Z Deploying container to Cloud Run service [medplat-backend] in project [***] region [europe-west1]
+deploy	🚀 Deploy Backend	2025-10-31T20:56:20.7532895Z Deploying...
+deploy	🚀 Deploy Backend	2025-10-31T20:56:24.9563281Z Setting IAM Policy...............................done
+deploy	🚀 Deploy Backend	2025-10-31T20:56:25.9164278Z Creating Revision...............done
+deploy	🚀 Deploy Backend	2025-10-31T20:56:26.3888602Z Done.
+deploy	🚀 Deploy Backend	2025-10-31T20:56:26.4605547Z Service [medplat-backend] revision [medplat-backend-00742-2w9] has been deployed and is serving 100 percent of traffic.
+deploy	🚀 Deploy Backend	2025-10-31T20:56:26.4607170Z Service URL: https://medplat-backend-139218747785.europe-west1.run.app
+deploy	🎨 Build Frontend (generate artifact)	﻿2025-10-31T20:56:26.6075650Z ##[group]Run cd frontend
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6076019Z [36;1mcd frontend[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6076653Z [36;1mBACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6077320Z [36;1mecho "Detected backend URL: $BACKEND_URL"[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6077714Z [36;1mexport VITE_API_BASE=$BACKEND_URL[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6078085Z [36;1mnpm ci && npm run build[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6078535Z [36;1m# Use the environment file mechanism to set step outputs instead of the[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6079173Z [36;1m# deprecated ::set-output command.[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6079587Z [36;1mecho "backend_url=$BACKEND_URL" >> $GITHUB_OUTPUT[0m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6099101Z shell: /usr/bin/bash -e ***0***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6099458Z env:
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6099761Z   GCP_PROJECT: ***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6100288Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6101087Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6101778Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6102291Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6102627Z   CLOUDSDK_PROJECT: ***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6102942Z   GCLOUD_PROJECT: ***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6103260Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6103647Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6104083Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:26.6104423Z ##[endgroup]
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:28.3674250Z Detected backend URL: https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5282841Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5283585Z added 121 packages, and audited 122 packages in 6s
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5283920Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5284069Z 8 packages are looking for funding
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5284428Z   run `npm fund` for details
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5385942Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5386236Z 2 moderate severity vulnerabilities
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5386939Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5387316Z To address all issues (including breaking changes), run:
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5388108Z   npm audit fix --force
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5388455Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.5388702Z Run `npm audit` for details.
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.6598636Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.6599416Z > medplat-frontend@1.0.0 build
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.6600187Z > node ./scripts/verify_build_env.js && vite build && node ./scripts/write_build_api_base.js
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.6600602Z 
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:36.6867528Z VITE_API_BASE present: https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.0805520Z [36mvite v4.5.14 [32mbuilding for production...[36m[39m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.1110937Z transforming...
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.7105306Z [32m✓[39m 31 modules transformed.
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.7835618Z rendering chunks...
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.7955684Z computing gzip size...
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.8103004Z [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.39 kB[22m[1m[22m[2m │ gzip:  0.27 kB[22m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.8104343Z [2mdist/[22m[2massets/[22m[35mindex-28c342d1.css  [39m[1m[2m  0.07 kB[22m[1m[22m[2m │ gzip:  0.09 kB[22m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.8105326Z [2mdist/[22m[2massets/[22m[36mindex-07999ac2.js   [39m[1m[2m142.81 kB[22m[1m[22m[2m │ gzip: 45.89 kB[22m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.8107182Z [32m✓ built in 729ms[39m
+deploy	🎨 Build Frontend (generate artifact)	2025-10-31T20:56:37.8456455Z Wrote VITE_API_BASE to /home/runner/work/medplat/medplat/frontend/dist/VITE_API_BASE.txt
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	﻿2025-10-31T20:56:37.8593605Z ##[group]Run BACKEND_URL=https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8594260Z [36;1mBACKEND_URL=https://medplat-backend-2pr2rrffwq-ew.a.run.app[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8594758Z [36;1mif [ -f frontend/dist/VITE_API_BASE.txt ]; then[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8595187Z [36;1m  FOUND=$(cat frontend/dist/VITE_API_BASE.txt)[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8595615Z [36;1m  echo "Found VITE_API_BASE in artifact: $FOUND"[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8596029Z [36;1m  if [ "$FOUND" != "$BACKEND_URL" ]; then[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8596589Z [36;1m    echo "❌ Mismatch: expected $BACKEND_URL but frontend/dist/VITE_API_BASE.txt contains $FOUND"[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8597089Z [36;1m    exit 1[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8597379Z [36;1m  fi[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8597654Z [36;1melse[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8598138Z [36;1m  echo "❌ frontend/dist/VITE_API_BASE.txt not found — build step did not produce the verification artifact"[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8598661Z [36;1m  exit 1[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8599097Z [36;1mfi[0m
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8618500Z shell: /usr/bin/bash -e ***0***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8618837Z env:
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8619309Z   GCP_PROJECT: ***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8619837Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8620581Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8621261Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8621785Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8622124Z   CLOUDSDK_PROJECT: ***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8622455Z   GCLOUD_PROJECT: ***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8622776Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8623160Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8623593Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8623946Z ##[endgroup]
+deploy	🔎 Verify Frontend Build contains VITE_API_BASE	2025-10-31T20:56:37.8673921Z Found VITE_API_BASE in artifact: https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	📦 Upload frontend build artifact	﻿2025-10-31T20:56:37.8719860Z ##[group]Run actions/upload-artifact@v4
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8720228Z with:
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8720511Z   name: frontend-dist
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8720810Z   path: frontend/dist
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8721105Z   if-no-files-found: warn
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8721415Z   compression-level: 6
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8721706Z   overwrite: false
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8722002Z   include-hidden-files: false
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8722430Z env:
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8722731Z   GCP_PROJECT: ***
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8723241Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8723983Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8724654Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8725158Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8725491Z   CLOUDSDK_PROJECT: ***
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8725809Z   GCLOUD_PROJECT: ***
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8726151Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8726529Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8726957Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:37.8727300Z ##[endgroup]
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.0724997Z With the provided path, there will be 4 files uploaded
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.0729885Z Artifact name is valid!
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.0731116Z Root directory input is valid!
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.3415635Z Beginning upload of artifact content to blob storage
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.6991610Z Uploaded bytes 46783
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.7642050Z Finished uploading artifact content to blob storage!
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.7644762Z SHA256 digest of uploaded artifact zip is 5bba2cea7f65cfa9be3f4e6a786f888fc7d300011b0714477122dd0a862ae5b9
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.7645978Z Finalizing artifact upload
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.8874662Z Artifact frontend-dist.zip successfully finalized. Artifact ID 4434203782
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.8876018Z Artifact frontend-dist has been successfully uploaded! Final size is 46783 bytes. Artifact ID is 4434203782
+deploy	📦 Upload frontend build artifact	2025-10-31T20:56:38.8883281Z Artifact download URL: https://github.com/Tazaai/medplat/actions/runs/18984966077/artifacts/4434203782
+deploy	🚀 Deploy Frontend	﻿2025-10-31T20:56:38.8961315Z ##[group]Run BACKEND_URL=https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8961978Z [36;1mBACKEND_URL=https://medplat-backend-2pr2rrffwq-ew.a.run.app[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8962463Z [36;1mcd frontend[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8962896Z [36;1m# Force a fresh image by tagging with a timestamp. This avoids accidental reuse[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8963473Z [36;1m# of older image tags or cached layers and guarantees Cloud Run receives the[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8963999Z [36;1m# newly built image containing the latest frontend assets.[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8964414Z [36;1mTIMESTAMP=$(date +%s)[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8964913Z [36;1mIMAGE_TAG="europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend:$TIMESTAMP"[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8965426Z [36;1mecho "Building image $IMAGE_TAG"[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8965909Z [36;1m# Ensure Cloud Build uses Kaniko-based execution so --no-cache is supported[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8966499Z [36;1m# (some projects have builds/use_kaniko=false by default). Set it idempotently.[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8967050Z [36;1mgcloud config set builds/use_kaniko true || true[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8967529Z [36;1m# Force a fresh Cloud Build (no cached layers) to avoid stale assets[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8968047Z [36;1m# and ensure the image contains the most recent `dist/` contents.[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8968578Z [36;1m# Build and push the image with docker so we can pass --build-arg directly.[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8969601Z [36;1m# gcloud builds submit doesn't accept --build-arg; using docker build + push[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8970512Z [36;1m# works with the Artifact Registry credential helper (configured above).[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8971265Z [36;1mdocker build --tag "$IMAGE_TAG" --build-arg BUILD_DATE="$TIMESTAMP" .[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8971736Z [36;1mdocker push "$IMAGE_TAG"[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8972117Z [36;1mgcloud run deploy medplat-frontend \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8972498Z [36;1m  --image "$IMAGE_TAG" \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8972860Z [36;1m  --region europe-west1 \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8973209Z [36;1m  --allow-unauthenticated \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8973551Z [36;1m  --port 8080 \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8974063Z [36;1m  --set-env-vars "VITE_API_BASE=$BACKEND_URL" \[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8974456Z [36;1m  --project $GCP_PROJECT[0m
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8993754Z shell: /usr/bin/bash -e ***0***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8994106Z env:
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8994414Z   GCP_PROJECT: ***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8994944Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8995701Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8996384Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8996909Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8997258Z   CLOUDSDK_PROJECT: ***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8997582Z   GCLOUD_PROJECT: ***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8997912Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8998312Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8998748Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.8999276Z ##[endgroup]
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:38.9049340Z Building image europe-west1-docker.pkg.dev/***/medplat/frontend:1761944198
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:39.4017242Z Updated property [builds/use_kaniko].
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7065615Z #0 building with "default" instance using docker driver
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7066135Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7066356Z #1 [internal] load build definition from Dockerfile
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7066830Z #1 transferring dockerfile: 937B done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7067232Z #1 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7067422Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.7067674Z #2 [internal] load metadata for docker.io/library/node:18-alpine
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.9115214Z #2 ...
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.9115608Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.9116003Z #3 [auth] library/node:pull token for registry-1.docker.io
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:41.9117094Z #3 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.0616577Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.0617361Z #2 [internal] load metadata for docker.io/library/node:18-alpine
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.4859251Z #2 DONE 0.9s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6083434Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6084148Z #4 [internal] load .dockerignore
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6084859Z #4 transferring context: 113B done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6085280Z #4 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6085473Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6085645Z #5 [internal] load build context
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6086066Z #5 transferring context: 89.01kB done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6086468Z #5 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6086656Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6087107Z #6 [1/7] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6088081Z #6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6089164Z #6 sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 0B / 3.64MB 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6090022Z #6 sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 0B / 40.01MB 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6090828Z #6 sha256:1e5a4c89cee5c0826c540ab06d4b6b491c96eda01837f430bd47f0d26702d6e3 0B / 1.26MB 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6091649Z #6 sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 7.67kB / 7.67kB done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6092447Z #6 sha256:929b04d7c782f04f615cf785488fed452b6569f87c73ff666ad553a7554f0006 1.72kB / 1.72kB done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.6093251Z #6 sha256:ee77c6cd7c1886ecc802ad6cedef3a8ec1ea27d1fb96162bf03dd3710839b8da 6.18kB / 6.18kB done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.7088413Z #6 sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 3.64MB / 3.64MB 0.2s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.8171124Z #6 sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 3.64MB / 3.64MB 0.2s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.8172493Z #6 sha256:1e5a4c89cee5c0826c540ab06d4b6b491c96eda01837f430bd47f0d26702d6e3 1.26MB / 1.26MB 0.3s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.8173692Z #6 extracting sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:42.8174741Z #6 sha256:25ff2da83641908f65c3a74d80409d6b1b62ccfaab220b9ea70b80df5a2e0549 0B / 446B 0.3s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.0091616Z #6 sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 11.53MB / 40.01MB 0.5s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.0092536Z #6 extracting sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 0.1s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.0093366Z #6 sha256:25ff2da83641908f65c3a74d80409d6b1b62ccfaab220b9ea70b80df5a2e0549 446B / 446B 0.3s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.1096226Z #6 sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 18.87MB / 40.01MB 0.6s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.3087305Z #6 sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 34.60MB / 40.01MB 0.8s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.5008315Z #6 sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 40.01MB / 40.01MB 0.9s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:43.5010291Z #6 extracting sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.2094970Z #6 extracting sha256:dd71dde834b5c203d162902e6b8994cb2309ae049a0eabc4efea161b2b5a3d0e 0.8s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.7292832Z #6 extracting sha256:1e5a4c89cee5c0826c540ab06d4b6b491c96eda01837f430bd47f0d26702d6e3
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9208271Z #6 extracting sha256:1e5a4c89cee5c0826c540ab06d4b6b491c96eda01837f430bd47f0d26702d6e3 0.0s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9209619Z #6 extracting sha256:25ff2da83641908f65c3a74d80409d6b1b62ccfaab220b9ea70b80df5a2e0549 done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9210417Z #6 DONE 2.3s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9210675Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9210852Z #7 [2/7] WORKDIR /app
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9211271Z #7 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9211505Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9212016Z #8 [3/7] RUN if [ -n "1761944198" ]; then mkdir -p /buildmeta && echo "1761944198" > /buildmeta/BUILD_DATE || true; fi
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:44.9212759Z #8 DONE 0.1s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:45.0816157Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:45.0816797Z #9 [4/7] COPY package*.json ./
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:45.0817549Z #9 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:45.0817704Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:45.0817835Z #10 [5/7] RUN npm install
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.6634504Z #10 3.733 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.6635060Z #10 3.733 added 121 packages, and audited 122 packages in 4s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8244141Z #10 3.733 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8244664Z #10 3.733 8 packages are looking for funding
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8245091Z #10 3.733   run `npm fund` for details
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8245427Z #10 3.742 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8245736Z #10 3.742 2 moderate severity vulnerabilities
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8246083Z #10 3.742 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8246944Z #10 3.742 To address all issues (including breaking changes), run:
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8247391Z #10 3.742   npm audit fix --force
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8247717Z #10 3.742 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8248014Z #10 3.742 Run `npm audit` for details.
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8248370Z #10 3.743 npm notice
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8248762Z #10 3.743 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8249562Z #10 3.743 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8250079Z #10 3.743 npm notice To update run: npm install -g npm@11.6.2
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8250480Z #10 3.743 npm notice
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:48.8811151Z #10 DONE 4.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.0444849Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.0445776Z #11 [6/7] COPY . .
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.0446346Z #11 DONE 0.0s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.0446602Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.0447205Z #12 [7/7] RUN if [ -d "dist" ]; then 			echo "Using prebuilt dist/ (skip npm run build)"; 		else 			npm run build; 		fi
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.1417012Z #12 0.248 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.1417540Z #12 0.248 > medplat-frontend@1.0.0 build
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.1418382Z #12 0.248 > node ./scripts/verify_build_env.js && vite build && node ./scripts/write_build_api_base.js
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.1419170Z #12 0.248 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.3353486Z #12 0.289 WARNING: VITE_API_BASE is not set. Local builds will fall back to the configured defaults in src/config.js.
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.4120436Z #12 0.518 vite v4.5.14 building for production...
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:49.5912308Z #12 0.546 transforming...
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.2236000Z #12 1.329 ✓ 31 modules transformed.
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3667268Z #12 1.409 rendering chunks...
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3668013Z #12 1.415 computing gzip size...
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3668762Z #12 1.421 dist/index.html                   0.39 kB │ gzip:  0.27 kB
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3669638Z #12 1.421 dist/assets/index-28c342d1.css    0.07 kB │ gzip:  0.09 kB
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3670314Z #12 1.421 dist/assets/index-07999ac2.js   142.81 kB │ gzip: 45.89 kB
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3670863Z #12 1.421 ✓ built in 902ms
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.3671315Z #12 1.473 Wrote VITE_API_BASE to /app/dist/VITE_API_BASE.txt
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.5360840Z #12 DONE 1.5s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.5389699Z 
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.5390212Z #13 exporting to image
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:50.5390770Z #13 exporting layers
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:51.8827992Z #13 exporting layers 1.5s done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:51.9023668Z #13 writing image sha256:85a6ca22628185496a0ca66bd86b82db366e916397ac48e9f48e2f755d0dc235 done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:51.9025195Z #13 naming to europe-west1-docker.pkg.dev/***/medplat/frontend:1761944198 done
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:51.9025881Z #13 DONE 1.5s
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:52.5146216Z The push refers to repository [europe-west1-docker.pkg.dev/***/medplat/frontend]
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4267936Z 4cbf3f48c52b: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4272973Z 34a909b49e41: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4273598Z 21b68fa5e871: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4274174Z c2de262e59d0: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4274810Z 545afdcfb1b0: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4275369Z b9c9416098d2: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4275908Z 82140d9a70a7: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4276398Z f3b40b0cdb1c: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4276819Z 0b1f26057bd0: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4277169Z 08000c18d16d: Preparing
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4277470Z b9c9416098d2: Waiting
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4277869Z 82140d9a70a7: Waiting
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4278776Z f3b40b0cdb1c: Waiting
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4279320Z 0b1f26057bd0: Waiting
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:53.4279719Z 08000c18d16d: Waiting
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:59.2248065Z 34a909b49e41: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:59.4471566Z c2de262e59d0: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:56:59.5412402Z 545afdcfb1b0: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:00.0927705Z 4cbf3f48c52b: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:00.3236911Z 0b1f26057bd0: Layer already exists
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:00.4209590Z 82140d9a70a7: Layer already exists
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:00.5433056Z f3b40b0cdb1c: Layer already exists
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:01.2765478Z 08000c18d16d: Layer already exists
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:01.8479640Z 21b68fa5e871: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:04.8278568Z b9c9416098d2: Pushed
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:11.1278691Z 1761944198: digest: sha256:55b1084866531c5a7abdab64f78d8c713fa0043e34d3924905d95259c082daac size: 2410
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:13.4091835Z Deploying container to Cloud Run service [medplat-frontend] in project [***] region [europe-west1]
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:13.4092563Z Deploying...
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:17.6503528Z Setting IAM Policy.................................done
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:29.0774455Z Creating Revision.........................................................................................................................done
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:29.0775640Z Routing traffic.....done
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:30.9782726Z Done.
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:31.0324678Z Service [medplat-frontend] revision [medplat-frontend-00284-xsl] has been deployed and is serving 100 percent of traffic.
+deploy	🚀 Deploy Frontend	2025-10-31T20:57:31.0326235Z Service URL: https://medplat-frontend-139218747785.europe-west1.run.app
+deploy	🩺 Post-deploy health checks	﻿2025-10-31T20:57:31.1791961Z ##[group]Run set -euo pipefail
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1792662Z [36;1mset -euo pipefail[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1793197Z [36;1mecho "Running post-deploy health checks"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1793778Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1794380Z [36;1m# Ensure services allow unauthenticated invocations (idempotent)[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1795307Z [36;1mecho "Ensuring Cloud Run services allow unauthenticated invocations"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1796800Z [36;1mgcloud run services add-iam-policy-binding medplat-frontend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1799151Z [36;1mgcloud run services add-iam-policy-binding medplat-backend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1800367Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1800867Z [36;1mresolve_url() ***[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1801369Z [36;1m  svc="$1"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1801954Z [36;1m  # re-query the service URL to avoid stale values[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1803084Z [36;1m  url=$(gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1804094Z [36;1m  echo "$url"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1804591Z [36;1m***[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1804990Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1805282Z [36;1mcheck_service() ***[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1805607Z [36;1m  svc="$1"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1805901Z [36;1m  name="$2"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1806265Z [36;1m  echo "Checking service $svc (friendly name: $name)"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1806775Z [36;1m  # allow retry a few times for services that are still warming[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1807179Z [36;1m  retries=6[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1807467Z [36;1m  delay=5[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1807755Z [36;1m  attempt=0[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1808046Z [36;1m  while : ; do[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1808362Z [36;1m    url=$(resolve_url "$svc")[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1808730Z [36;1m    echo "Resolved $svc -> $url"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1809318Z [36;1m    if [ -z "$url" ]; then[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1809692Z [36;1m      echo "No URL returned yet for $svc"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1810053Z [36;1m    else[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1810507Z [36;1m        status=$(curl -s -o /dev/null -w "%***http_code***" -L --max-time 15 "$url" || true)[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1811015Z [36;1m        echo "$name responded with HTTP $status"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1811425Z [36;1m        if [[ "$status" =~ ^2[0-9][0-9]$ ]]; then[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1811802Z [36;1m          echo "✅ $name OK"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1812146Z [36;1m          break[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1812462Z [36;1m        fi[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1812749Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1813169Z [36;1m        # Try fallback regional URL using project number (some Cloud Run hostnames differ)[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1813865Z [36;1m        PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1814455Z [36;1m        if [ -n "$PROJECT_NUMBER" ]; then[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1814940Z [36;1m          alt_url="https://$svc-$PROJECT_NUMBER.europe-west1.run.app"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1815408Z [36;1m          echo "Trying fallback URL: $alt_url"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1815924Z [36;1m          alt_status=$(curl -s -o /dev/null -w "%***http_code***" -L --max-time 15 "$alt_url" || true)[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1816472Z [36;1m          echo "$name fallback URL responded with HTTP $alt_status"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1816928Z [36;1m          if [[ "$alt_status" =~ ^2[0-9][0-9]$ ]]; then[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1817350Z [36;1m            echo "✅ $name OK via fallback URL ($alt_url)"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1817728Z [36;1m            break[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1818036Z [36;1m          else[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1818392Z [36;1m            echo "❌ $name fallback also returned $alt_status"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1818778Z [36;1m          fi[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1819414Z [36;1m        fi[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1819696Z [36;1m    fi[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1819971Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1820253Z [36;1m    attempt=$((attempt+1))[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1820623Z [36;1m    if [ $attempt -ge $retries ]; then[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1821065Z [36;1m      echo "$name failed health check after $retries attempts"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1821488Z [36;1m      # print some diagnostics[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1821901Z [36;1m      echo "Diagnostics: describe and IAM policy for $svc"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1822454Z [36;1m      gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT || true[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1823230Z [36;1m      gcloud run services get-iam-policy "$svc" --region=europe-west1 --project=$GCP_PROJECT || true[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1823737Z [36;1m      exit 1[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1824038Z [36;1m    fi[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1824447Z [36;1m    echo "Retrying $name in $delay seconds... (attempt $attempt/$retries)"[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1824903Z [36;1m    sleep $delay[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1825225Z [36;1m  done[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1825515Z [36;1m***[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1825790Z [36;1m[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1826101Z [36;1mcheck_service medplat-frontend frontend[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1826506Z [36;1mcheck_service medplat-backend backend[0m
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1846271Z shell: /usr/bin/bash -e ***0***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1846623Z env:
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1846929Z   GCP_PROJECT: ***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1847461Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1848219Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1849050Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1849704Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1850050Z   CLOUDSDK_PROJECT: ***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1850400Z   GCLOUD_PROJECT: ***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1850733Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1851123Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1851563Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1851917Z ##[endgroup]
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1892238Z Running post-deploy health checks
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:31.1893128Z Ensuring Cloud Run services allow unauthenticated invocations
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5225671Z Updated IAM policy for service [medplat-frontend].
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5382870Z bindings:
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5383453Z - members:
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5383842Z   - allUsers
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5384202Z   role: roles/run.invoker
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5384598Z etag: BwZCep1lTsk=
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:34.5384961Z version: 1
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0063524Z Updated IAM policy for service [medplat-backend].
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0213738Z bindings:
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0214272Z - members:
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0214797Z   - allUsers
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0215354Z   role: roles/run.invoker
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0215995Z etag: BwZCep2abb0=
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.0216444Z version: 1
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:38.1264948Z Checking service medplat-frontend (friendly name: frontend)
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:39.8741444Z Resolved medplat-frontend -> https://medplat-frontend-2pr2rrffwq-ew.a.run.app
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:40.1461843Z frontend responded with HTTP 403
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:40.9968265Z Trying fallback URL: https://medplat-frontend-139218747785.europe-west1.run.app
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:41.3343199Z frontend fallback URL responded with HTTP 200
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:41.3344496Z ✅ frontend OK via fallback URL (https://medplat-frontend-139218747785.europe-west1.run.app)
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:41.3345192Z Checking service medplat-backend (friendly name: backend)
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:43.0654529Z Resolved medplat-backend -> https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:46.6734966Z backend responded with HTTP 200
+deploy	🩺 Post-deploy health checks	2025-10-31T20:57:46.6735769Z ✅ backend OK
+deploy	📊 Summary	﻿2025-10-31T20:57:46.6759646Z ##[group]Run BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
+deploy	📊 Summary	2025-10-31T20:57:46.6760527Z [36;1mBACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')[0m
+deploy	📊 Summary	2025-10-31T20:57:46.6761341Z [36;1mFRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')[0m
+deploy	📊 Summary	2025-10-31T20:57:46.6761935Z [36;1mecho "✅ Backend: $BACKEND_URL"[0m
+deploy	📊 Summary	2025-10-31T20:57:46.6762313Z [36;1mecho "✅ Frontend: $FRONTEND_URL"[0m
+deploy	📊 Summary	2025-10-31T20:57:46.6762721Z [36;1mecho "🎯 MedPlat deployment successful"[0m
+deploy	📊 Summary	2025-10-31T20:57:46.6782514Z shell: /usr/bin/bash -e ***0***
+deploy	📊 Summary	2025-10-31T20:57:46.6782876Z env:
+deploy	📊 Summary	2025-10-31T20:57:46.6783190Z   GCP_PROJECT: ***
+deploy	📊 Summary	2025-10-31T20:57:46.6783721Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📊 Summary	2025-10-31T20:57:46.6784470Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📊 Summary	2025-10-31T20:57:46.6785208Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json
+deploy	📊 Summary	2025-10-31T20:57:46.6785716Z   CLOUDSDK_CORE_PROJECT: ***
+deploy	📊 Summary	2025-10-31T20:57:46.6786065Z   CLOUDSDK_PROJECT: ***
+deploy	📊 Summary	2025-10-31T20:57:46.6786387Z   GCLOUD_PROJECT: ***
+deploy	📊 Summary	2025-10-31T20:57:46.6786706Z   GOOGLE_CLOUD_PROJECT: ***
+deploy	📊 Summary	2025-10-31T20:57:46.6787097Z   CLOUDSDK_METRICS_ENVIRONMENT: github-actions-setup-gcloud
+deploy	📊 Summary	2025-10-31T20:57:46.6787534Z   CLOUDSDK_METRICS_ENVIRONMENT_VERSION: 2.2.1
+deploy	📊 Summary	2025-10-31T20:57:46.6787891Z ##[endgroup]
+deploy	📊 Summary	2025-10-31T20:57:50.1635323Z ✅ Backend: https://medplat-backend-2pr2rrffwq-ew.a.run.app
+deploy	📊 Summary	2025-10-31T20:57:50.1636849Z ✅ Frontend: https://medplat-frontend-2pr2rrffwq-ew.a.run.app
+deploy	📊 Summary	2025-10-31T20:57:50.1637682Z 🎯 MedPlat deployment successful
+deploy	Post ☁️ Authenticate to Google Cloud (service account key)	﻿2025-10-31T20:57:50.1702251Z Post job cleanup.
+deploy	Post ☁️ Authenticate to Google Cloud (service account key)	2025-10-31T20:57:50.2484169Z Removed exported credentials at "/home/runner/work/medplat/medplat/gha-creds-9d3c5ba13001df20.json".
+deploy	Post Run actions/checkout@v4	﻿2025-10-31T20:57:50.2568319Z Post job cleanup.
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3465525Z [command]/usr/bin/git version
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3500590Z git version 2.51.2
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3541254Z Temporarily overriding HOME='/home/runner/work/_temp/b1fd15ba-46be-4fbb-8253-7e0386aa9e90' before making global git config changes
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3543699Z Adding repository directory to the temporary git global config as a safe directory
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3557931Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3600971Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3632377Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3843703Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3867029Z http.https://github.com/.extraheader
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3883566Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+deploy	Post Run actions/checkout@v4	2025-10-31T20:57:50.3915096Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Complete job	﻿2025-10-31T20:57:50.4195249Z Cleaning up orphan processes
