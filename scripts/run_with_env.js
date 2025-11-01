@@ -63,6 +63,7 @@ if (!fs.existsSync(envFile)) {
   process.exit(1);
 }
 const envFromFile = parseEnvFile(envFile);
+// Leave values as-is; JSON strings in env should contain escaped sequences (\\n) so JSON.parse() will decode them.
 const mergedEnv = Object.assign({}, process.env, envFromFile);
 
 try {

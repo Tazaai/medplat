@@ -32,7 +32,12 @@ function initFirebase() {
   }
 
   try {
-    const cred = JSON.parse(key);
+    let cred = JSON.parse(key);
+    // Some workflows/store formats may leave literal "\\n" sequences in the private_key.
+    // Ensure private_key has real newlines before passing to firebase-admin.
+    if (cred && cred.private_key && typeof cred.private_key === 'string' && cred.private_key.indexOf('\\n') !== -1) {
+      cred = Object.assign({}, cred, { private_key: cred.private_key.replace(/\\n/g, '\n') });
+    }
     // Attempt a real firebase-admin init if the package is installed.
     try {
       // use createRequire to load CommonJS firebase-admin when available
