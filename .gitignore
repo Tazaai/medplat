@@ -19,3 +19,7 @@ serviceAccountKey.json
 
 # Ignore downloaded GitHub Actions artifacts saved into the repo workspace
 .github/artifacts-*/
+tmp/actions-artifacts/
+tmp/
+tmp/*.pid
+tmp/*.log
