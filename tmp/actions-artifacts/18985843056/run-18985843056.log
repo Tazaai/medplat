@@ -1,0 +1,335 @@
+Backend tests	Set up job	﻿2025-10-31T21:37:11.0918992Z Current runner version: '2.329.0'
+Backend tests	Set up job	2025-10-31T21:37:11.0943825Z ##[group]Runner Image Provisioner
+Backend tests	Set up job	2025-10-31T21:37:11.0944665Z Hosted Compute Agent
+Backend tests	Set up job	2025-10-31T21:37:11.0945176Z Version: 20251016.436
+Backend tests	Set up job	2025-10-31T21:37:11.0945825Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+Backend tests	Set up job	2025-10-31T21:37:11.0946499Z Build Date: 2025-10-15T20:44:12Z
+Backend tests	Set up job	2025-10-31T21:37:11.0947087Z ##[endgroup]
+Backend tests	Set up job	2025-10-31T21:37:11.0947587Z ##[group]Operating System
+Backend tests	Set up job	2025-10-31T21:37:11.0948215Z Ubuntu
+Backend tests	Set up job	2025-10-31T21:37:11.0948651Z 24.04.3
+Backend tests	Set up job	2025-10-31T21:37:11.0949102Z LTS
+Backend tests	Set up job	2025-10-31T21:37:11.0949618Z ##[endgroup]
+Backend tests	Set up job	2025-10-31T21:37:11.0950067Z ##[group]Runner Image
+Backend tests	Set up job	2025-10-31T21:37:11.0950630Z Image: ubuntu-24.04
+Backend tests	Set up job	2025-10-31T21:37:11.0951167Z Version: 20251030.96.2
+Backend tests	Set up job	2025-10-31T21:37:11.0952484Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+Backend tests	Set up job	2025-10-31T21:37:11.0953834Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+Backend tests	Set up job	2025-10-31T21:37:11.0955061Z ##[endgroup]
+Backend tests	Set up job	2025-10-31T21:37:11.0956179Z ##[group]GITHUB_TOKEN Permissions
+Backend tests	Set up job	2025-10-31T21:37:11.0958178Z Contents: read
+Backend tests	Set up job	2025-10-31T21:37:11.0958736Z Metadata: read
+Backend tests	Set up job	2025-10-31T21:37:11.0959256Z Packages: read
+Backend tests	Set up job	2025-10-31T21:37:11.0959770Z ##[endgroup]
+Backend tests	Set up job	2025-10-31T21:37:11.0961888Z Secret source: Actions
+Backend tests	Set up job	2025-10-31T21:37:11.0962663Z Prepare workflow directory
+Backend tests	Set up job	2025-10-31T21:37:11.1275355Z Prepare all required actions
+Backend tests	Set up job	2025-10-31T21:37:11.1313713Z Getting action download info
+Backend tests	Set up job	2025-10-31T21:37:11.4438240Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+Backend tests	Set up job	2025-10-31T21:37:11.6406279Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Backend tests	Set up job	2025-10-31T21:37:11.8504009Z Complete job name: Backend tests
+Backend tests	Run actions/checkout@v4	﻿2025-10-31T21:37:11.9175336Z ##[group]Run actions/checkout@v4
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9176298Z with:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9176700Z   repository: Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9177319Z   token: ***
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9177723Z   ssh-strict: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9178104Z   ssh-user: git
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9178505Z   persist-credentials: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9178945Z   clean: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9179346Z   sparse-checkout-cone-mode: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9179815Z   fetch-depth: 1
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9180201Z   fetch-tags: false
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9180596Z   show-progress: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9180985Z   lfs: false
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9181354Z   submodules: false
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9181916Z   set-safe-directory: true
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:11.9182601Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0246721Z Syncing repository: Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0248685Z ##[group]Getting Git version info
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0249386Z Working directory is '/home/runner/work/medplat/medplat'
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0250308Z [command]/usr/bin/git version
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0330158Z git version 2.51.2
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0356774Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0379039Z Temporarily overriding HOME='/home/runner/work/_temp/e48b22e1-29bc-416b-955e-15936d0acfca' before making global git config changes
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0380553Z Adding repository directory to the temporary git global config as a safe directory
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0384749Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0421720Z Deleting the contents of '/home/runner/work/medplat/medplat'
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0425426Z ##[group]Initializing the repository
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0428987Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0530331Z hint: Using 'master' as the name for the initial branch. This default branch name
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0531734Z hint: is subject to change. To configure the initial branch name to use in all
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0532660Z hint: of your new repositories, which will suppress this warning, call:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0533357Z hint:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0534295Z hint: 	git config --global init.defaultBranch <name>
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0535355Z hint:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0536608Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0538207Z hint: 'development'. The just-created branch can be renamed via this command:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0539464Z hint:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0540166Z hint: 	git branch -m <name>
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0540939Z hint:
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0542180Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0543893Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0549599Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0585930Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0587112Z ##[group]Disabling automatic garbage collection
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0590909Z [command]/usr/bin/git config --local gc.auto 0
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0620366Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0621824Z ##[group]Setting up auth
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0628324Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.0661879Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1069147Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1101387Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1351880Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1398338Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1399423Z ##[group]Fetching the repository
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:12.1410046Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7f59dfaa272744fbaa2c30123af354167e29284a:refs/remotes/origin/main
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4877815Z From https://github.com/Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4879511Z  * [new ref]         7f59dfaa272744fbaa2c30123af354167e29284a -> origin/main
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4909409Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4910732Z ##[group]Determining the checkout info
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4912956Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4917302Z [command]/usr/bin/git sparse-checkout disable
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4960882Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4989785Z ##[group]Checking out the ref
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.4994657Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.5646834Z Switched to a new branch 'main'
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.5648261Z branch 'main' set up to track 'origin/main'.
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.5654264Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.5691571Z [command]/usr/bin/git log -1 --format=%H
+Backend tests	Run actions/checkout@v4	2025-10-31T21:37:13.5714514Z 7f59dfaa272744fbaa2c30123af354167e29284a
+Backend tests	Use Node 18	﻿2025-10-31T21:37:13.6005508Z ##[group]Run actions/setup-node@v4
+Backend tests	Use Node 18	2025-10-31T21:37:13.6006628Z with:
+Backend tests	Use Node 18	2025-10-31T21:37:13.6007424Z   node-version: 18
+Backend tests	Use Node 18	2025-10-31T21:37:13.6008301Z   always-auth: false
+Backend tests	Use Node 18	2025-10-31T21:37:13.6009183Z   check-latest: false
+Backend tests	Use Node 18	2025-10-31T21:37:13.6010349Z   token: ***
+Backend tests	Use Node 18	2025-10-31T21:37:13.6011157Z ##[endgroup]
+Backend tests	Use Node 18	2025-10-31T21:37:13.7968230Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+Backend tests	Use Node 18	2025-10-31T21:37:13.7975278Z ##[group]Environment details
+Backend tests	Use Node 18	2025-10-31T21:37:16.1422889Z node: v18.20.8
+Backend tests	Use Node 18	2025-10-31T21:37:16.1423659Z npm: 10.8.2
+Backend tests	Use Node 18	2025-10-31T21:37:16.1424290Z yarn: 1.22.22
+Backend tests	Use Node 18	2025-10-31T21:37:16.1425996Z ##[endgroup]
+Backend tests	Install backend deps	﻿2025-10-31T21:37:16.1533755Z ##[group]Run npm --prefix backend ci
+Backend tests	Install backend deps	2025-10-31T21:37:16.1534174Z [36;1mnpm --prefix backend ci[0m
+Backend tests	Install backend deps	2025-10-31T21:37:16.1650406Z shell: /usr/bin/bash -e {0}
+Backend tests	Install backend deps	2025-10-31T21:37:16.1650748Z ##[endgroup]
+Backend tests	Install backend deps	2025-10-31T21:37:21.1827268Z 
+Backend tests	Install backend deps	2025-10-31T21:37:21.1836519Z added 79 packages, and audited 80 packages in 5s
+Backend tests	Install backend deps	2025-10-31T21:37:21.1837085Z 
+Backend tests	Install backend deps	2025-10-31T21:37:21.1837756Z 14 packages are looking for funding
+Backend tests	Install backend deps	2025-10-31T21:37:21.1838271Z   run `npm fund` for details
+Backend tests	Install backend deps	2025-10-31T21:37:21.1839405Z 
+Backend tests	Install backend deps	2025-10-31T21:37:21.1839636Z found 0 vulnerabilities
+Backend tests	Run backend tests	﻿2025-10-31T21:37:21.1982287Z ##[group]Run npm --prefix backend test
+Backend tests	Run backend tests	2025-10-31T21:37:21.1982688Z [36;1mnpm --prefix backend test[0m
+Backend tests	Run backend tests	2025-10-31T21:37:21.2017303Z shell: /usr/bin/bash -e {0}
+Backend tests	Run backend tests	2025-10-31T21:37:21.2017548Z ##[endgroup]
+Backend tests	Run backend tests	2025-10-31T21:37:21.3988835Z 
+Backend tests	Run backend tests	2025-10-31T21:37:21.3989382Z > medplat-backend@1.0.0 test
+Backend tests	Run backend tests	2025-10-31T21:37:21.3990233Z > node test/test_firebase_client.cjs && node test/test_openai_client.cjs
+Backend tests	Run backend tests	2025-10-31T21:37:21.3990718Z 
+Backend tests	Run backend tests	2025-10-31T21:37:21.4419757Z Running firebaseClient no-op tests...
+Backend tests	Run backend tests	2025-10-31T21:37:21.4507781Z ⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)
+Backend tests	Run backend tests	2025-10-31T21:37:21.4509440Z ✅ firebaseClient no-op tests passed
+Backend tests	Run backend tests	2025-10-31T21:37:21.4788972Z Running openaiClient no-op tests...
+Backend tests	Run backend tests	2025-10-31T21:37:21.4876677Z ⚠️ OPENAI_API_KEY not set — using noop OpenAI client (local dev)
+Backend tests	Run backend tests	2025-10-31T21:37:21.4877735Z ✅ openaiClient no-op tests passed
+Backend tests	Post Use Node 18	﻿2025-10-31T21:37:21.5035848Z Post job cleanup.
+Backend tests	Post Run actions/checkout@v4	﻿2025-10-31T21:37:21.6733024Z Post job cleanup.
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7681354Z [command]/usr/bin/git version
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7718861Z git version 2.51.2
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7762405Z Temporarily overriding HOME='/home/runner/work/_temp/df3283b5-738f-442b-93b5-be161d0f00c5' before making global git config changes
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7763641Z Adding repository directory to the temporary git global config as a safe directory
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7776230Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7810822Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.7844537Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.8072197Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.8092788Z http.https://github.com/.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.8106114Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-10-31T21:37:21.8138082Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Backend tests	Complete job	﻿2025-10-31T21:37:21.8477167Z Cleaning up orphan processes
+Frontend build	Set up job	﻿2025-10-31T21:37:27.6246070Z Current runner version: '2.329.0'
+Frontend build	Set up job	2025-10-31T21:37:27.6276968Z ##[group]Runner Image Provisioner
+Frontend build	Set up job	2025-10-31T21:37:27.6278240Z Hosted Compute Agent
+Frontend build	Set up job	2025-10-31T21:37:27.6278901Z Version: 20251016.436
+Frontend build	Set up job	2025-10-31T21:37:27.6279489Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+Frontend build	Set up job	2025-10-31T21:37:27.6280305Z Build Date: 2025-10-15T20:44:12Z
+Frontend build	Set up job	2025-10-31T21:37:27.6280895Z ##[endgroup]
+Frontend build	Set up job	2025-10-31T21:37:27.6281479Z ##[group]Operating System
+Frontend build	Set up job	2025-10-31T21:37:27.6282102Z Ubuntu
+Frontend build	Set up job	2025-10-31T21:37:27.6282598Z 24.04.3
+Frontend build	Set up job	2025-10-31T21:37:27.6283037Z LTS
+Frontend build	Set up job	2025-10-31T21:37:27.6283557Z ##[endgroup]
+Frontend build	Set up job	2025-10-31T21:37:27.6284050Z ##[group]Runner Image
+Frontend build	Set up job	2025-10-31T21:37:27.6284696Z Image: ubuntu-24.04
+Frontend build	Set up job	2025-10-31T21:37:27.6285266Z Version: 20251030.96.2
+Frontend build	Set up job	2025-10-31T21:37:27.6286277Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+Frontend build	Set up job	2025-10-31T21:37:27.6287691Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+Frontend build	Set up job	2025-10-31T21:37:27.6289178Z ##[endgroup]
+Frontend build	Set up job	2025-10-31T21:37:27.6290348Z ##[group]GITHUB_TOKEN Permissions
+Frontend build	Set up job	2025-10-31T21:37:27.6292815Z Contents: read
+Frontend build	Set up job	2025-10-31T21:37:27.6293368Z Metadata: read
+Frontend build	Set up job	2025-10-31T21:37:27.6293962Z Packages: read
+Frontend build	Set up job	2025-10-31T21:37:27.6294474Z ##[endgroup]
+Frontend build	Set up job	2025-10-31T21:37:27.6296534Z Secret source: Actions
+Frontend build	Set up job	2025-10-31T21:37:27.6297604Z Prepare workflow directory
+Frontend build	Set up job	2025-10-31T21:37:27.6641436Z Prepare all required actions
+Frontend build	Set up job	2025-10-31T21:37:27.6681462Z Getting action download info
+Frontend build	Set up job	2025-10-31T21:37:28.0174852Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+Frontend build	Set up job	2025-10-31T21:37:28.2096455Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Frontend build	Set up job	2025-10-31T21:37:28.3069850Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+Frontend build	Set up job	2025-10-31T21:37:28.5146849Z Complete job name: Frontend build
+Frontend build	Run actions/checkout@v4	﻿2025-10-31T21:37:28.5863017Z ##[group]Run actions/checkout@v4
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5863975Z with:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5864480Z   repository: Tazaai/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5865230Z   token: ***
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5865683Z   ssh-strict: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5866161Z   ssh-user: git
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5866643Z   persist-credentials: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5867209Z   clean: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5867697Z   sparse-checkout-cone-mode: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5868480Z   fetch-depth: 1
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5868955Z   fetch-tags: false
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5869458Z   show-progress: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5869938Z   lfs: false
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5870393Z   submodules: false
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5870876Z   set-safe-directory: true
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.5871670Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7031605Z Syncing repository: Tazaai/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7033589Z ##[group]Getting Git version info
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7034380Z Working directory is '/home/runner/work/medplat/medplat'
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7035409Z [command]/usr/bin/git version
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7098358Z git version 2.51.2
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7135559Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7161012Z Temporarily overriding HOME='/home/runner/work/_temp/d7bf8618-779a-4e1b-a491-90f5815f8ef3' before making global git config changes
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7166207Z Adding repository directory to the temporary git global config as a safe directory
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7168498Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7203825Z Deleting the contents of '/home/runner/work/medplat/medplat'
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7207318Z ##[group]Initializing the repository
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7211525Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7305509Z hint: Using 'master' as the name for the initial branch. This default branch name
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7307540Z hint: is subject to change. To configure the initial branch name to use in all
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7309988Z hint: of your new repositories, which will suppress this warning, call:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7312073Z hint:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7313750Z hint: 	git config --global init.defaultBranch <name>
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7315381Z hint:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7316901Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7319871Z hint: 'development'. The just-created branch can be renamed via this command:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7321351Z hint:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7322197Z hint: 	git branch -m <name>
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7323170Z hint:
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7324437Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7326541Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7329658Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7361833Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7363257Z ##[group]Disabling automatic garbage collection
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7366635Z [command]/usr/bin/git config --local gc.auto 0
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7399983Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7401475Z ##[group]Setting up auth
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7406287Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7439480Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7771570Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.7804521Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.8034564Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.8071640Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.8072594Z ##[group]Fetching the repository
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:28.8080578Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7f59dfaa272744fbaa2c30123af354167e29284a:refs/remotes/origin/main
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1565505Z From https://github.com/Tazaai/medplat
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1569390Z  * [new ref]         7f59dfaa272744fbaa2c30123af354167e29284a -> origin/main
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1595852Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1597845Z ##[group]Determining the checkout info
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1600372Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1605263Z [command]/usr/bin/git sparse-checkout disable
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1650071Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1681378Z ##[group]Checking out the ref
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.1684991Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.2370423Z Switched to a new branch 'main'
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.2372538Z branch 'main' set up to track 'origin/main'.
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.2381485Z ##[endgroup]
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.2426821Z [command]/usr/bin/git log -1 --format=%H
+Frontend build	Run actions/checkout@v4	2025-10-31T21:37:30.2452410Z 7f59dfaa272744fbaa2c30123af354167e29284a
+Frontend build	Use Node 18	﻿2025-10-31T21:37:30.2785034Z ##[group]Run actions/setup-node@v4
+Frontend build	Use Node 18	2025-10-31T21:37:30.2786275Z with:
+Frontend build	Use Node 18	2025-10-31T21:37:30.2787118Z   node-version: 18
+Frontend build	Use Node 18	2025-10-31T21:37:30.2788210Z   always-auth: false
+Frontend build	Use Node 18	2025-10-31T21:37:30.2789193Z   check-latest: false
+Frontend build	Use Node 18	2025-10-31T21:37:30.2790481Z   token: ***
+Frontend build	Use Node 18	2025-10-31T21:37:30.2791357Z ##[endgroup]
+Frontend build	Use Node 18	2025-10-31T21:37:30.4615721Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+Frontend build	Use Node 18	2025-10-31T21:37:30.4621910Z ##[group]Environment details
+Frontend build	Use Node 18	2025-10-31T21:37:30.8472951Z node: v18.20.8
+Frontend build	Use Node 18	2025-10-31T21:37:30.8473532Z npm: 10.8.2
+Frontend build	Use Node 18	2025-10-31T21:37:30.8473990Z yarn: 1.22.22
+Frontend build	Use Node 18	2025-10-31T21:37:30.8475243Z ##[endgroup]
+Frontend build	Install frontend deps	﻿2025-10-31T21:37:30.8588408Z ##[group]Run npm --prefix frontend ci
+Frontend build	Install frontend deps	2025-10-31T21:37:30.8588905Z [36;1mnpm --prefix frontend ci[0m
+Frontend build	Install frontend deps	2025-10-31T21:37:30.8636469Z shell: /usr/bin/bash -e {0}
+Frontend build	Install frontend deps	2025-10-31T21:37:30.8636876Z ##[endgroup]
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0192694Z 
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0203418Z added 121 packages, and audited 122 packages in 5s
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0204431Z 
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0205014Z 8 packages are looking for funding
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0206028Z   run `npm fund` for details
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0288641Z 
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0289150Z 2 moderate severity vulnerabilities
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0289704Z 
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0290239Z To address all issues (including breaking changes), run:
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0290837Z   npm audit fix --force
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0291104Z 
+Frontend build	Install frontend deps	2025-10-31T21:37:36.0291304Z Run `npm audit` for details.
+Frontend build	Build frontend (safe)	﻿2025-10-31T21:37:36.0541099Z ##[group]Run npm --prefix frontend run build
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.0541626Z [36;1mnpm --prefix frontend run build[0m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.0577170Z shell: /usr/bin/bash -e {0}
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.0577562Z env:
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.0578000Z   VITE_API_BASE: https://example.com
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.0578448Z ##[endgroup]
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.1866424Z 
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.1867136Z > medplat-frontend@1.0.0 build
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.1868159Z > node ./scripts/verify_build_env.js && vite build && node ./scripts/write_build_api_base.js
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.1868667Z 
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.2219784Z VITE_API_BASE present: https://example.com
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.4489832Z [36mvite v4.5.14 [32mbuilding for production...[36m[39m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:36.4754146Z transforming...
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.2788310Z [32m✓[39m 31 modules transformed.
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3708436Z rendering chunks...
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3762798Z computing gzip size...
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3835333Z [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.39 kB[22m[1m[22m[2m │ gzip:  0.27 kB[22m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3837192Z [2mdist/[22m[2massets/[22m[35mindex-28c342d1.css  [39m[1m[2m  0.07 kB[22m[1m[22m[2m │ gzip:  0.09 kB[22m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3839257Z [2mdist/[22m[2massets/[22m[36mindex-07999ac2.js   [39m[1m[2m142.81 kB[22m[1m[22m[2m │ gzip: 45.89 kB[22m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.3840815Z [32m✓ built in 934ms[39m
+Frontend build	Build frontend (safe)	2025-10-31T21:37:37.4364075Z Wrote VITE_API_BASE to /home/runner/work/medplat/medplat/frontend/dist/VITE_API_BASE.txt
+Frontend build	Upload frontend dist	﻿2025-10-31T21:37:37.4525367Z ##[group]Run actions/upload-artifact@v4
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4525675Z with:
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4525872Z   name: frontend-dist
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4526101Z   path: frontend/dist
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4526321Z   if-no-files-found: warn
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4526579Z   compression-level: 6
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4526803Z   overwrite: false
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4527030Z   include-hidden-files: false
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.4527275Z ##[endgroup]
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.7097567Z With the provided path, there will be 4 files uploaded
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.7104363Z Artifact name is valid!
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.7105278Z Root directory input is valid!
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.8353661Z Beginning upload of artifact content to blob storage
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.9288470Z Uploaded bytes 46755
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.9476339Z Finished uploading artifact content to blob storage!
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.9480330Z SHA256 digest of uploaded artifact zip is 399f0caa61d27b77355090764053f319e88515fdc2789e13f9e413008e89cba2
+Frontend build	Upload frontend dist	2025-10-31T21:37:37.9495212Z Finalizing artifact upload
+Frontend build	Upload frontend dist	2025-10-31T21:37:38.0511633Z Artifact frontend-dist.zip successfully finalized. Artifact ID 4434504079
+Frontend build	Upload frontend dist	2025-10-31T21:37:38.0514663Z Artifact frontend-dist has been successfully uploaded! Final size is 46755 bytes. Artifact ID is 4434504079
+Frontend build	Upload frontend dist	2025-10-31T21:37:38.0522768Z Artifact download URL: https://github.com/Tazaai/medplat/actions/runs/18985843056/artifacts/4434504079
+Frontend build	Post Use Node 18	﻿2025-10-31T21:37:38.0678316Z Post job cleanup.
+Frontend build	Post Run actions/checkout@v4	﻿2025-10-31T21:37:38.2598644Z Post job cleanup.
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3583547Z [command]/usr/bin/git version
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3624235Z git version 2.51.2
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3667638Z Temporarily overriding HOME='/home/runner/work/_temp/67b85814-de54-4b44-90e6-3fea49b25f10' before making global git config changes
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3669459Z Adding repository directory to the temporary git global config as a safe directory
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3683745Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3720218Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3754568Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.3997810Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.4019403Z http.https://github.com/.extraheader
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.4034542Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Frontend build	Post Run actions/checkout@v4	2025-10-31T21:37:38.4069213Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Frontend build	Complete job	﻿2025-10-31T21:37:38.4426102Z Cleaning up orphan processes
