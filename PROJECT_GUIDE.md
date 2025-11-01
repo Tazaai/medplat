@@ -12,6 +12,8 @@ for clinicians and students.
 It generates realistic cases, interactive MCQs, and adaptive explanations  
 based on expert-panel reasoning.
 
+Important: MedPlat is a dynamic AI case generator — the system does not ship or rely on a library of static cases stored in the database. Instead, the backend generates cases on-demand from the set of clinical "topics" (see Data model below).
+
 ---
 
 ## 🧩 Core Objectives
@@ -42,6 +44,11 @@ based on expert-panel reasoning.
   - Firebase Admin SDK (topics & logging)
   - OpenAI API (case generation + MCQs)
 - Deployment: Cloud Run container (`process.env.PORT || 8080`)
+
+### Data model
+
+- Firebase contains a single operational dataset used by MedPlat: a `topics` collection (named `topics2` in production) that lists clinical topics or seeds (topic id, display name, optional metadata).
+- The platform does NOT store static case documents or answer keys in Firestore. All cases and MCQs are generated dynamically by the AI at request time using the topic as the seed. This keeps the database small, avoids shipping PHI or copyrighted content, and ensures cases are adaptive and up-to-date.
 
 Note: For local development the backend includes safe, non-throwing fallbacks when secrets or SDKs are missing:
 - `backend/firebaseClient.js` returns a noop `firestore()` client when `FIREBASE_SERVICE_KEY` or `firebase-admin` is not available.
@@ -85,3 +92,5 @@ These fallbacks keep local tests and the review scripts runnable without requiri
 npm install
 npm install --prefix backend
 npm install --prefix frontend
+
+_For temporary ops toggles (e.g. SOFT_FAIL_CONNECTIVITY), see docs/SOFT_FAIL_CONNECTIVITY.md._

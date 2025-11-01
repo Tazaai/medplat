@@ -1,0 +1,13 @@
+# Copilot Automation Directives – MedPlat
+goals:
+  - Continuously monitor workflow YAMLs for drift or missing checks.
+  - Auto-run diagnostics on every push and PR (no manual trigger).
+  - Self-verify connectivity, artifacts, and report presence before deployment.
+  - Re-run jobs automatically on transient failures up to 3×.
+  - Respect PROJECT_GUIDE.md protection; never edit it directly without explicit approval.
+  - Surface summaries (≤40 lines) from tmp/logs/agent_enhanced_latest.md as PR comments.
+  - Auto-sync new docs under /docs to README references.
+policies:
+  - Never modify Firebase data.
+  - Always deploy only from `main`.
+  - Always fail on unresolved connectivity after retries unless SOFT_FAIL_CONNECTIVITY is set.

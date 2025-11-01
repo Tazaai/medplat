@@ -147,13 +147,48 @@ echo "Frontend: $( [ -d frontend/src/components ] && echo OK || echo FAIL )"
 echo "Secrets configured: $(( ${#required_secrets[@]} - missing )) / ${#required_secrets[@]}"
 echo "====================================================="
 
+## --- Optional local backend smoke tests ---
+echo ""
+echo "## 🧪 Local backend smoke tests (optional)"
+test_result=0
+if [ -f test_backend_local.sh ]; then
+  echo "▶ Running ./test_backend_local.sh (captures health + endpoints)..."
+  # Run tests but don't let failures abort this wrapper script immediately
+  bash test_backend_local.sh || test_result=$?
+  if [ $test_result -eq 0 ]; then
+    echo "✅ Local backend smoke tests passed"
+  else
+    echo "⚠️ Local backend smoke tests FAILED (exit code=$test_result)"
+  fi
+else
+  echo "⚠️ test_backend_local.sh not found — skipping local backend smoke tests"
+fi
+
+## --- Final summary & exit code ---
 if [ $missing -gt 0 ]; then
   echo "🚨 Deployment NOT READY — missing secrets."
+  if [ $test_result -eq 0 ]; then
+    echo "Note: Backend smoke tests passed locally despite missing secrets (local fallbacks in use)."
+  else
+    echo "Note: Backend smoke tests did not pass; fix tests and secrets before merging."
+  fi
+  echo "\nNext steps:"
+  echo "- Configure required secrets in GitHub → Settings → Secrets → Actions before merging."
+  echo "- Include agent.md in your PR description for reviewer traceability."
+  echo "- Run './scripts/run_local_checks.sh' locally (it runs this script + extended checks)."
   exit 1
 else
-  echo "✅ READY FOR DEPLOYMENT — All major checks passed."
-  echo "\nNext steps:"
-  echo "- Include agent.md in your PR description for reviewer traceability."
-  echo "- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + quick backend smoke tests)."
-  exit 0
+  if [ $test_result -eq 0 ]; then
+    echo "✅ READY FOR DEPLOYMENT — All major checks passed and local backend smoke tests passed."
+    echo "\nNext steps:"
+    echo "- Include agent.md in your PR description for reviewer traceability."
+    echo "- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + extended checks)."
+    exit 0
+  else
+    echo "⚠️ READY FOR DEPLOYMENT (with warnings) — Some local smoke tests failed. Fix before merging."
+    echo "\nNext steps:"
+    echo "- Inspect the test output above, fix failing endpoints or dependencies, and re-run tests."
+    echo "- Include agent.md in your PR description for reviewer traceability."
+    exit 1
+  fi
 fi

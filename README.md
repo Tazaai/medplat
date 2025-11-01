@@ -60,6 +60,52 @@ Tools & useful scripts
 - `./scripts/ensure_workflow_dispatch.mjs` — adds `workflow_dispatch:` to workflows that use block-style `on:` mapping.
 - `./scripts/dispatch_and_monitor_workflows.mjs` — helper to dispatch and monitor seed/test/delete workflows (requires `gh` authenticated with a PAT).
 
+Local dev via PM2 (optional)
+---------------------------
+
+If you prefer process supervision with auto-restart during active development, you can use PM2 at the repo root:
+
+1. Install pm2 (project-local):
+
+```bash
+npm install --prefix . pm2 --save-dev
+```
+
+2. Start the PM2-managed dev processes (backend + frontend):
+
+```bash
+npm run dev:background   # starts PM2-managed backend and frontend
+# or for foreground (no-daemon): npm run dev:start
+```
+
+3. Stop PM2-managed processes:
+
+```bash
+npm run dev:stop
+```
+
+PM2 is lightweight and useful for auto-restart and log aggregation; the repository includes `ecosystem.config.js` and top-level npm scripts to simplify this.
+
+Hot-reload (nodemon) for backend
+--------------------------------
+
+The PM2 ecosystem is configured to run the backend via `nodemon` so changes to server code auto-restart during development.
+
+To use hot-reload:
+
+```bash
+# ensure dev deps are installed
+npm ci --prefix .
+
+# start PM2-managed apps in background
+npm run dev:background
+
+# or start foreground for debugging
+npm run dev:start
+```
+
+The backend will be run with `nodemon backend/index.js` (configured in `package.json`) so file edits restart the server automatically.
+
 For full architecture and protected guidance, see `PROJECT_GUIDE.md` and `.github/copilot-instructions.md`.
 
 ```

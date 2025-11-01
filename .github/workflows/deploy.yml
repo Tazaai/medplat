@@ -73,8 +73,26 @@ jobs:
             exit 1
           fi
 
+  pre-deploy-check:
+    name: Pre-deploy commit-to-main check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify running on main branch
+        run: |
+          # Fetch main to ensure refs are present
+          git fetch origin main --depth=1 || true
+          CURRENT_BRANCH=${GITHUB_REF##*/}
+          echo "Detected GITHUB_REF=$GITHUB_REF -> branch=$CURRENT_BRANCH"
+          if [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "❌ Deployment blocked: workflows must be run from 'main' for production deploys."
+            echo "👉 To deploy: merge your changes into main, then re-run this workflow."
+            exit 1
+          fi
+          echo "✅ On main branch — safe to deploy."
+
   deploy:
-    needs: validate-secrets
+    needs: [validate-secrets, pre-deploy-check]
     if: needs.validate-secrets.outputs.ok == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
@@ -274,6 +292,89 @@ jobs:
           echo "✅ Backend: $BACKEND_URL"
           echo "✅ Frontend: $FRONTEND_URL"
           echo "🎯 MedPlat deployment successful"
+
+      - name: Frontend↔Backend connectivity test
+        run: |
+          echo "🌐 Testing deployed frontend→backend connectivity..."
+          set -euo pipefail
+          # Allow a soft-fail mode via environment variable (set to 'true' to avoid failing the workflow)
+          SOFT_FAIL=${SOFT_FAIL_CONNECTIVITY:-false}
+
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
+          echo "Frontend URL: $FRONTEND_URL"
+          echo "Backend URL: $BACKEND_URL"
+
+          echo "→ Quick check: frontend root (non-blocking)"
+          if ! curl -fsSL -I "$FRONTEND_URL/" | head -n 1; then
+            echo "⚠️ Frontend root returned non-2xx or unreachable"
+          else
+            echo "✅ Frontend root reachable"
+          fi
+
+          # Helper: retry GET endpoints (3 attempts, exponential backoff) with jitter (± up to 1s)
+          retry_get() {
+            endpoint="$1"
+            for i in 1 2 3; do
+              if curl -fsSL "$BACKEND_URL/$endpoint" -o /dev/null; then
+                echo "✅ $endpoint OK"
+                return 0
+              else
+                echo "Attempt $i failed for $endpoint"
+                base_sleep=$((2**i))
+                jitter=$(( (RANDOM % 3) - 1 )) # -1,0,1
+                sleep_time=$((base_sleep + jitter))
+                if [ $sleep_time -gt 0 ]; then
+                  echo "Sleeping ${sleep_time}s before retry..."
+                  sleep $sleep_time
+                fi
+              fi
+            done
+            echo "❌ $endpoint unreachable after retries"
+            return 1
+          }
+
+          # Helper: retry POST endpoints similarly
+          retry_post() {
+            endpoint="$1"
+            data="$2"
+            for i in 1 2 3; do
+              if curl -fsSL -X POST "$BACKEND_URL/$endpoint" -H "Content-Type: application/json" -d "$data" -o /dev/null; then
+                echo "✅ $endpoint OK"
+                return 0
+              else
+                echo "Attempt $i failed for $endpoint"
+                base_sleep=$((2**i))
+                jitter=$(( (RANDOM % 3) - 1 ))
+                sleep_time=$((base_sleep + jitter))
+                if [ $sleep_time -gt 0 ]; then
+                  echo "Sleeping ${sleep_time}s before retry..."
+                  sleep $sleep_time
+                fi
+              fi
+            done
+            echo "❌ $endpoint unreachable after retries"
+            return 1
+          }
+
+          # Run checks; honor soft-fail if configured
+          if ! retry_get "api/topics"; then
+            if [ "$SOFT_FAIL" = "true" ]; then
+              echo "⚠️ /api/topics unreachable but SOFT_FAIL enabled — continuing"
+            else
+              echo "❌ /api/topics unreachable — failing deploy"
+              exit 1
+            fi
+          fi
+
+          if ! retry_post "api/dialog" '{"message":"ping"}'; then
+            if [ "$SOFT_FAIL" = "true" ]; then
+              echo "⚠️ /api/dialog unreachable but SOFT_FAIL enabled — continuing"
+            else
+              echo "❌ /api/dialog unreachable — failing deploy"
+              exit 1
+            fi
+          fi
 
       - name: 🧪 Post-deploy smoke tests
         id: smoke

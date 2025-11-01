@@ -46,3 +46,49 @@ jobs:
         with:
           name: frontend-dist
           path: frontend/dist
+
+  enhanced-diagnostics:
+    name: Enhanced diagnostics and artifacts
+    runs-on: ubuntu-latest
+    needs: frontend-build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Run enhanced diagnostics
+        run: |
+          node scripts/review_report_enhanced.mjs || true
+          mkdir -p artifacts
+          cp tmp/logs/agent_enhanced_*.md artifacts/ || true
+      - name: Upload diagnostic artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-enhanced-report
+          path: artifacts/
+      - name: Remind commit policy
+        run: |
+          echo "⚠️ Reminder: before deploying to Cloud Run or production, ensure the latest code is merged into main."
+          echo "   Use: git checkout main && git pull origin main"
+          echo "   Then re-run the deployment workflow."
+
+      - name: Trim enhanced report for PR comment
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          mkdir -p tmp/logs
+          LATEST=$(ls -1t tmp/logs/agent_enhanced_*.md 2>/dev/null | head -n 1 || true)
+          if [ -n "$LATEST" ]; then
+            # Prefer a 40-line summary; fall back to full file if head fails for any reason
+            head -n 40 "$LATEST" > tmp/logs/agent_enhanced_latest.md || cp "$LATEST" tmp/logs/agent_enhanced_latest.md
+          else
+            echo "No enhanced report found for this run." > tmp/logs/agent_enhanced_latest.md
+          fi
+
+      - name: Post enhanced diagnostics summary to PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: tmp/logs/agent_enhanced_latest.md
+          token: ${{ secrets.GITHUB_TOKEN }}
