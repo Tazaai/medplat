@@ -23,6 +23,7 @@ if [ -f PROJECT_GUIDE.md ]; then
 else
   echo "❌ PROJECT_GUIDE.md missing — CRITICAL"
 fi
+echo "📛 Note: PROJECT_GUIDE.md is protected. Do not edit it automatically; follow the policy in PROJECT_GUIDE.md for changes."
 
 # --- Structure ---
 echo ""
@@ -49,6 +50,13 @@ if [ $missing -gt 0 ]; then
   echo "🚨 $missing required secrets missing. Configure them in GitHub → Settings → Secrets → Actions."
 else
   echo "🎉 All required secrets configured!"
+fi
+
+# Ensure local env is gitignored
+if grep -q "^\.env.local" .gitignore 2>/dev/null; then
+  echo "✅ .env.local is gitignored"
+else
+  echo "⚠️ .env.local not found in .gitignore — ensure local secrets are not committed"
 fi
 
 # --- Backend ---
@@ -144,5 +152,8 @@ if [ $missing -gt 0 ]; then
   exit 1
 else
   echo "✅ READY FOR DEPLOYMENT — All major checks passed."
+  echo "\nNext steps:"
+  echo "- Include agent.md in your PR description for reviewer traceability."
+  echo "- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + quick backend smoke tests)."
   exit 0
 fi
