@@ -1,3 +1,53 @@
+name: Delete seeded topics (manual, explicit confirmation)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm you authorize deleting seeded Firestore documents. This must be explicit to avoid accidental deletions.'
+        required: false
+        default: 'no'
+
+jobs:
+  delete:
+    name: Delete seeded topics from Firestore (manual)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install firebase-admin for delete
+        run: |
+          npm --prefix backend install firebase-admin --no-audit --no-fund
+
+      - name: Validate explicit confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
+            echo "Delete aborted: workflow_dispatch input 'confirm' was not set to 'yes'."
+            echo "To run this workflow, re-run workflow_dispatch and set confirm=yes to explicitly authorize deletion."
+            exit 1
+          fi
+
+      - name: Validate FIREBASE_SERVICE_KEY
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_KEY }}" ]; then
+            echo "FIREBASE_SERVICE_KEY secret not set — aborting."
+            exit 1
+          fi
+
+      - name: Delete seeded topics
+        env:
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          TOPICS_COLLECTION: topics2
+        run: |
+          node scripts/delete_seeded_topics.mjs
 name: Delete seeded topics (manual)
 
 on:

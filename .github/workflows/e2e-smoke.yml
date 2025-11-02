@@ -1,0 +1,23 @@
+name: E2E smoke
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    name: E2E smoke against deployed URLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Run e2e smoke
+        env:
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
+        run: |
+          node test/e2e/smoke.mjs

@@ -146,10 +146,10 @@ export default function CaseView() {
       .catch(() => setAreas([]));
   }, []);
 
-  // load topics
+  // load topics (use the read-only advanced search endpoint)
   useEffect(() => {
     if (!area) return;
-    fetch(`${API_BASE}/api/topics`, {
+    fetch(`${API_BASE}/api/topics/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ area }),
