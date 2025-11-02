@@ -204,3 +204,17 @@ This file is a proposed replacement for `PROJECT_GUIDE.md`. To apply:
 1. Create a PR that includes this file and a clear review note referencing the protected-file policy.
 2. Require an explicit approval from a designated repo owner before merging.
 
+---
+
+## MANDATORY PROCESS (short list)
+
+These rules are mandatory for any change that touches backend, CI/CD, deployment, or Firebase data.
+
+1. Do NOT perform or commit automated writes to Firestore documents in production from CI or agents. The only allowed Firestore collection for topic data is `topics2`. Any script or route that modifies Firestore must be explicitly reviewed and approved by a repo owner.
+2. Always run `./scripts/run_local_checks.sh` and include the produced `agent.md` in your PR description before requesting a merge to `main`.
+3. Do not deploy or promote images to production unless the change is merged into the `main` branch and CI checks have passed.
+4. Use the provided safe local fallbacks (`firebaseClient.js`, `openaiClient.js`) for developer machines; they must not be removed.
+5. Add integration or seeding scripts only as explicit, reviewed commands (for example, `scripts/seed_topics.mjs`) and gate any production write operations behind manual approval and restricted service accounts.
+
+These steps enforce read-only behavior for topic data and ensure deployments are traceable and reviewed.
+
