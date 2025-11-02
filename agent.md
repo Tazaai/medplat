@@ -4,18 +4,24 @@
 📘 PROJECT_GUIDE.md found — master documentation loaded
 📛 Note: PROJECT_GUIDE.md is protected. Do not edit it automatically; follow the policy in PROJECT_GUIDE.md for changes.
 
+## 📚 README check
+✅ README.md found
+🔍 README mentions backend
+🔍 README mentions frontend
+🔍 README references PROJECT_GUIDE
+
 ## 📁 Checking key directories...
 ✅ backend/
 ✅ frontend/
 ✅ .github/workflows/
 
 ## 🔐 Validating environment variables (GitHub Secrets expected)...
-✅ OPENAI_API_KEY present
-✅ GCP_PROJECT present
-✅ GCP_SA_KEY present
-✅ FIREBASE_SERVICE_KEY present
-✅ VITE_API_BASE present
-🎉 All required secrets configured!
+❌ Missing OPENAI_API_KEY
+❌ Missing GCP_PROJECT
+❌ Missing GCP_SA_KEY
+❌ Missing FIREBASE_SERVICE_KEY
+❌ Missing VITE_API_BASE
+🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -55,7 +61,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 5 / 5
+Secrets configured: 0 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -66,10 +72,10 @@ Secrets configured: 5 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 341ms
+up to date in 402ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 203025,
+  pid: 330349,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -89,12 +95,12 @@ DEBUG ROUTES: files in routes/: [
   'topics_api.mjs'
 ]
 ✅ Mounted /api/location -> ./routes/location_api.mjs
-⚠️ firebase-admin not available or failed to init — using noop Firebase client: Failed to parse private key: Error: Invalid PEM formatted message.
+⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)
 ✅ Mounted /api/topics -> ./routes/topics_api.mjs
 ✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
 ✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
 ✅ Mounted /api/comment -> ./routes/comment_api.mjs
-⚠️ firebase-admin not available or failed to init — using noop Firebase client: Failed to parse private key: Error: Invalid PEM formatted message.
+⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)
 ✅ Mounted /api/cases -> ./routes/cases_api.mjs
 All route import attempts finished
 🚀 MedPlat backend listening on 0.0.0.0:8080
@@ -109,7 +115,19 @@ All route import attempts finished
 �� Cleaning up...
 ✅ Local backend tests complete
 ✅ Local backend smoke tests passed
-✅ READY FOR DEPLOYMENT — All major checks passed and local backend smoke tests passed.
+🚨 Deployment NOT READY — missing secrets.
+Note: Backend smoke tests passed locally despite missing secrets (local fallbacks in use).
 \nNext steps:
+- Configure required secrets in GitHub → Settings → Secrets → Actions before merging.
 - Include agent.md in your PR description for reviewer traceability.
-- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + extended checks).
+- Run './scripts/run_local_checks.sh' locally (it runs this script + extended checks).
+
+## Latest automated actions (agent)
+
+- Frontend build: succeeded with VITE_API_BASE set to https://medplat-backend-139218747785.europe-west1.run.app and wrote verification artifact `frontend/dist/VITE_API_BASE.txt`.
+- Post-deploy smoke test: ✅ passed against deployed services.
+  - Frontend URL: https://medplat-frontend-139218747785.europe-west1.run.app
+  - Backend URL:  https://medplat-backend-139218747785.europe-west1.run.app
+  - Artifacts: `/workspaces/medplat/tmp/smoke-2025-11-02T20-01-01-000Z.log` and `/workspaces/medplat/tmp/smoke-2025-11-02T20-01-01-000Z.json`
+
+These actions were performed automatically by the agent to verify production readiness after merging the review changes into `main`.
