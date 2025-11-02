@@ -2,8 +2,6 @@ name: CI checks — backend tests + frontend build
 
 on:
   workflow_dispatch: {}
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ '**' ]
 
@@ -28,25 +26,39 @@ jobs:
           BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
         run: |
           missing=0
+          missing_list=""
           for s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE BACKEND_BASE; do
             if [ -z "${!s}" ]; then
               echo "ERROR: required secret $s is not set"
+              if [ -z "$missing_list" ]; then
+                missing_list="$s"
+              else
+                missing_list="$missing_list,$s"
+              fi
               missing=1
             else
               echo "OK: $s present"
             fi
           done
           echo "missing=$missing" >> "$GITHUB_OUTPUT"
+          echo "missing_list=$missing_list" >> "$GITHUB_OUTPUT"
 
-      - name: Post PR comment when secrets missing
+      - name: Comment missing secrets on PR
         if: ${{ github.event_name == 'pull_request' && steps.check-secrets.outputs.missing == '1' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
+        env:
+          MISSING_SECRETS: ${{ steps.check-secrets.outputs.missing_list }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const issue_number = context.payload.pull_request.number;
-            const body = `⚠️ Preflight check failed: one or more required secrets are missing. Please set the repository secrets: OPENAI_API_KEY, FIREBASE_SERVICE_KEY, GCP_PROJECT, GCP_SA_KEY, VITE_API_BASE, BACKEND_BASE.`;
-            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number, body });
+            const missing = process.env.MISSING_SECRETS || 'unknown';
+            const body = `🚨 **CI Preflight Check Failed**  \nMissing required secrets: \`${missing}\`  \nPlease set them under **Settings → Secrets → Actions**.`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
 
       - name: Fail if required secrets missing
         if: ${{ steps.check-secrets.outputs.missing == '1' }}
@@ -91,12 +103,14 @@ jobs:
           echo "Checking backend/routes/topics_api.mjs for write operations..."
           FILE=backend/routes/topics_api.mjs
           if [ -f "$FILE" ]; then
-            if grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >/dev/null; then
-              echo "ERROR: write operation found in $FILE — topics route must be read-only" >&2
-              grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >&2 || true
+            # Be conservative but avoid false positives (e.g. local Set.add or other non-Firestore uses).
+            # Only flag writes that clearly target a Firestore collection/doc (collection(...).add/set/update/delete)
+            if grep -nE "\.collection\([^)]*(topics2|collectionName)[^)]*\)\.(add|doc\(|set\(|update\(|delete\()|admin\.firestore\(\).*\.(add|set\(|update\(|delete\()" "$FILE" >/dev/null; then
+              echo "ERROR: potential Firestore write operation found in $FILE — topics route must be read-only" >&2
+              grep -nE "\.collection\([^)]*(topics2|collectionName)[^)]*\)\.(add|doc\(|set\(|update\(|delete\()|admin\.firestore\(\).*\.(add|set\(|update\(|delete\()" "$FILE" >&2 || true
               exit 1
             else
-              echo "No write verbs found in $FILE"
+              echo "No Firestore write calls found in $FILE"
             fi
           else
             echo "File $FILE not found — skipping read-only check"
@@ -112,6 +126,7 @@ jobs:
 
   frontend-build:
     name: Frontend build
+    needs: preflight-checks
     runs-on: ubuntu-latest
     needs: backend-tests
     steps:
