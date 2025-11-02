@@ -8,6 +8,7 @@
   },
   "scripts": {
     "backend:dev": "nodemon backend/index.js",
+    "test:integration": "node test/integration/topics_search_integration.mjs",
     "dev:start": "pm2 start ecosystem.config.js --no-daemon",
     "dev:background": "pm2 start ecosystem.config.js",
     "dev:stop": "pm2 stop ecosystem.config.js || true",

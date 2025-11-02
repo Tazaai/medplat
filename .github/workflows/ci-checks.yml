@@ -20,9 +20,14 @@ jobs:
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
         run: |
           missing=0
           for s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE; do
+            # BACKEND_BASE is optional for non-deploy CI runs; warn if missing but don't fail here
+            if [ -z "${BACKEND_BASE}" ]; then
+              echo "WARN: BACKEND_BASE not set — integration tests that target deployed backend will be skipped"
+            fi
             if [ -z "${!s}" ]; then
               echo "ERROR: required secret $s is not set"
               missing=1
@@ -128,3 +133,23 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-file: tmp/logs/agent_enhanced_latest.md
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  integration:
+    name: Integration tests (topics search)
+    runs-on: ubuntu-latest
+    needs: enhanced-diagnostics
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Run integration test for topics search
+        env:
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
+        run: |
+          if [ -z "${BACKEND_BASE}" ]; then
+            echo "Skipping integration tests: BACKEND_BASE not set";
+            exit 0;
+          fi
+          node test/integration/topics_search_integration.mjs
