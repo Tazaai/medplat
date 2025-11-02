@@ -8,8 +8,55 @@ on:
     branches: [ '**' ]
 
 jobs:
+  preflight-checks:
+    name: Preflight — required secrets
+    runs-on: ubuntu-latest
+    outputs:
+      missing: ${{ steps.check-secrets.outputs.missing }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required secrets
+        id: check-secrets
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
+        run: |
+          missing=0
+          for s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE BACKEND_BASE; do
+            if [ -z "${!s}" ]; then
+              echo "ERROR: required secret $s is not set"
+              missing=1
+            else
+              echo "OK: $s present"
+            fi
+          done
+          echo "missing=$missing" >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment when secrets missing
+        if: ${{ github.event_name == 'pull_request' && steps.check-secrets.outputs.missing == '1' }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = context.payload.pull_request.number;
+            const body = `⚠️ Preflight check failed: one or more required secrets are missing. Please set the repository secrets: OPENAI_API_KEY, FIREBASE_SERVICE_KEY, GCP_PROJECT, GCP_SA_KEY, VITE_API_BASE, BACKEND_BASE.`;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number, body });
+
+      - name: Fail if required secrets missing
+        if: ${{ steps.check-secrets.outputs.missing == '1' }}
+        run: |
+          echo "One or more required secrets missing. Failing preflight.";
+          exit 1
+
   backend-tests:
     name: Backend tests
+    needs: preflight-checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
