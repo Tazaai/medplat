@@ -1,3 +1,11 @@
+# Deploy instructions + readiness report
+
+This PR updates CI to authenticate using the `GCP_SA_KEY` secret and makes Secret Manager operations tolerant when the service account lacks create permissions. It also contains guidance for admins to grant the required IAM roles and to trigger the deploy workflow.
+
+---
+
+## Agent readiness report
+
 =====================================================
 🧠 MedPlat Diagnostic & Readiness Review
 =====================================================
@@ -20,8 +28,8 @@
 ❌ Missing GCP_PROJECT
 ❌ Missing GCP_SA_KEY
 ❌ Missing FIREBASE_SERVICE_KEY
-✅ VITE_API_BASE present
-🚨 4 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+❌ Missing VITE_API_BASE
+🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -61,7 +69,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 1 / 5
+Secrets configured: 0 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -72,10 +80,10 @@ Secrets configured: 1 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 336ms
+up to date in 432ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 8544,
+  pid: 3872,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
