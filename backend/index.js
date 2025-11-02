@@ -121,11 +121,25 @@ mountRoutes()
 // Temporary debug endpoint to list mounted routes (useful in Cloud Run)
 app.get('/debug/routes', (req, res) => {
 	try {
-		const routes = (app._router && app._router.stack ? app._router.stack : [])
+		const stack = app._router && app._router.stack ? app._router.stack : [];
+		const routes = stack
 			.filter((r) => r && r.route)
 			.map((r) => Object.keys(r.route.methods).map((m) => `${m.toUpperCase()} ${r.route.path}`))
 			.flat();
-		return res.json({ routes });
+
+		// Also include mounted middleware/router entries for deeper debugging
+		const middleware = stack
+			.filter((r) => r && r.name === 'router')
+			.map((r) => {
+				return {
+					name: r.name,
+					regexp: r.regexp && r.regexp.source ? r.regexp.source : null,
+					// show first layer path if possible
+					paths: r.handle && r.handle.stack ? r.handle.stack.filter(l => l && l.route).map(l => l.route && l.route.path) : undefined,
+				};
+			});
+
+		return res.json({ routes, middleware });
 	} catch (e) {
 		return res.status(500).json({ error: String(e) });
 	}
