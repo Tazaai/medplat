@@ -107,95 +107,15 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
 
-      - name: 🔧 Prepare GCP service account key (robust normalization)
+      - name: Set GCP key
         if: needs.validate-secrets.outputs.auth == 'sa'
-        shell: bash
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
-          set -euo pipefail
-          raw="$(printf '%s' "${{ secrets.GCP_SA_KEY }}")"
-          # strip surrounding quotes if present
-          if [[ "$raw" =~ ^\".*\"$ ]]; then
-            raw="$(printf '%s' "$raw" | sed 's/^"//;s/"$//')"
-          fi
-
-          # Try three strategies: direct JSON, base64 decode, replace escaped newlines
-          try_dir() {
-            printf '%s' "$raw" > /tmp/gcp_sa_try.json
-            if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
-              mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
-              return 0
-            fi
-            return 1
-          }
-
-          try_b64() {
-            if printf '%s' "$raw" | base64 -d >/tmp/gcp_sa_try.json 2>/dev/null; then
-              if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
-                mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
-                return 0
-              fi
-            fi
-            return 1
-          }
-
-          try_escaped_newlines() {
-            printf '%s' "$raw" | sed 's/\\\\n/\\n/g' > /tmp/gcp_sa_try.json
-            if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
-              mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
-              return 0
-            fi
-            return 1
-          }
-
-          # ensure jq is available
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update && sudo apt-get install -y jq >/dev/null 2>&1 || true
-          fi
-
-          if try_dir; then
-            echo "GCP_SA_KEY parsed as direct JSON"
-          elif try_b64; then
-            echo "GCP_SA_KEY parsed as base64-encoded JSON"
-          elif try_escaped_newlines; then
-            echo "GCP_SA_KEY parsed after replacing escaped newlines"
-          else
-            echo "Failed to parse GCP_SA_KEY (tried direct JSON, base64 decode, and escaped-newline normalization)" >&2
-            # Gather non-secret diagnostics to help determine how the secret is stored
-            len=$(printf '%s' "$raw" | wc -c)
-            starts_with_brace=false
-            if [ "$(printf '%s' "$raw" | head -c1)" = "{" ]; then starts_with_brace=true; fi
-            ends_with_brace=false
-            if [ "$(printf '%s' "$raw" | tail -c1)" = "}" ]; then ends_with_brace=true; fi
-            esc_n_count=$(printf '%s' "$raw" | grep -o '\\\\n' | wc -l || true)
-
-            # Check if base64-decoding yields valid JSON (without printing the secret)
-            b64_ok=false
-            if printf '%s' "$raw" | base64 -d >/tmp/gcp_sa_b64_try.json 2>/dev/null; then
-              if jq -e . /tmp/gcp_sa_b64_try.json >/dev/null 2>&1; then
-                b64_ok=true
-              fi
-            fi
-
-            # Check if replacing escaped newlines yields valid JSON
-            esc_ok=false
-            if printf '%s' "$raw" | sed 's/\\\\n/\\n/g' >/tmp/gcp_sa_esc_try.json 2>/dev/null; then
-              if jq -e . /tmp/gcp_sa_esc_try.json >/dev/null 2>&1; then
-                esc_ok=true
-              fi
-            fi
-
-            echo "Diagnostics: length=$len starts_with_brace=$starts_with_brace ends_with_brace=$ends_with_brace escaped_newline_escapes=$esc_n_count base64_json_ok=$b64_ok escaped_newlines_json_ok=$esc_ok" >&2
-
-            # Export diagnostics as step outputs (so they appear in job outputs) without revealing the secret
-            echo "gcp_sa_key_length=$len" >> $GITHUB_OUTPUT
-            echo "gcp_sa_key_starts_with_brace=$starts_with_brace" >> $GITHUB_OUTPUT
-            echo "gcp_sa_key_ends_with_brace=$ends_with_brace" >> $GITHUB_OUTPUT
-            echo "gcp_sa_key_escaped_newline_count=$esc_n_count" >> $GITHUB_OUTPUT
-            echo "gcp_sa_key_base64_json_ok=$b64_ok" >> $GITHUB_OUTPUT
-            echo "gcp_sa_key_escaped_newlines_json_ok=$esc_ok" >> $GITHUB_OUTPUT
-
-            exit 1
-          fi
+          # Write the service account key directly from the Actions secret into a file
+          # The secret should be stored as the raw JSON content or as base64 if you prefer
+          printf '%s' "$GCP_SA_KEY" > /tmp/gcp_sa.json
+          chmod 600 /tmp/gcp_sa.json
 
       - name: ☁️ Authenticate to Google Cloud (service account key)
         if: needs.validate-secrets.outputs.auth == 'sa'
