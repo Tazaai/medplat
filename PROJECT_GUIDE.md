@@ -50,6 +50,12 @@ Important: MedPlat is a dynamic AI case generator — the system does not ship o
 - Firebase contains a single operational dataset used by MedPlat: a `topics` collection (named `topics2` in production) that lists clinical topics or seeds (topic id, display name, optional metadata).
 - The platform does NOT store static case documents or answer keys in Firestore. All cases and MCQs are generated dynamically by the AI at request time using the topic as the seed. This keeps the database small, avoids shipping PHI or copyrighted content, and ensures cases are adaptive and up-to-date.
 
+Note on topics maintenance and read-only contract:
+
+- The canonical list of topics is stored in the Firestore collection `topics2` (production). These entries are treated as seeds only — the AI generates full case content on demand and we avoid storing static cases or answer keys in Firestore.
+- Topics are typically seeded from `scripts/topics_seed.json` using `scripts/seed_topics.mjs` (or the JS variant `scripts/seed_topics.js`). To update topics in production, run the seeding script with proper credentials (see `scripts/README.md` / `examine_firebaseservicekey.mjs`).
+- The backend route `backend/routes/topics_api.mjs` is intentionally read-only and CI includes guards to prevent accidental writes; do not add Firestore writes to that route or other runtime endpoints unless you intentionally change the data model and CI checks.
+
 Note: For local development the backend includes safe, non-throwing fallbacks when secrets or SDKs are missing:
 - `backend/firebaseClient.js` returns a noop `firestore()` client when `FIREBASE_SERVICE_KEY` or `firebase-admin` is not available.
 - `backend/openaiClient.js` provides a stubbed client when `OPENAI_API_KEY` or the OpenAI SDK is not present.

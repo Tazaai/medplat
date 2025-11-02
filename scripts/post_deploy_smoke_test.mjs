@@ -54,8 +54,9 @@ async function tryEither(primary, fallback, path = '/', options = {}) {
   }
   log('->', healthTry.res.status, ' (url:', healthTry.url, ')');
 
-  log('\n2) Backend /api/topics (POST)');
-  const topicsTry = await tryEither(backendPrimary, backendFallback, '/api/topics', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}) });
+  log('\n2) Backend /api/topics (GET read-only)');
+  // The topics endpoint is read-only; use GET for diagnostics
+  const topicsTry = await tryEither(backendPrimary, backendFallback, '/api/topics', { method: 'GET' });
   if (!topicsTry.res || !topicsTry.res.ok) {
     log('Backend /api/topics failed');
     await writeOutputs(logs, startTs, { success: false, failedStep: 'backend-topics' });

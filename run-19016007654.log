@@ -1,0 +1,304 @@
+Preflight — required secrets	Set up job	﻿2025-11-02T17:57:02.2767545Z Current runner version: '2.329.0'
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2803126Z ##[group]Runner Image Provisioner
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2804571Z Hosted Compute Agent
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2805549Z Version: 20251016.436
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2806572Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2807948Z Build Date: 2025-10-15T20:44:12Z
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2809255Z ##[endgroup]
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2810211Z ##[group]Operating System
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2811331Z Ubuntu
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2812153Z 24.04.3
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2813010Z LTS
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2813833Z ##[endgroup]
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2814843Z ##[group]Runner Image
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2816093Z Image: ubuntu-24.04
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2817062Z Version: 20251030.96.2
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2819136Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2821813Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2823995Z ##[endgroup]
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2826248Z ##[group]GITHUB_TOKEN Permissions
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2829057Z Contents: read
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2830151Z Metadata: read
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2831190Z Packages: read
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2832124Z ##[endgroup]
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2835258Z Secret source: Actions
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.2836442Z Prepare workflow directory
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.3287981Z Prepare all required actions
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.3343498Z Getting action download info
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.6213592Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+Preflight — required secrets	Set up job	2025-11-02T17:57:02.7855150Z Download action repository 'actions/github-script@v6' (SHA:d7906e4ad0b1822421a7e6a35d5ca353c962f410)
+Preflight — required secrets	Set up job	2025-11-02T17:57:03.1778456Z Complete job name: Preflight — required secrets
+Preflight — required secrets	Checkout	﻿2025-11-02T17:57:03.2457420Z ##[group]Run actions/checkout@v4
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2458974Z with:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2459710Z   repository: Tazaai/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2460794Z   token: ***
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2461592Z   ssh-strict: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2462372Z   ssh-user: git
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2463454Z   persist-credentials: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2464350Z   clean: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2465117Z   sparse-checkout-cone-mode: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2466038Z   fetch-depth: 1
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2466812Z   fetch-tags: false
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2467571Z   show-progress: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2468514Z   lfs: false
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2469254Z   submodules: false
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2470055Z   set-safe-directory: true
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.2471937Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3601464Z Syncing repository: Tazaai/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3603226Z ##[group]Getting Git version info
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3603940Z Working directory is '/home/runner/work/medplat/medplat'
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3604898Z [command]/usr/bin/git version
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3701843Z git version 2.51.2
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3728630Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3743848Z Temporarily overriding HOME='/home/runner/work/_temp/b43de7a9-0f0b-44c7-ab86-32bde061ed91' before making global git config changes
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3746296Z Adding repository directory to the temporary git global config as a safe directory
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3756952Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3796398Z Deleting the contents of '/home/runner/work/medplat/medplat'
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3800483Z ##[group]Initializing the repository
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3805145Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3913928Z hint: Using 'master' as the name for the initial branch. This default branch name
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3915227Z hint: is subject to change. To configure the initial branch name to use in all
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3916807Z hint: of your new repositories, which will suppress this warning, call:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3918072Z hint:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3919247Z hint: 	git config --global init.defaultBranch <name>
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3920564Z hint:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3921245Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3922201Z hint: 'development'. The just-created branch can be renamed via this command:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3922953Z hint:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3923366Z hint: 	git branch -m <name>
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3923848Z hint:
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3924525Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3925568Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3936264Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3976147Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3976929Z ##[group]Disabling automatic garbage collection
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.3980331Z [command]/usr/bin/git config --local gc.auto 0
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4008818Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4009612Z ##[group]Setting up auth
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4015459Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4044947Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4511220Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4548833Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4814028Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4859878Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4862634Z ##[group]Fetching the repository
+Preflight — required secrets	Checkout	2025-11-02T17:57:03.4880582Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9ecfccc7e7728ff73b8b26b3d8afac02a0269910:refs/remotes/origin/main
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5470438Z From https://github.com/Tazaai/medplat
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5472369Z  * [new ref]         9ecfccc7e7728ff73b8b26b3d8afac02a0269910 -> origin/main
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5507580Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5509152Z ##[group]Determining the checkout info
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5510691Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5514010Z [command]/usr/bin/git sparse-checkout disable
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5558466Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5590224Z ##[group]Checking out the ref
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.5595351Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.6297110Z Switched to a new branch 'main'
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.6300091Z branch 'main' set up to track 'origin/main'.
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.6316383Z ##[endgroup]
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.6355523Z [command]/usr/bin/git log -1 --format=%H
+Preflight — required secrets	Checkout	2025-11-02T17:57:04.6378463Z 9ecfccc7e7728ff73b8b26b3d8afac02a0269910
+Preflight — required secrets	Check required secrets	﻿2025-11-02T17:57:04.6605133Z ##[group]Run missing=0
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6606436Z [36;1mmissing=0[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6608661Z [36;1mfor s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE BACKEND_BASE; do[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6610937Z [36;1m  if [ -z "$***!s}" ]; then[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6612373Z [36;1m    echo "ERROR: required secret $s is not set"[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6613825Z [36;1m    missing=1[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6614950Z [36;1m  else[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6616017Z [36;1m    echo "OK: $s present"[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6617268Z [36;1m  fi[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6618495Z [36;1mdone[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6619716Z [36;1mecho "missing=$missing" >> "$GITHUB_OUTPUT"[0m
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6657845Z shell: /usr/bin/bash -e ***0}
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6659282Z env:
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6662721Z   OPENAI_API_KEY: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6663796Z   FIREBASE_SERVICE_KEY: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6665002Z   GCP_PROJECT: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6666228Z   GCP_SA_KEY: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6667785Z   VITE_API_BASE: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6669492Z   BACKEND_BASE: ***
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6670443Z ##[endgroup]
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6749767Z OK: OPENAI_API_KEY present
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6751081Z OK: FIREBASE_SERVICE_KEY present
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6753213Z OK: GCP_PROJECT present
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6754524Z OK: GCP_SA_KEY present
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6755562Z OK: VITE_API_BASE present
+Preflight — required secrets	Check required secrets	2025-11-02T17:57:04.6756634Z OK: BACKEND_BASE present
+Preflight — required secrets	Post Checkout	﻿2025-11-02T17:57:04.6972801Z Post job cleanup.
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.7911274Z [command]/usr/bin/git version
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.7946341Z git version 2.51.2
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.7988692Z Temporarily overriding HOME='/home/runner/work/_temp/2f980452-0a2c-4ffe-bcd6-cb5fbef30a1b' before making global git config changes
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.7991516Z Adding repository directory to the temporary git global config as a safe directory
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.7994169Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8027431Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8059394Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8281945Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8301039Z http.https://github.com/.extraheader
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8313268Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Preflight — required secrets	Post Checkout	2025-11-02T17:57:04.8342956Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Preflight — required secrets	Complete job	﻿2025-11-02T17:57:04.8671958Z Evaluate and set job outputs
+Preflight — required secrets	Complete job	2025-11-02T17:57:04.8678826Z Set output 'missing'
+Preflight — required secrets	Complete job	2025-11-02T17:57:04.8681759Z Cleaning up orphan processes
+Backend tests	Set up job	﻿2025-11-02T17:57:09.2643502Z Current runner version: '2.329.0'
+Backend tests	Set up job	2025-11-02T17:57:09.2680595Z ##[group]Runner Image Provisioner
+Backend tests	Set up job	2025-11-02T17:57:09.2682254Z Hosted Compute Agent
+Backend tests	Set up job	2025-11-02T17:57:09.2683438Z Version: 20251016.436
+Backend tests	Set up job	2025-11-02T17:57:09.2684540Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+Backend tests	Set up job	2025-11-02T17:57:09.2685851Z Build Date: 2025-10-15T20:44:12Z
+Backend tests	Set up job	2025-11-02T17:57:09.2687066Z ##[endgroup]
+Backend tests	Set up job	2025-11-02T17:57:09.2688196Z ##[group]Operating System
+Backend tests	Set up job	2025-11-02T17:57:09.2689300Z Ubuntu
+Backend tests	Set up job	2025-11-02T17:57:09.2690379Z 24.04.3
+Backend tests	Set up job	2025-11-02T17:57:09.2691248Z LTS
+Backend tests	Set up job	2025-11-02T17:57:09.2692226Z ##[endgroup]
+Backend tests	Set up job	2025-11-02T17:57:09.2693416Z ##[group]Runner Image
+Backend tests	Set up job	2025-11-02T17:57:09.2694563Z Image: ubuntu-24.04
+Backend tests	Set up job	2025-11-02T17:57:09.2695523Z Version: 20251030.96.2
+Backend tests	Set up job	2025-11-02T17:57:09.2697558Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251030.96/images/ubuntu/Ubuntu2404-Readme.md
+Backend tests	Set up job	2025-11-02T17:57:09.2700169Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251030.96
+Backend tests	Set up job	2025-11-02T17:57:09.2702738Z ##[endgroup]
+Backend tests	Set up job	2025-11-02T17:57:09.2704819Z ##[group]GITHUB_TOKEN Permissions
+Backend tests	Set up job	2025-11-02T17:57:09.2707889Z Contents: read
+Backend tests	Set up job	2025-11-02T17:57:09.2708854Z Metadata: read
+Backend tests	Set up job	2025-11-02T17:57:09.2709988Z Packages: read
+Backend tests	Set up job	2025-11-02T17:57:09.2711017Z ##[endgroup]
+Backend tests	Set up job	2025-11-02T17:57:09.2714025Z Secret source: Actions
+Backend tests	Set up job	2025-11-02T17:57:09.2715747Z Prepare workflow directory
+Backend tests	Set up job	2025-11-02T17:57:09.3121680Z Prepare all required actions
+Backend tests	Set up job	2025-11-02T17:57:09.3177449Z Getting action download info
+Backend tests	Set up job	2025-11-02T17:57:09.6166687Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+Backend tests	Set up job	2025-11-02T17:57:09.7699522Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Backend tests	Set up job	2025-11-02T17:57:09.9363781Z Complete job name: Backend tests
+Backend tests	Run actions/checkout@v4	﻿2025-11-02T17:57:10.0036908Z ##[group]Run actions/checkout@v4
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0037760Z with:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0038193Z   repository: Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0038838Z   token: ***
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0039269Z   ssh-strict: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0039694Z   ssh-user: git
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0040115Z   persist-credentials: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0040581Z   clean: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0041011Z   sparse-checkout-cone-mode: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0041510Z   fetch-depth: 1
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0042086Z   fetch-tags: false
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0042520Z   show-progress: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0042959Z   lfs: false
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0043353Z   submodules: false
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0043778Z   set-safe-directory: true
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.0044473Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1112374Z Syncing repository: Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1114167Z ##[group]Getting Git version info
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1114886Z Working directory is '/home/runner/work/medplat/medplat'
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1115841Z [command]/usr/bin/git version
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1201428Z git version 2.51.2
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1227758Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1241436Z Temporarily overriding HOME='/home/runner/work/_temp/5218101b-9b2b-42d9-b0cc-6653cef25a46' before making global git config changes
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1243113Z Adding repository directory to the temporary git global config as a safe directory
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1246910Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1284365Z Deleting the contents of '/home/runner/work/medplat/medplat'
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1288225Z ##[group]Initializing the repository
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1292988Z [command]/usr/bin/git init /home/runner/work/medplat/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1377988Z hint: Using 'master' as the name for the initial branch. This default branch name
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1379323Z hint: is subject to change. To configure the initial branch name to use in all
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1380600Z hint: of your new repositories, which will suppress this warning, call:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1381651Z hint:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1382573Z hint: 	git config --global init.defaultBranch <name>
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1383876Z hint:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1385356Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1387029Z hint: 'development'. The just-created branch can be renamed via this command:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1388406Z hint:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1389151Z hint: 	git branch -m <name>
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1389958Z hint:
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1391017Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1393060Z Initialized empty Git repository in /home/runner/work/medplat/medplat/.git/
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1395963Z [command]/usr/bin/git remote add origin https://github.com/Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1428535Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1429799Z ##[group]Disabling automatic garbage collection
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1433651Z [command]/usr/bin/git config --local gc.auto 0
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1462469Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1463784Z ##[group]Setting up auth
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1469904Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1500514Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1925863Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.1956124Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.2172815Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.2208247Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.2209541Z ##[group]Fetching the repository
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:10.2218517Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9ecfccc7e7728ff73b8b26b3d8afac02a0269910:refs/remotes/origin/main
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1808751Z From https://github.com/Tazaai/medplat
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1810530Z  * [new ref]         9ecfccc7e7728ff73b8b26b3d8afac02a0269910 -> origin/main
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1843325Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1845069Z ##[group]Determining the checkout info
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1846842Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1851374Z [command]/usr/bin/git sparse-checkout disable
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1892653Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1922327Z ##[group]Checking out the ref
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.1926544Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.2625396Z Switched to a new branch 'main'
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.2626979Z branch 'main' set up to track 'origin/main'.
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.2644423Z ##[endgroup]
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.2682338Z [command]/usr/bin/git log -1 --format=%H
+Backend tests	Run actions/checkout@v4	2025-11-02T17:57:11.2704026Z 9ecfccc7e7728ff73b8b26b3d8afac02a0269910
+Backend tests	Ensure required secrets are set	﻿2025-11-02T17:57:11.2932268Z ##[group]Run missing=0
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2933637Z [36;1mmissing=0[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2935464Z [36;1mfor s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE; do[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2938032Z [36;1m  # BACKEND_BASE is optional for non-deploy CI runs; warn if missing but don't fail here[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2940141Z [36;1m  if [ -z "$***BACKEND_BASE}" ]; then[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2942503Z [36;1m    echo "WARN: BACKEND_BASE not set — integration tests that target deployed backend will be skipped"[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2944595Z [36;1m  fi[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2945701Z [36;1m  if [ -z "$***!s}" ]; then[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2947138Z [36;1m    echo "ERROR: required secret $s is not set"[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2948603Z [36;1m    missing=1[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2949730Z [36;1m  else[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2950775Z [36;1m    echo "OK: $s present"[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2952077Z [36;1m  fi[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2953020Z [36;1mdone[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2954326Z [36;1mif [ "$missing" -ne 0 ]; then[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2955966Z [36;1m  echo "One or more required secrets are missing. Failing the job." >&2[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2957620Z [36;1m  exit 1[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2958558Z [36;1mfi[0m
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2995843Z shell: /usr/bin/bash -e ***0}
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.2997011Z env:
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3000378Z   OPENAI_API_KEY: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3001419Z   FIREBASE_SERVICE_KEY: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3002859Z   GCP_PROJECT: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3003836Z   GCP_SA_KEY: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3005303Z   VITE_API_BASE: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3006758Z   BACKEND_BASE: ***
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3007693Z ##[endgroup]
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3087664Z OK: OPENAI_API_KEY present
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3088999Z OK: FIREBASE_SERVICE_KEY present
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3091157Z OK: GCP_PROJECT present
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3092564Z OK: GCP_SA_KEY present
+Backend tests	Ensure required secrets are set	2025-11-02T17:57:11.3093642Z OK: VITE_API_BASE present
+Backend tests	Enforce read-only topics route	﻿2025-11-02T17:57:11.3153041Z ##[group]Run echo "Checking backend/routes/topics_api.mjs for write operations..."
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3155158Z [36;1mecho "Checking backend/routes/topics_api.mjs for write operations..."[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3156789Z [36;1mFILE=backend/routes/topics_api.mjs[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3157997Z [36;1mif [ -f "$FILE" ]; then[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3159623Z [36;1m  if grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >/dev/null; then[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3162039Z [36;1m    echo "ERROR: write operation found in $FILE — topics route must be read-only" >&2[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3164294Z [36;1m    grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >&2 || true[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3165927Z [36;1m    exit 1[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3166964Z [36;1m  else[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3167937Z [36;1m    echo "No write verbs found in $FILE"[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3169091Z [36;1m  fi[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3169915Z [36;1melse[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3171087Z [36;1m  echo "File $FILE not found — skipping read-only check"[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3172495Z [36;1mfi[0m
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3204085Z shell: /usr/bin/bash -e ***0}
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3205126Z ##[endgroup]
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3261983Z Checking backend/routes/topics_api.mjs for write operations...
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3278869Z ERROR: write operation found in backend/routes/topics_api.mjs — topics route must be read-only
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3290472Z 35:      if (area) seen.add(String(area));
+Backend tests	Enforce read-only topics route	2025-11-02T17:57:11.3304538Z ##[error]Process completed with exit code 1.
+Backend tests	Post Run actions/checkout@v4	﻿2025-11-02T17:57:11.3493264Z Post job cleanup.
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4449035Z [command]/usr/bin/git version
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4485641Z git version 2.51.2
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4530673Z Temporarily overriding HOME='/home/runner/work/_temp/46d2c196-00e2-479e-88eb-fa01a27e7a5f' before making global git config changes
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4536330Z Adding repository directory to the temporary git global config as a safe directory
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4540059Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/medplat/medplat
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4573435Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4605224Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4831394Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4851797Z http.https://github.com/.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4864805Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Backend tests	Post Run actions/checkout@v4	2025-11-02T17:57:11.4896401Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Backend tests	Complete job	﻿2025-11-02T17:57:11.5245676Z Cleaning up orphan processes

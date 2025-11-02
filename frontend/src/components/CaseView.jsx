@@ -29,7 +29,8 @@ function normalizeCaseData(raw) {
 
 // ✅ recursive renderer for objects/arrays
 function renderContent(value) {
-  if (!value) return <i>Not specified</i>;
+  // treat null/undefined/empty-string as not specified, but allow 0/false
+  if (value == null || value === "") return <i>Not specified</i>;
 
   if (Array.isArray(value)) {
     return (
@@ -67,6 +68,7 @@ function ChartBlock({ chart }) {
       <div className="flex justify-between items-center">
         <h4 className="font-semibold">Chart</h4>
         <button
+          type="button"
           onClick={() => setView(view === "graph" ? "table" : "graph")}
           className="px-2 py-1 bg-gray-200 rounded text-sm"
         >
@@ -125,7 +127,10 @@ export default function CaseView() {
   // 🌍 detect location
   useEffect(() => {
     fetch(`${API_BASE}/api/location`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((d) => {
         if (d?.country_name) setUserLocation(d.country_name);
         else if (d?.country) setUserLocation(d.country);
@@ -141,7 +146,10 @@ export default function CaseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((data) => setAreas((data.categories || []).sort()))
       .catch(() => setAreas([]));
   }, []);
@@ -154,7 +162,10 @@ export default function CaseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ area }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((data) => setTopics(data.topics || []))
       .catch(() => setTopics([]));
   }, [area]);
@@ -178,7 +189,8 @@ export default function CaseView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           area,
-          topic,
+          // send the resolved topic (custom or selected)
+          topic: chosenTopic,
           customSearch: customTopic,
           language: getLanguage(),
           model,
@@ -186,6 +198,7 @@ export default function CaseView() {
           userLocation: getEffectiveRegion(),
         }),
       });
+      if (!res.ok) throw new Error(res.statusText || 'Dialog failed');
       const data = await res.json();
       setCaseData(normalizeCaseData(data?.aiReply?.json || data?.aiReply || {}));
     } catch (err) {
@@ -197,21 +210,27 @@ export default function CaseView() {
   const saveCase = async () => {
     if (!caseData) return;
     try {
-      await fetch(`${API_BASE}/api/cases`, {
+      const res = await fetch(`${API_BASE}/api/cases`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(caseData),
       });
+      if (!res.ok) throw new Error('Save failed');
       alert("✅ Case saved to My Cases");
     } catch {
       alert("⚠️ Failed to save case");
     }
   };
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (!caseRef.current) return;
-    navigator.clipboard.writeText(caseRef.current.innerText);
-    alert("📋 Case copied to clipboard!");
+    try {
+      await navigator.clipboard.writeText(caseRef.current.innerText);
+      alert("📋 Case copied to clipboard!");
+    } catch (err) {
+      console.warn('Clipboard write failed:', err);
+      alert('⚠️ Failed to copy to clipboard');
+    }
   };
 
   const downloadPDF = () => {
@@ -354,9 +373,9 @@ export default function CaseView() {
         {/* topic */}
         <select value={topic} onChange={(e) => setTopic(e.target.value)} className="border p-2 rounded">
           <option value="">Choose topic</option>
-          {topics.map((t) => (
-            <option key={t.id} value={t.topic}>{t.topic}</option>
-          ))}
+            {topics.map((t) => (
+              <option key={t.id || t.topic} value={t.topic}>{t.topic}</option>
+            ))}
         </select>
 
         <input type="text" value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} placeholder="Custom search" className="border p-2 rounded w-64" />
@@ -398,7 +417,7 @@ export default function CaseView() {
           <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
         </label>
 
-        <button onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button type="button" onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
           {loading ? "Generating..." : "Generate Case"}
         </button>
       </div>
@@ -410,16 +429,16 @@ export default function CaseView() {
       {/* Actions */}
       {caseData && (
         <div className="flex gap-2 mt-4">
-          <button onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
+          <button type="button" onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
             <Save size={16} /> Save
           </button>
-          <button onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <Copy size={16} /> Copy
           </button>
-          <button onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <FileDown size={16} /> PDF
           </button>
-          <button onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <Share2 size={16} /> Share
           </button>
         </div>
