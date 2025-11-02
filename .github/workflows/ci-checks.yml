@@ -77,9 +77,16 @@ jobs:
         run: npm --prefix frontend ci
       - name: Build frontend (safe)
         env:
-          # Use a safe fallback backend URL so build doesn't require secrets
-          VITE_API_BASE: 'https://example.com'
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
         run: |
+          # Prefer BACKEND_BASE secret (deployed backend) for the built frontend.
+          if [ -n "${BACKEND_BASE}" ]; then
+            echo "Using BACKEND_BASE for VITE_API_BASE: ${BACKEND_BASE}"
+            export VITE_API_BASE="${BACKEND_BASE}"
+          else
+            echo "BACKEND_BASE not set; falling back to known deployed backend"
+            export VITE_API_BASE='https://medplat-backend-139218747785.europe-west1.run.app'
+          fi
           npm --prefix frontend run build
       - name: Upload frontend dist
         if: success()
