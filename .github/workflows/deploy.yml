@@ -49,14 +49,16 @@ jobs:
           # For GCP authentication we accept either a service account key JSON
           # in GCP_SA_KEY, or Workload Identity Federation configuration via
           # WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.
-          if [ -n "$(printenv GCP_SA_KEY)" ]; then
-            echo "✅ GCP_SA_KEY present (service-account key)"
-            AUTH="sa"
-          elif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
+          # Prefer Workload Identity Federation (WIF) when both methods are present
+          # because WIF avoids storing long-lived JSON keys in GitHub Secrets.
+          if [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
             echo "✅ Workload Identity provider and service account present"
             AUTH="wif"
+          elif [ -n "$(printenv GCP_SA_KEY)" ]; then
+            echo "✅ GCP_SA_KEY present (service-account key)"
+            AUTH="sa"
           else
-            echo "❌ GCP auth configuration missing: provide either GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT"
+            echo "❌ GCP auth configuration missing: provide either WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT or GCP_SA_KEY"
             MISSING=$((MISSING+1))
           fi
 
@@ -120,7 +122,26 @@ jobs:
       - name: 🧰 Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: 🐳 Configure Artifact Registry
+      - name: � Auth diagnostics (non-fatal)
+        run: |
+          echo "--- gcloud auth list ---"
+          gcloud auth list || true
+          echo "--- active account ---"
+          gcloud auth print-identity-token --account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)") >/dev/null 2>&1 || true
+          echo "Active credential info:"
+          gcloud auth list --filter=status:ACTIVE --format='value(account)'
+          echo "Project number (may require permission):"
+          gcloud projects describe $GCP_PROJECT --format='value(projectNumber)' || true
+          echo "Attempting to show IAM bindings for service accounts (may fail if insufficient permissions):"
+          # Try to list bindings filtered to service accounts
+          if gcloud projects get-iam-policy $GCP_PROJECT --format='json' >/tmp/policy.json 2>/dev/null; then
+            echo "IAM policy fetched; extracting service-account bindings..."
+            jq '.bindings[] | select(.members[]? | test("serviceAccount:"))' /tmp/policy.json || true
+          else
+            echo "Warning: unable to fetch project IAM policy (permission denied or API disabled)."
+          fi
+
+      - name: �🐳 Configure Artifact Registry
         run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
       - name: 🔐 Ensure Firebase key secret in Secret Manager
