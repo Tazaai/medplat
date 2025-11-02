@@ -44,7 +44,8 @@ export default function topicsApi() {
     const { area, search } = req.query || {};
     const docs = await readAllTopics();
     let filtered = docs;
-    if (area) {
+    // Treat area='all' as a wildcard (no filter)
+    if (area && String(area).toLowerCase() !== 'all') {
       filtered = filtered.filter((d) => {
         const a = (d.area || d.category || d.topic_area || d.section || '').toString();
         return a.toLowerCase() === String(area).toLowerCase();
@@ -66,7 +67,8 @@ export default function topicsApi() {
       const { area, search, tags } = req.body || {};
       const docs = await readAllTopics();
       let filtered = docs;
-      if (area) {
+      // Treat area='all' as a wildcard (no filter)
+      if (area && String(area).toLowerCase() !== 'all') {
         filtered = filtered.filter((d) => {
           const a = (d.area || d.category || d.topic_area || d.section || '').toString();
           return a.toLowerCase() === String(area).toLowerCase();
