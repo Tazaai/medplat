@@ -49,14 +49,16 @@ jobs:
           # For GCP authentication we accept either a service account key JSON
           # in GCP_SA_KEY, or Workload Identity Federation configuration via
           # WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.
-          if [ -n "$(printenv GCP_SA_KEY)" ]; then
-            echo "✅ GCP_SA_KEY present (service-account key)"
-            AUTH="sa"
-          elif [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
+          # Prefer Workload Identity Federation (WIF) when both methods are present
+          # because WIF avoids storing long-lived JSON keys in GitHub Secrets.
+          if [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
             echo "✅ Workload Identity provider and service account present"
             AUTH="wif"
+          elif [ -n "$(printenv GCP_SA_KEY)" ]; then
+            echo "✅ GCP_SA_KEY present (service-account key)"
+            AUTH="sa"
           else
-            echo "❌ GCP auth configuration missing: provide either GCP_SA_KEY or WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT"
+            echo "❌ GCP auth configuration missing: provide either WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT or GCP_SA_KEY"
             MISSING=$((MISSING+1))
           fi
 
