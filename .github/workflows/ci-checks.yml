@@ -13,6 +13,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Ensure required secrets are set
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+        run: |
+          missing=0
+          for s in OPENAI_API_KEY FIREBASE_SERVICE_KEY GCP_PROJECT GCP_SA_KEY VITE_API_BASE; do
+            if [ -z "${!s}" ]; then
+              echo "ERROR: required secret $s is not set"
+              missing=1
+            else
+              echo "OK: $s present"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "One or more required secrets are missing. Failing the job." >&2
+            exit 1
+          fi
+      - name: Enforce read-only topics route
+        run: |
+          echo "Checking backend/routes/topics_api.mjs for write operations..."
+          FILE=backend/routes/topics_api.mjs
+          if [ -f "$FILE" ]; then
+            if grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >/dev/null; then
+              echo "ERROR: write operation found in $FILE — topics route must be read-only" >&2
+              grep -nE "\b(add\(|\.set\(|\.update\(|\.delete\(|\bset\b|\bupdate\b|\bdelete\b)" "$FILE" >&2 || true
+              exit 1
+            else
+              echo "No write verbs found in $FILE"
+            fi
+          else
+            echo "File $FILE not found — skipping read-only check"
+          fi
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
