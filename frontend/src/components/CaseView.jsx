@@ -67,6 +67,7 @@ function ChartBlock({ chart }) {
       <div className="flex justify-between items-center">
         <h4 className="font-semibold">Chart</h4>
         <button
+          type="button"
           onClick={() => setView(view === "graph" ? "table" : "graph")}
           className="px-2 py-1 bg-gray-200 rounded text-sm"
         >
@@ -208,10 +209,15 @@ export default function CaseView() {
     }
   };
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (!caseRef.current) return;
-    navigator.clipboard.writeText(caseRef.current.innerText);
-    alert("📋 Case copied to clipboard!");
+    try {
+      await navigator.clipboard.writeText(caseRef.current.innerText);
+      alert("📋 Case copied to clipboard!");
+    } catch (err) {
+      console.warn('Clipboard write failed:', err);
+      alert('⚠️ Failed to copy to clipboard');
+    }
   };
 
   const downloadPDF = () => {
@@ -398,7 +404,7 @@ export default function CaseView() {
           <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
         </label>
 
-        <button onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button type="button" onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
           {loading ? "Generating..." : "Generate Case"}
         </button>
       </div>
@@ -410,16 +416,16 @@ export default function CaseView() {
       {/* Actions */}
       {caseData && (
         <div className="flex gap-2 mt-4">
-          <button onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
+          <button type="button" onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
             <Save size={16} /> Save
           </button>
-          <button onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <Copy size={16} /> Copy
           </button>
-          <button onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <FileDown size={16} /> PDF
           </button>
-          <button onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
+          <button type="button" onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
             <Share2 size={16} /> Share
           </button>
         </div>
