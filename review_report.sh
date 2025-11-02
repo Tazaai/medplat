@@ -25,6 +25,19 @@ else
 fi
 echo "📛 Note: PROJECT_GUIDE.md is protected. Do not edit it automatically; follow the policy in PROJECT_GUIDE.md for changes."
 
+# --- README check ---
+echo ""
+echo "## 📚 README check"
+if [ -f README.md ]; then
+  echo "✅ README.md found"
+  # quick content checks
+  grep -qi "backend" README.md && echo "🔍 README mentions backend" || echo "⚠️ README missing 'backend' keyword"
+  grep -qi "frontend" README.md && echo "🔍 README mentions frontend" || echo "⚠️ README missing 'frontend' keyword"
+  grep -qi "PROJECT_GUIDE" README.md && echo "🔍 README references PROJECT_GUIDE" || echo "⚠️ README does not reference PROJECT_GUIDE.md"
+else
+  echo "⚠️ README.md missing — consider adding a high-level README covering architecture and run instructions"
+fi
+
 # --- Structure ---
 echo ""
 echo "## 📁 Checking key directories..."
