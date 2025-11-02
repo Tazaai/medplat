@@ -29,7 +29,8 @@ function normalizeCaseData(raw) {
 
 // ✅ recursive renderer for objects/arrays
 function renderContent(value) {
-  if (!value) return <i>Not specified</i>;
+  // treat null/undefined/empty-string as not specified, but allow 0/false
+  if (value == null || value === "") return <i>Not specified</i>;
 
   if (Array.isArray(value)) {
     return (
@@ -126,7 +127,10 @@ export default function CaseView() {
   // 🌍 detect location
   useEffect(() => {
     fetch(`${API_BASE}/api/location`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((d) => {
         if (d?.country_name) setUserLocation(d.country_name);
         else if (d?.country) setUserLocation(d.country);
@@ -142,7 +146,10 @@ export default function CaseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((data) => setAreas((data.categories || []).sort()))
       .catch(() => setAreas([]));
   }, []);
@@ -155,7 +162,10 @@ export default function CaseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ area }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+        return res.json();
+      })
       .then((data) => setTopics(data.topics || []))
       .catch(() => setTopics([]));
   }, [area]);
@@ -179,7 +189,8 @@ export default function CaseView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           area,
-          topic,
+          // send the resolved topic (custom or selected)
+          topic: chosenTopic,
           customSearch: customTopic,
           language: getLanguage(),
           model,
@@ -187,6 +198,7 @@ export default function CaseView() {
           userLocation: getEffectiveRegion(),
         }),
       });
+      if (!res.ok) throw new Error(res.statusText || 'Dialog failed');
       const data = await res.json();
       setCaseData(normalizeCaseData(data?.aiReply?.json || data?.aiReply || {}));
     } catch (err) {
@@ -198,11 +210,12 @@ export default function CaseView() {
   const saveCase = async () => {
     if (!caseData) return;
     try {
-      await fetch(`${API_BASE}/api/cases`, {
+      const res = await fetch(`${API_BASE}/api/cases`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(caseData),
       });
+      if (!res.ok) throw new Error('Save failed');
       alert("✅ Case saved to My Cases");
     } catch {
       alert("⚠️ Failed to save case");
@@ -360,9 +373,9 @@ export default function CaseView() {
         {/* topic */}
         <select value={topic} onChange={(e) => setTopic(e.target.value)} className="border p-2 rounded">
           <option value="">Choose topic</option>
-          {topics.map((t) => (
-            <option key={t.id} value={t.topic}>{t.topic}</option>
-          ))}
+            {topics.map((t) => (
+              <option key={t.id || t.topic} value={t.topic}>{t.topic}</option>
+            ))}
         </select>
 
         <input type="text" value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} placeholder="Custom search" className="border p-2 rounded w-64" />

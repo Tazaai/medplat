@@ -1,0 +1,68 @@
+name: Copilot Deploy Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+
+permissions:
+  contents: write
+
+jobs:
+  post-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post Copilot deploy instruction
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |-
+            ### 🧠 Instruction for GitHub Copilot
+
+            > **You are now responsible for completing MedPlat’s frontend → backend deploy and verification flow.**
+            >
+            > Follow these exact priorities — no new todos, no extra files, no markdown edits:
+            >
+            > 1. **Run deploy**
+            >
+            >    * Trigger the GitHub Actions workflow file `.github/workflows/deploy.yml` on the `main` branch.
+            >    * If secrets are missing, print the names of missing secrets and stop cleanly.
+            >    * If all secrets are present, proceed to deploy both **backend** and **frontend** to Cloud Run.
+            >    * When deployment completes, print the **service URLs** (backend + frontend).
+            > 2. **Run smoke tests**
+            >
+            >    * After deploy completes, run:
+            >
+            >      ```bash
+            >      npm --prefix scripts run post_deploy_smoke_test || node scripts/post_deploy_smoke_test.mjs
+            >      ```
+            >    * Summarize success/failure clearly (✅ or ❌) and list any failing endpoints.
+            > 3. **Inspect CaseView.jsx build readiness**
+            >
+            >    * Verify that the frontend builds successfully with:
+            >
+            >      ```bash
+            >      VITE_API_BASE="https://medplat-backend-139218747785.europe-west1.run.app" npm --prefix frontend run build
+            >      ```
+            >    * Report any warnings (missing keys, unused imports, missing dependencies).
+            >    * Suggest only small one-line fixes if necessary — **do not refactor logic**.
+            > 4. **CI check follow-up**
+            >
+            >    * Fetch logs from the latest run of `ci-checks.yml`.
+            >    * If any job fails (for example, “Backend tests”), display the first 40 error lines and suggest a minimal targeted fix.
+            > 5. **Output summary**
+            >
+            >    * End your report with a concise summary like:
+            >
+            >      ```
+            >      ✅ Backend deployed
+            >      ✅ Frontend build passed
+            >      ⚠️ CI warnings detected (Backend tests)
+            >      ```
+            >    * Keep your output short and structured so the next automation step can parse it easily.
+            >
+            > **Do not edit docs, markdown, or workflow files unless explicitly asked.**
+            > **Your single goal:** verify that MedPlat is production-ready — backend, frontend, and CI all working cleanly.

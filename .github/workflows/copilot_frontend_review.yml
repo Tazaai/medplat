@@ -1,0 +1,28 @@
+name: Copilot Frontend Review — post checklist on PR
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  post-review:
+    name: Post Copilot Frontend Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Post Copilot Frontend Review as PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          # target the PR that triggered this workflow
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: docs/COPILOT_FRONTEND_REVIEW_GUIDE.md
+          # use a stable identifier so the comment can be updated across runs
+          recreate: false
+          title: "Copilot: Frontend review guide"
+          edit-mode: replace
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

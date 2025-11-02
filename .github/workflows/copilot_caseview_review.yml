@@ -1,0 +1,23 @@
+name: Copilot CaseView Review — post checklist on PR
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/src/components/CaseView.jsx'
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  post-review:
+    name: Post Copilot CaseView Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Post Copilot CaseView Review as PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: docs/COPILOT_CASEVIEW_REVIEW.md
+          edit-mode: replace
+          token: ${{ secrets.GITHUB_TOKEN }}
