@@ -7,9 +7,9 @@ function TopicsPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const base = API_BASE || '';
-    // Use the read-only search endpoint for topics (GET with query params)
-    const url = base ? `${base}/api/topics/search?area=all` : `/api/topics/search?area=all`;
+  const base = API_BASE || '';
+  // Use the read-only topics listing endpoint (avoid area=all filter)
+  const url = base ? `${base}/api/topics` : `/api/topics`;
     setLoading(true);
     fetch(url)
       .then((r) => r.json())
@@ -64,9 +64,9 @@ function DiagnosticsPanel() {
     async function runChecks() {
       setLoading(true);
       try {
-        const healthUrl = base ? `${base}/` : `/`;
-        // Diagnostics should use the search endpoint (avoid hitting guarded root)
-        const topicsUrl = base ? `${base}/api/topics/search?area=all` : `/api/topics/search?area=all`;
+  const healthUrl = base ? `${base}/` : `/`;
+  // Diagnostics: use the bulk topics listing which returns all topics
+  const topicsUrl = base ? `${base}/api/topics` : `/api/topics`;
 
         const [hRes, tRes] = await Promise.all([
           fetch(healthUrl).then(r => r.json()).catch(() => null),
