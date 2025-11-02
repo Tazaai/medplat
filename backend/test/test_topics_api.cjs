@@ -29,9 +29,14 @@ const fetch = require('node-fetch');
   assert(Array.isArray(catJson.categories), 'categories should be an array');
 
   // topics list (empty body)
-  const topicsRes = await fetch(`${base}/api/topics`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-  assert(topicsRes.ok, 'topics response must be OK');
-  const topicsJson = await topicsRes.json();
+  // POST to root /api/topics should be rejected (read-only)
+  const topicsPostRes = await fetch(`${base}/api/topics`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  assert(topicsPostRes.status === 405, 'POST /api/topics must be rejected with 405');
+
+  // POST /api/topics/search should be allowed (read-only search)
+  const searchRes = await fetch(`${base}/api/topics/search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  assert(searchRes.ok, 'POST /api/topics/search response must be OK');
+  const topicsJson = await searchRes.json();
   assert(Array.isArray(topicsJson.topics), 'topics should be an array');
 
   // save a case

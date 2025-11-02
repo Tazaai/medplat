@@ -1,0 +1,2 @@
+Use the GitHub Actions UI to trigger seed_topics.yml with confirm=yes.
+Do NOT remove firebase-admin — keep it for read-only checks.

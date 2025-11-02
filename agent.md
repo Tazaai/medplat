@@ -10,12 +10,12 @@
 ✅ .github/workflows/
 
 ## 🔐 Validating environment variables (GitHub Secrets expected)...
-❌ Missing OPENAI_API_KEY
-❌ Missing GCP_PROJECT
-❌ Missing GCP_SA_KEY
-❌ Missing FIREBASE_SERVICE_KEY
+✅ OPENAI_API_KEY present
+✅ GCP_PROJECT present
+✅ GCP_SA_KEY present
+✅ FIREBASE_SERVICE_KEY present
 ✅ VITE_API_BASE present
-🚨 4 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+🎉 All required secrets configured!
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -55,7 +55,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 1 / 5
+Secrets configured: 5 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -66,28 +66,38 @@ Secrets configured: 1 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 507ms
+up to date in 345ms
 🚀 Starting backend on port 8080 (background)...
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
-
-Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at node:net:2206:7
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1976:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '0.0.0.0',
-  port: 8080
+STARTUP ROUTES: {
+  pid: 176808,
+  dir: '/workspaces/medplat/backend/routes',
+  files: [
+    'cases_api.mjs',
+    'comment_api.mjs',
+    'dialog_api.mjs',
+    'gamify_api.mjs',
+    'location_api.mjs',
+    'topics_api.mjs'
+  ]
 }
-
-Node.js v22.17.0
+DEBUG ROUTES: files in routes/: [
+  'cases_api.mjs',
+  'comment_api.mjs',
+  'dialog_api.mjs',
+  'gamify_api.mjs',
+  'location_api.mjs',
+  'topics_api.mjs'
+]
+✅ Mounted /api/location -> ./routes/location_api.mjs
+⚠️ firebase-admin not available or failed to init — using noop Firebase client: Failed to parse private key: Error: Invalid PEM formatted message.
+✅ Mounted /api/topics -> ./routes/topics_api.mjs
+✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
+✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
+✅ Mounted /api/comment -> ./routes/comment_api.mjs
+⚠️ firebase-admin not available or failed to init — using noop Firebase client: Failed to parse private key: Error: Invalid PEM formatted message.
+✅ Mounted /api/cases -> ./routes/cases_api.mjs
+All route import attempts finished
+🚀 MedPlat backend listening on 0.0.0.0:8080
 🌐 Testing health endpoint...
 ✅ Health OK
 📡 Testing /api/topics...
@@ -99,9 +109,7 @@ Node.js v22.17.0
 �� Cleaning up...
 ✅ Local backend tests complete
 ✅ Local backend smoke tests passed
-🚨 Deployment NOT READY — missing secrets.
-Note: Backend smoke tests passed locally despite missing secrets (local fallbacks in use).
+✅ READY FOR DEPLOYMENT — All major checks passed and local backend smoke tests passed.
 \nNext steps:
-- Configure required secrets in GitHub → Settings → Secrets → Actions before merging.
 - Include agent.md in your PR description for reviewer traceability.
-- Run './scripts/run_local_checks.sh' locally (it runs this script + extended checks).
+- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + extended checks).

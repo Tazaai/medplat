@@ -2,6 +2,29 @@
 
 Purpose: Short, actionable guidance for automated agents and reviewers working on MedPlat.
 
+### Topics Protection — Copilot Prompt
+
+The backend route `backend/routes/topics_api.mjs` must remain strictly read-only. Add this prompt block to guide Copilot and automated agents when editing backend code.
+
+```
+Context: The backend route `backend/routes/topics_api.mjs` must remain strictly read-only. It reads topics from Firestore collection `topics2` and must never perform writes (add/set/update/delete).
+
+Objectives:
+- Only GET endpoints for topics (e.g., `/api/topics`, `/api/topics/search`).
+- Read data from Firestore `topics2` only. No writes.
+- Return JSON with shape: `{ ok: true, topics }`.
+
+Behavior rules for Copilot/agents:
+1. Never generate Firestore writes inside `topics_api.mjs`.
+2. Implement new routes under `routes/` as `express.Router()` modules.
+3. Use GET for read endpoints; avoid POST for search/filtering.
+4. Add a read-only guard: `router.all('/', (req,res,next)=>{ if(req.method!=='GET') return res.status(405)... })`.
+5. Keep CI checks that fail on `add|set|update|delete` verbs in `backend/routes/topics_api.mjs`.
+
+Copilot prompt (copy/paste when coding):
+"In MedPlat, ensure `topics_api.mjs` remains read-only. Only GET endpoints allowed. Do not write to Firestore `topics2`. Add a 405 guard for non-GET methods and keep CI checks to block write verbs. Return `{ ok:true, topics }` and follow project routing style."
+```
+
 1) Big picture (one-liner)
 - Backend: Node 18 + Express (entry: `backend/index.js`) — dynamic ESM route imports, Cloud Run friendly.
 - Frontend: React + Vite in `frontend/` (components under `frontend/src/components/`).
