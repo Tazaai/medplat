@@ -107,27 +107,61 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.WORKLOAD_IDENTITY_SERVICE_ACCOUNT }}
 
-      - name: 🔧 Prepare GCP service account key (normalize newlines)
+      - name: 🔧 Prepare GCP service account key (robust normalization)
         if: needs.validate-secrets.outputs.auth == 'sa'
         shell: bash
         run: |
-          # write raw secret to a temp file
-          printf '%s' "${{ secrets.GCP_SA_KEY }}" > /tmp/gcp_sa_raw.txt
-          # if the secret contains escaped newlines (\n), replace them with real newlines
-          if grep -q '\\n' /tmp/gcp_sa_raw.txt; then
-            sed 's/\\n/\n/g' /tmp/gcp_sa_raw.txt > /tmp/gcp_sa.json
-          else
-            cp /tmp/gcp_sa_raw.txt /tmp/gcp_sa.json
+          set -euo pipefail
+          raw="$(printf '%s' "${{ secrets.GCP_SA_KEY }}")"
+          # strip surrounding quotes if present
+          if [[ "$raw" =~ ^\".*\"$ ]]; then
+            raw="$(printf '%s' "$raw" | sed 's/^"//;s/"$//')"
           fi
-          # quick JSON sanity check
+
+          # Try three strategies: direct JSON, base64 decode, replace escaped newlines
+          try_dir() {
+            printf '%s' "$raw" > /tmp/gcp_sa_try.json
+            if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
+              mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
+              return 0
+            fi
+            return 1
+          }
+
+          try_b64() {
+            if printf '%s' "$raw" | base64 -d >/tmp/gcp_sa_try.json 2>/dev/null; then
+              if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
+                mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
+                return 0
+              fi
+            fi
+            return 1
+          }
+
+          try_escaped_newlines() {
+            printf '%s' "$raw" | sed 's/\\\\n/\\n/g' > /tmp/gcp_sa_try.json
+            if jq -e . /tmp/gcp_sa_try.json >/dev/null 2>&1; then
+              mv /tmp/gcp_sa_try.json /tmp/gcp_sa.json
+              return 0
+            fi
+            return 1
+          }
+
+          # ensure jq is available
           if ! command -v jq >/dev/null 2>&1; then
-            # install jq if missing (runner should have it but be defensive)
             sudo apt-get update && sudo apt-get install -y jq >/dev/null 2>&1 || true
           fi
-          if ! jq -e . /tmp/gcp_sa.json >/dev/null 2>&1; then
-            echo "Invalid JSON in GCP_SA_KEY after normalization" >&2
-            echo "(first 200 chars):" >&2
-            head -c 200 /tmp/gcp_sa.json >&2 || true
+
+          if try_dir; then
+            echo "GCP_SA_KEY parsed as direct JSON"
+          elif try_b64; then
+            echo "GCP_SA_KEY parsed as base64-encoded JSON"
+          elif try_escaped_newlines; then
+            echo "GCP_SA_KEY parsed after replacing escaped newlines"
+          else
+            echo "Failed to parse GCP_SA_KEY (tried direct JSON, base64 decode, and escaped-newline normalization)" >&2
+            echo "(preview, first 200 chars):" >&2
+            printf '%s' "$raw" | head -c 200 >&2 || true
             exit 1
           fi
 
