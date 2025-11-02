@@ -9,9 +9,13 @@ function TopicsPanel() {
   useEffect(() => {
     const base = API_BASE || '';
     // Use the read-only search endpoint for topics (GET with query params)
-    const url = base ? `${base}/api/topics/search?area=all` : `/api/topics/search?area=all`;
+    const url = base ? `${base}/api/topics/search` : `/api/topics/search`;
     setLoading(true);
-    fetch(url)
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ area: 'all' }),
+    })
       .then((r) => r.json())
       .then((data) => {
         // try to handle different shapes: { topics: [...] } or array
@@ -66,11 +70,11 @@ function DiagnosticsPanel() {
       try {
         const healthUrl = base ? `${base}/` : `/`;
         // Diagnostics should use the search endpoint (avoid hitting guarded root)
-        const topicsUrl = base ? `${base}/api/topics/search?area=all` : `/api/topics/search?area=all`;
+        const topicsUrl = base ? `${base}/api/topics/search` : `/api/topics/search`;
 
         const [hRes, tRes] = await Promise.all([
           fetch(healthUrl).then(r => r.json()).catch(() => null),
-          fetch(topicsUrl).then(r => r.json()).catch(() => null),
+          fetch(topicsUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ area: 'all' }) }).then(r => r.json()).catch(() => null),
         ]);
 
         if (!mounted) return;
