@@ -1,0 +1,4 @@
+# Mark PROJECT_GUIDE.md as a protected reference (informational only).
+# This file does not enforce protection by itself; use branch protections and
+# CI checks to prevent direct edits to `PROJECT_GUIDE.md`.
+PROJECT_GUIDE.md   text
