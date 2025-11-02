@@ -164,6 +164,9 @@ jobs:
             printf '%s' "$raw" | head -c 200 >&2 || true
             exit 1
           fi
+          # Masked preview for debugging (show first 8 and last 8 chars, mask middle)
+          preview_raw=$(printf '%s' "$raw" | tr -d '\n' | sed -E 's/(.{8}).*(.{8})/\1...\2/') || preview_raw="<preview-unavailable>"
+          echo "[DEBUG] GCP_SA_KEY masked preview: $preview_raw"
 
       - name: ☁️ Authenticate to Google Cloud (service account key)
         if: needs.validate-secrets.outputs.auth == 'sa'
