@@ -26,25 +26,29 @@ function makeNoopFirestore() {
 
 function initFirebase() {
   const fs = require('fs');
+  // First, prefer an explicit file mounted at GOOGLE_APPLICATION_CREDENTIALS
+  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || '/app/serviceAccountKey.json';
+  console.log('Firebase credential path:', credPath, fs.existsSync(credPath) ? '✅ exists' : '❌ missing');
 
-  // Prefer the environment variable, but allow a runtime file (created by CI
-  // at /tmp/firebase_key.json) for runners that prefer file-based secrets.
+  // Prefer FIREBASE_SERVICE_KEY (env or /tmp) when present, otherwise try the mounted file
   let key = process.env.FIREBASE_SERVICE_KEY;
-  if (!key) {
-    try {
+  try {
+    if (!key) {
+      // Try known runtime paths first
       const path1 = '/tmp/firebase_key.json';
       const path2 = '/tmp/key.json';
       if (fs.existsSync(path1)) {
         key = fs.readFileSync(path1, 'utf8');
         console.log('ℹ️ Loaded Firebase key from', path1);
       } else if (fs.existsSync(path2)) {
-        // Some workflows write the GCP service account to /tmp/key.json — try that too.
         key = fs.readFileSync(path2, 'utf8');
         console.log('ℹ️ Loaded Firebase key from', path2);
+      } else if (fs.existsSync(credPath)) {
+        // If the secret was mounted to the container (Secret Manager), read it directly
+        key = fs.readFileSync(credPath, 'utf8');
+        console.log('ℹ️ Loaded Firebase key from', credPath);
       } else {
-        // Local dev convenience: if the repository contains a keys/serviceAccountKey.json,
-        // try to use that for local testing only. This file SHOULD NOT be committed in
-        // production workflows; it's a local fallback to help contributors run the server.
+        // Local repo fallback for contributors only
         try {
           const repoKeyUrl = new URL('../keys/serviceAccountKey.json', import.meta.url);
           if (fs.existsSync(repoKeyUrl.pathname)) {
@@ -52,16 +56,16 @@ function initFirebase() {
             console.log('ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)');
           }
         } catch (repoErr) {
-          // ignore and continue to warn below
+          // ignore and continue
         }
       }
-    } catch (fileErr) {
-      console.warn('⚠️ Could not read firebase key file:', fileErr.message);
     }
+  } catch (fileErr) {
+    console.warn('⚠️ Could not read firebase key file:', fileErr.message);
   }
 
   if (!key) {
-    console.warn('⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)');
+    console.warn('⚠️ FIREBASE_SERVICE_KEY not set and no mounted key found — Firebase not initialized (expected for local dev)');
     return { initialized: false, firestore: makeNoopFirestore() };
   }
 
