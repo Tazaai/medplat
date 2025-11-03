@@ -468,8 +468,12 @@ jobs:
           node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt
           echo "artifact=tmp" >> $GITHUB_OUTPUT
 
-      - name: 📦 Upload smoke test artifacts
-        if: always()
+      - name: 📦 Upload smoke test artifacts (if present)
+        # Only attempt upload if the smoke step produced an artifact path. When the
+        # smoke step fails or didn't set the output, the upload action would error
+        # with "Input required and not supplied: path". Use a conditional to skip
+        # the upload when there is no artifact output.
+        if: always() && steps.smoke.outputs.artifact != ''
         uses: actions/upload-artifact@v4
         with:
           name: smoke-test-artifacts
