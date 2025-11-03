@@ -59,6 +59,7 @@ jobs:
       - name: Run backend integration tests
         run: |
           node backend/test/test_topics_api.cjs
+          node backend/test/test_topics_get.cjs
 
       - name: Show backend server log (if needed)
         if: failure()
