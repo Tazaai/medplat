@@ -6,6 +6,11 @@ import path from 'path';
 import url from 'url';
 import fs from 'fs';
 
+// Ensure GOOGLE_APPLICATION_CREDENTIALS is set inside the container
+// so the app will use the provided service account file when present.
+process.env.GOOGLE_APPLICATION_CREDENTIALS = process.env.GOOGLE_APPLICATION_CREDENTIALS || '/app/serviceAccountKey.json';
+console.log('Using service account:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
 
