@@ -20,8 +20,8 @@
 ❌ Missing GCP_PROJECT
 ❌ Missing GCP_SA_KEY
 ❌ Missing FIREBASE_SERVICE_KEY
-❌ Missing VITE_API_BASE
-🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+✅ VITE_API_BASE present
+🚨 4 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -61,7 +61,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 0 / 5
+Secrets configured: 1 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -72,10 +72,10 @@ Secrets configured: 0 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 402ms
+up to date in 336ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 330349,
+  pid: 8544,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -121,13 +121,3 @@ Note: Backend smoke tests passed locally despite missing secrets (local fallback
 - Configure required secrets in GitHub → Settings → Secrets → Actions before merging.
 - Include agent.md in your PR description for reviewer traceability.
 - Run './scripts/run_local_checks.sh' locally (it runs this script + extended checks).
-
-## Latest automated actions (agent)
-
-- Frontend build: succeeded with VITE_API_BASE set to https://medplat-backend-139218747785.europe-west1.run.app and wrote verification artifact `frontend/dist/VITE_API_BASE.txt`.
-- Post-deploy smoke test: ✅ passed against deployed services.
-  - Frontend URL: https://medplat-frontend-139218747785.europe-west1.run.app
-  - Backend URL:  https://medplat-backend-139218747785.europe-west1.run.app
-  - Artifacts: `/workspaces/medplat/tmp/smoke-2025-11-02T20-01-01-000Z.log` and `/workspaces/medplat/tmp/smoke-2025-11-02T20-01-01-000Z.json`
-
-These actions were performed automatically by the agent to verify production readiness after merging the review changes into `main`.
