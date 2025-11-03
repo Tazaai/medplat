@@ -25,7 +25,28 @@ function makeNoopFirestore() {
 }
 
 function initFirebase() {
-  const key = process.env.FIREBASE_SERVICE_KEY;
+  const fs = require('fs');
+
+  // Prefer the environment variable, but allow a runtime file (created by CI
+  // at /tmp/firebase_key.json) for runners that prefer file-based secrets.
+  let key = process.env.FIREBASE_SERVICE_KEY;
+  if (!key) {
+    try {
+      const path1 = '/tmp/firebase_key.json';
+      const path2 = '/tmp/key.json';
+      if (fs.existsSync(path1)) {
+        key = fs.readFileSync(path1, 'utf8');
+        console.log('ℹ️ Loaded Firebase key from', path1);
+      } else if (fs.existsSync(path2)) {
+        // Some workflows write the GCP service account to /tmp/key.json — try that too.
+        key = fs.readFileSync(path2, 'utf8');
+        console.log('ℹ️ Loaded Firebase key from', path2);
+      }
+    } catch (fileErr) {
+      console.warn('⚠️ Could not read firebase key file:', fileErr.message);
+    }
+  }
+
   if (!key) {
     console.warn('⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)');
     return { initialized: false, firestore: makeNoopFirestore() };
