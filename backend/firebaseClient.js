@@ -41,6 +41,19 @@ function initFirebase() {
         // Some workflows write the GCP service account to /tmp/key.json — try that too.
         key = fs.readFileSync(path2, 'utf8');
         console.log('ℹ️ Loaded Firebase key from', path2);
+      } else {
+        // Local dev convenience: if the repository contains a keys/serviceAccountKey.json,
+        // try to use that for local testing only. This file SHOULD NOT be committed in
+        // production workflows; it's a local fallback to help contributors run the server.
+        try {
+          const repoKeyUrl = new URL('../keys/serviceAccountKey.json', import.meta.url);
+          if (fs.existsSync(repoKeyUrl.pathname)) {
+            key = fs.readFileSync(repoKeyUrl.pathname, 'utf8');
+            console.log('ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)');
+          }
+        } catch (repoErr) {
+          // ignore and continue to warn below
+        }
       }
     } catch (fileErr) {
       console.warn('⚠️ Could not read firebase key file:', fileErr.message);
