@@ -20,8 +20,8 @@
 ❌ Missing GCP_PROJECT
 ❌ Missing GCP_SA_KEY
 ❌ Missing FIREBASE_SERVICE_KEY
-✅ VITE_API_BASE present
-🚨 4 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+❌ Missing VITE_API_BASE
+🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -61,7 +61,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 1 / 5
+Secrets configured: 0 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -72,10 +72,10 @@ Secrets configured: 1 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 336ms
+up to date in 376ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 8544,
+  pid: 26812,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -95,15 +95,35 @@ DEBUG ROUTES: files in routes/: [
   'topics_api.mjs'
 ]
 ✅ Mounted /api/location -> ./routes/location_api.mjs
-⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)
+ℹ️ Loaded Firebase key from /tmp/firebase_key.json
+✅ Firebase initialized using FIREBASE_SERVICE_KEY
 ✅ Mounted /api/topics -> ./routes/topics_api.mjs
 ✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
 ✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
 ✅ Mounted /api/comment -> ./routes/comment_api.mjs
-⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)
+ℹ️ Loaded Firebase key from /tmp/firebase_key.json
 ✅ Mounted /api/cases -> ./routes/cases_api.mjs
 All route import attempts finished
-🚀 MedPlat backend listening on 0.0.0.0:8080
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8080
+}
+
+Node.js v22.17.0
 🌐 Testing health endpoint...
 ✅ Health OK
 📡 Testing /api/topics...
