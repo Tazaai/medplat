@@ -451,6 +451,10 @@ jobs:
         id: smoke
         run: |
           echo "Running post-deploy smoke tests"
+          # Ensure an artifact path output is set even if the smoke script fails
+          # so the upload-artifact step has a non-empty 'path' input. The upload
+          # will warn if no files are present but won't fail with a missing input.
+          echo "artifact=tmp" >> $GITHUB_OUTPUT
           FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
           PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
