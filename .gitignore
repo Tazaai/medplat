@@ -25,3 +25,9 @@ tmp/actions-artifacts/
 tmp/
 tmp/*.pid
 tmp/*.log
+keys/serviceAccountKey.json
+node_modules/
+/tmp/
+tmp/
+medplat_backup_20250901_2042.tar.gz
+*.tar.gz
