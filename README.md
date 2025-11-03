@@ -108,5 +108,16 @@ The backend will be run with `nodemon backend/index.js` (configured in `package.
 
 For full architecture and protected guidance, see `PROJECT_GUIDE.md` and `.github/copilot-instructions.md`.
 
+Quick note: topics and local Firebase key
+---------------------------------------
+
+If you see the frontend reporting "Topics count: 0":
+
+- Verify the backend is able to initialize Firebase. The backend uses `FIREBASE_SERVICE_KEY` (env) or `/tmp/firebase_key.json` in CI. For local dev the code now also attempts to load `keys/serviceAccountKey.json` from the repo (local convenience only).
+- The topics API reads from the `topics2` collection by default; you can override with `TOPICS_COLLECTION` if needed.
+- A lightweight integration test was added at `backend/test/test_topics_get.cjs` to assert GET `/api/topics` returns `{ ok: true, topics: [] }` and this will run in local checks.
+
+If production deploys fail, make sure GitHub Secrets include `FIREBASE_SERVICE_KEY` and that the CI principal has the necessary GCP IAM roles (Cloud Build, Artifact Registry, Cloud Run, Secret Manager).
+
 ```
 

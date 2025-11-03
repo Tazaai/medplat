@@ -11,6 +11,11 @@ export default function topicsApi() {
   // Helper: safely read all docs from topics collection (noop firestore returns empty list)
   async function readAllTopics() {
     try {
+      // Diagnostic: if firestore looks like the noop client returned by firebaseClient
+      if (!firestore || typeof firestore.collection !== 'function') {
+        console.warn('⚠️ Firestore client not initialized properly — falling back to noop client. Check FIREBASE_SERVICE_KEY or /tmp/firebase_key.json');
+        return [];
+      }
       const col = firestore.collection(collectionName);
       const snapshot = await col.get();
       // firestore-admin returns QuerySnapshot with docs; noop returns { docs: [] }
