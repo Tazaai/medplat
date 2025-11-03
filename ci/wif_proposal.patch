@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: .github/workflows/deploy.yml
+@@
+-          # For GCP authentication we accept either a service account key JSON
+-          # in GCP_SA_KEY, or Workload Identity Federation configuration via
+-          # WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT.
+-          # Prefer Workload Identity Federation (WIF) when both methods are present
+-          # because WIF avoids storing long-lived JSON keys in GitHub Secrets.
+-          if [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
+-            echo "✅ Workload Identity provider and service account present"
+-            AUTH="wif"
+-          elif [ -n "$(printenv GCP_SA_KEY)" ]; then
+-            echo "✅ GCP_SA_KEY present (service-account key)"
+-            AUTH="sa"
+-          else
+-            echo "❌ GCP auth configuration missing: provide either WORKLOAD_IDENTITY_PROVIDER + WORKLOAD_IDENTITY_SERVICE_ACCOUNT or GCP_SA_KEY"
+-            MISSING=$((MISSING+1))
+-          fi
++          # For GCP authentication we require Workload Identity Federation (WIF).
++          # This enforces a stronger security posture by avoiding long-lived
++          # service-account JSON keys in repository secrets. Provide the
++          # WORKLOAD_IDENTITY_PROVIDER and WORKLOAD_IDENTITY_SERVICE_ACCOUNT
++          # secrets before running this workflow.
++          if [ -n "$(printenv WORKLOAD_IDENTITY_PROVIDER)" ] && [ -n "$(printenv WORKLOAD_IDENTITY_SERVICE_ACCOUNT)" ]; then
++            echo "✅ Workload Identity provider and service account present"
++            AUTH="wif"
++          else
++            echo "❌ WIF configuration missing: set WORKLOAD_IDENTITY_PROVIDER and WORKLOAD_IDENTITY_SERVICE_ACCOUNT in repo Secrets"
++            MISSING=$((MISSING+1))
++          fi
+*** End Patch
