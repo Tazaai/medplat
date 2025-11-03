@@ -17,7 +17,7 @@ export default function topicsApi() {
         return [];
       }
       const col = firestore.collection(collectionName);
-      const snapshot = await col.get();
+    const snapshot = await firestore.collection("topics2").get();
       // firestore-admin returns QuerySnapshot with docs; noop returns { docs: [] }
       const docs = snapshot && snapshot.docs ? snapshot.docs : [];
       return docs.map((d) => {

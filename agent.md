@@ -72,10 +72,10 @@ Secrets configured: 0 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 376ms
+up to date in 406ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 26812,
+  pid: 112978,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',

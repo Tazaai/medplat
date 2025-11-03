@@ -14,5 +14,8 @@
     "dev:stop": "pm2 stop ecosystem.config.js || true",
     "dev:logs": "pm2 logs --lines 100",
     "dev:reload": "pm2 reload ecosystem.config.js || true"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
   }
 }
