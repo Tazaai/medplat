@@ -222,6 +222,7 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
+            --set-env-vars "TOPICS_COLLECTION=topics2" \
             --project $GCP_PROJECT
 
       - name: 🎨 Build Frontend (generate artifact)
