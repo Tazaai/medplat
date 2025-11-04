@@ -253,7 +253,7 @@ jobs:
   post_deploy_smoke:
     name: Post-Deploy Connectivity Smoke Check
     runs-on: ubuntu-latest
-    needs: [deploy_backend]  # adjust to match your deploy job name
+    needs: [deploy]
     if: always()
     steps:
       - name: Checkout
@@ -283,4 +283,11 @@ jobs:
             cat logs/* || true
             exit 1
           }
+
+      - name: Upload connectivity logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connectivity-logs
+          path: logs/*
 
