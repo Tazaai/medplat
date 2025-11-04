@@ -11,12 +11,25 @@ echo "=== MedPlat dev_up.sh started at $TS ===" | tee "$LOG"
 PORT=${PORT:-8080}
 FRONT_PORT=${FRONT_PORT:-5173}
 
+# Support non-interactive mode via --yes / -y
+AUTO_YES=false
+for arg in "$@"; do
+  if [[ "$arg" == "--yes" || "$arg" == "-y" ]]; then
+    AUTO_YES=true
+  fi
+done
+[ "$AUTO_YES" = true ] && echo "[dev_up] Running non-interactively (--yes flag detected)" | tee -a "$LOG"
+
 # Check if backend port is in use
 if ss -ltnp | grep -q ":$PORT"; then
   echo "⚠️ Port $PORT already in use — showing process:" | tee -a "$LOG"
   ss -ltnp | grep ":$PORT" | tee -a "$LOG"
-  read -p "Kill this process? (y/N): " ans
-  if [[ "$ans" =~ ^[Yy]$ ]]; then
+  if [ "$AUTO_YES" = true ]; then
+    ANSWER="y"
+  else
+    read -r -p "Kill this process? (y/N): " ANSWER
+  fi
+  if [[ "$ANSWER" =~ ^[Yy]$ ]]; then
     PID=$(ss -ltnp | grep ":$PORT" | sed -E 's/.*pid=([0-9]+).*/\1/' | head -n1)
     echo "Killing PID=$PID" | tee -a "$LOG"
     kill -9 "$PID" 2>/dev/null || true

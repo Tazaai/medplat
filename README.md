@@ -106,7 +106,20 @@ npm run dev:start
 
 The backend will be run with `nodemon backend/index.js` (configured in `package.json`) so file edits restart the server automatically.
 
-For full architecture and protected guidance, see `PROJECT_GUIDE.md` and `.github/copilot-instructions.md`.
+-For full architecture and protected guidance, see `PROJECT_GUIDE.md` and `.github/copilot-instructions.md`.
+
+Dev helper: `scripts/dev_up.sh`
+--------------------------------
+
+Run both backend and frontend locally and verify connectivity with the smoke-check.
+
+Example (non-interactive):
+
+```bash
+bash scripts/dev_up.sh --yes
+```
+
+This will start the backend on `$PORT` (default 8080), start the frontend with `VITE_API_BASE=http://localhost:$PORT`, run the connectivity check, and write a timestamped log under `logs/` (e.g. `logs/dev_up_YYYYMMDD_HHMMSS.log`).
 
 Quick note: topics and local Firebase key
 ---------------------------------------
