@@ -56,6 +56,12 @@ Note on topics maintenance and read-only contract:
 - Topics are typically seeded from `scripts/topics_seed.json` using `scripts/seed_topics.mjs` (or the JS variant `scripts/seed_topics.js`). To update topics in production, run the seeding script with proper credentials (see `scripts/README.md` / `examine_firebaseservicekey.mjs`).
 - The backend route `backend/routes/topics_api.mjs` is intentionally read-only and CI includes guards to prevent accidental writes; do not add Firestore writes to that route or other runtime endpoints unless you intentionally change the data model and CI checks.
 
+Operational summary (explicit):
+
+- MedPlat uses a single authoritative Firestore collection for topic seeds named `topics2` (production).
+- Each entry in `topics2` is a lightweight seed (topic id, display name, optional metadata) used to drive AI generation.
+- The platform does not store static case documents, answers, or MCQs in Firestore — all clinical cases and multiple-choice questions are generated dynamically by the backend at request time using the topic seed.
+
 Note: For local development the backend includes safe, non-throwing fallbacks when secrets or SDKs are missing:
 - `backend/firebaseClient.js` returns a noop `firestore()` client when `FIREBASE_SERVICE_KEY` or `firebase-admin` is not available.
 - `backend/openaiClient.js` provides a stubbed client when `OPENAI_API_KEY` or the OpenAI SDK is not present.
