@@ -249,3 +249,38 @@ jobs:
             exit 0;
           fi
           node test/integration/topics_search_integration.mjs
+
+  post_deploy_smoke:
+    name: Post-Deploy Connectivity Smoke Check
+    runs-on: ubuntu-latest
+    needs: [deploy_backend]  # adjust to match your deploy job name
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify deployed backend connectivity
+        env:
+          BACKEND_BASE: ${{ secrets.BACKEND_BASE }}
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+        run: |
+          # Prefer BACKEND_BASE (explicit deployed backend). Fall back to VITE_API_BASE.
+          if [ -n "$BACKEND_BASE" ]; then
+            BASE_URL="$BACKEND_BASE"
+          elif [ -n "$VITE_API_BASE" ]; then
+            BASE_URL="$VITE_API_BASE"
+          else
+            echo "ERROR: Neither BACKEND_BASE nor VITE_API_BASE is set. Cannot run post-deploy smoke check." >&2
+            exit 1
+          fi
+
+          echo "Running connectivity check against $BASE_URL ..."
+          mkdir -p logs
+          bash scripts/check_connectivity.sh "$BASE_URL" || {
+            echo "❌ Connectivity check failed for $BASE_URL" >&2
+            # Upload the logs to help debugging (artifact upload is available in other workflows)
+            ls -la logs || true
+            cat logs/* || true
+            exit 1
+          }
+
