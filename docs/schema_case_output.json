@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MedPlat Case Output Schema",
+  "type": "object",
+  "required": ["meta","final_diagnosis","management"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "case_id": {"type":"string"},
+        "topic_id": {"type":"string"},
+        "generated_at": {"type":"string","format":"date-time"},
+        "region": {"type":"string"},
+        "language": {"type":"string"},
+        "difficulty": {"type":"string","enum":["student","doctor","specialist"]}
+      },
+      "required":["case_id","topic_id","generated_at"]
+    },
+    "history": {
+      "type":"object",
+      "properties":{
+        "presenting_complaint":{"type":"string"},
+        "history_of_present_illness":{"type":"string"},
+        "past_medical_history":{"type":"array","items":{"type":"string"}},
+        "medications":{"type":"array","items":{"type":"string"}},
+        "allergies":{"type":"array","items":{"type":"string"}}
+      }
+    },
+    "exam": {"type":"object"},
+    "paraclinical": {"type":"object"},
+    "differentials": {
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "name":{"type":"string"},
+          "probability":{"type":"number","minimum":0,"maximum":1},
+          "why_for":{"type":"string"},
+          "why_against":{"type":"string"}
+        },
+        "required":["name","probability"]
+      }
+    },
+    "red_flags": {"type":"array","items":{"type":"string"}},
+    "final_diagnosis":{"type":"object","properties":{"name":{"type":"string"},"confidence":{"type":"number"}},"required":["name"]},
+    "pathophysiology":{"type":"string"},
+    "etiology":{"type":"string"},
+    "management":{
+      "type":"object",
+      "properties":{
+        "immediate":{"type":"array","items":{"type":"string"}},
+        "medical":{"type":"array","items":{"type":"string"}},
+        "surgical":{"type":"array","items":{"type":"string"}},
+        "follow_up":{"type":"object","properties":{"when":{"type":"string"},"where":{"type":"string"}}}
+      }
+    },
+    "disposition":{"type":"string"},
+    "evidence":{"type":"array","items":{"type":"object","properties":{"source":{"type":"string"},"url":{"type":"string","format":"uri"}}}},
+    "teaching":{"type":"string"},
+    "panel_notes":{"type":"array","items":{"type":"object","properties":{"role":{"type":"string"},"note":{"type":"string"}}}}
+  },
+  "additionalProperties": false
+}

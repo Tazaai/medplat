@@ -1,30 +1,52 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE } from "./config";
 
+const DEFAULT_TIMEOUT = 2500; // ms
+
+async function fetchJsonWithTimeout(url, timeout = DEFAULT_TIMEOUT) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(id);
+    if (err.name === "AbortError") throw new Error("Request timed out");
+    throw err;
+  }
+}
+
 function TopicsPanel() {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const base = API_BASE || "";
 
   useEffect(() => {
-  const base = API_BASE || '';
-  // Use the read-only topics listing endpoint (avoid area=all filter)
-  const url = base ? `${base}/api/topics` : `/api/topics`;
-    setLoading(true);
-    fetch(url)
-      .then((r) => r.json())
-      .then((data) => {
-        // try to handle different shapes: { topics: [...] } or array
+    let mounted = true;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      const url = base ? `${base}/api/topics` : `/api/topics`;
+      try {
+        const data = await fetchJsonWithTimeout(url);
+        if (!mounted) return;
         if (Array.isArray(data)) setTopics(data);
         else if (data && Array.isArray(data.topics)) setTopics(data.topics);
         else setTopics([]);
-      })
-      .catch((err) => {
-        console.debug("Topics fetch error", err);
-        setError("Backend unreachable or returned invalid data");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (err) {
+        if (!mounted) return;
+        setError(`Backend unreachable: ${err.message}`);
+        setTopics([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    load();
+    return () => { mounted = false; };
+  }, [base]);
 
   if (loading) return <p>Loading backend topics…</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -46,7 +68,7 @@ export default function App() {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>✅ MedPlat Frontend</h1>
-      <p>Backend base: <code>{API_BASE}</code></p>
+      <p>Backend base: <code>{API_BASE || 'local (proxy or /api)'}</code></p>
       <DiagnosticsPanel />
       <TopicsPanel />
     </div>
@@ -57,28 +79,29 @@ function DiagnosticsPanel() {
   const [health, setHealth] = useState(null);
   const [topicsCount, setTopicsCount] = useState(null);
   const [loading, setLoading] = useState(true);
-  const base = API_BASE || '';
+  const base = API_BASE || "";
 
   useEffect(() => {
     let mounted = true;
     async function runChecks() {
       setLoading(true);
+      setHealth(null);
+      setTopicsCount(null);
       try {
-  const healthUrl = base ? `${base}/` : `/`;
-  // Diagnostics: use the bulk topics listing which returns all topics
-  const topicsUrl = base ? `${base}/api/topics` : `/api/topics`;
+        const healthUrl = base ? `${base}/` : `/`;
+        const topicsUrl = base ? `${base}/api/topics` : `/api/topics`;
 
-        const [hRes, tRes] = await Promise.all([
-          fetch(healthUrl).then(r => r.json()).catch(() => null),
-          fetch(topicsUrl).then(r => r.json()).catch(() => null),
+        const [h, t] = await Promise.all([
+          fetchJsonWithTimeout(healthUrl).catch(() => null),
+          fetchJsonWithTimeout(topicsUrl).catch(() => null),
         ]);
 
         if (!mounted) return;
-        setHealth(hRes ? (hRes.status || JSON.stringify(hRes)) : null);
-        if (Array.isArray(tRes)) setTopicsCount(tRes.length);
-        else if (tRes && Array.isArray(tRes.topics)) setTopicsCount(tRes.topics.length);
-        else setTopicsCount(tRes ? 0 : null);
-      } catch (e) {
+        setHealth(h ? (h.status || JSON.stringify(h)) : null);
+        if (Array.isArray(t)) setTopicsCount(t.length);
+        else if (t && Array.isArray(t.topics)) setTopicsCount(t.topics.length);
+        else setTopicsCount(t ? 0 : null);
+      } catch (err) {
         if (!mounted) return;
         setHealth(null);
         setTopicsCount(null);

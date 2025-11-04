@@ -1,3 +1,30 @@
+name: CI Checks - Connectivity Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend-url:
+        description: 'Backend base URL (e.g., https://my-backend-url)'
+        required: true
+        default: 'http://localhost:8080'
+
+jobs:
+  connectivity-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run connectivity check
+        run: |
+          mkdir -p logs
+          bash scripts/check_connectivity.sh "${{ github.event.inputs.backend-url }}"
+
+      - name: Upload connectivity log
+        uses: actions/upload-artifact@v4
+        with:
+          name: connectivity-log
+          path: logs/*
 name: CI checks — backend tests + frontend build
 
 on:
