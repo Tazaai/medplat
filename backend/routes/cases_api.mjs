@@ -1,5 +1,6 @@
 import express from 'express';
 import { initFirebase } from '../firebaseClient.js';
+import generateCase from '../../generate_case_clinical.mjs';
 
 export default function casesApi() {
   const router = express.Router();
@@ -7,7 +8,21 @@ export default function casesApi() {
   const firestore = fb && fb.firestore;
   const collectionName = process.env.CASES_COLLECTION || 'cases';
 
-  // POST /api/cases - save a case document
+  // POST /api/cases/generate - generate a case using the AI generator
+  router.post('/generate', async (req, res) => {
+    try {
+      const { topic, model = 'gpt-4o-mini', lang = 'en' } = req.body || {};
+      if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
+
+      const result = await generateCase({ topic, model, lang });
+      return res.json({ ok: true, case: result });
+    } catch (err) {
+      console.error('❌ /api/cases/generate error:', err && err.stack ? err.stack : err);
+      return res.status(500).json({ ok: false, error: String(err) });
+    }
+  });
+
+  // POST /api/cases - save a case document (existing behaviour)
   router.post('/', async (req, res) => {
     try {
       const payload = req.body || {};
