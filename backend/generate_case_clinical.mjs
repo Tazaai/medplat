@@ -35,8 +35,14 @@ Keep tone realistic and educational.
     : completion && completion.text
     ? completion.text
     : JSON.stringify(completion);
-  const parsed = JSON.parse(text);
-  return parsed;
+  try {
+    const parsed = JSON.parse(text);
+    return parsed;
+  } catch (e) {
+    // If the AI returned non-JSON (stub or plain text), fall back to a safe structure
+    console.warn('generateClinicalCase: failed to parse AI output as JSON, returning raw text');
+    return { meta: { topic }, history: String(text), exam: '', labs: '', imaging: '', diagnosis: '', discussion: '' };
+  }
 }
 
 // Backwards compatible default export
