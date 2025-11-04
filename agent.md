@@ -72,10 +72,10 @@ Secrets configured: 0 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 376ms
+up to date in 429ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 26812,
+  pid: 15292,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -95,13 +95,13 @@ DEBUG ROUTES: files in routes/: [
   'topics_api.mjs'
 ]
 ✅ Mounted /api/location -> ./routes/location_api.mjs
-ℹ️ Loaded Firebase key from /tmp/firebase_key.json
+ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)
 ✅ Firebase initialized using FIREBASE_SERVICE_KEY
 ✅ Mounted /api/topics -> ./routes/topics_api.mjs
 ✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
 ✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
 ✅ Mounted /api/comment -> ./routes/comment_api.mjs
-ℹ️ Loaded Firebase key from /tmp/firebase_key.json
+ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)
 ✅ Mounted /api/cases -> ./routes/cases_api.mjs
 All route import attempts finished
 node:events:496

@@ -1,0 +1,29 @@
+=== Purge & Rotate script started: 2025-11-03_22-14-59 ===
+Repository: /workspaces/medplat
+Current branch: feature/add-smoke-test-and-docs
+Path to remove: medplat_backup_20250901_2042.tar.gz
+Execute mode: false
+-- Step 1: Create backup branch (local & remote) --
+Creating backup branch backup/purge_2025-11-03_22-14-59 from main
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+From https://github.com/Tazaai/medplat
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+remote: 
+remote: Create a pull request for 'backup/purge_2025-11-03_22-14-59' on GitHub by visiting:        
+remote:      https://github.com/Tazaai/medplat/pull/new/backup/purge_2025-11-03_22-14-59        
+remote: 
+To https://github.com/Tazaai/medplat
+ * [new branch]      backup/purge_2025-11-03_22-14-59 -> backup/purge_2025-11-03_22-14-59
+branch 'backup/purge_2025-11-03_22-14-59' set up to track 'origin/backup/purge_2025-11-03_22-14-59'.
+-- Git files containing medplat_backup_20250901_2042.tar.gz (if any): --
+medplat_backup_20250901_2042.tar.gz
+\nDRY RUN (no destructive actions taken). To execute, re-run with --execute and set required env vars.
+Planned actions if executed:
+ 1) Run: npx git-filter-repo --path medplat_backup_20250901_2042.tar.gz --invert-paths
+ 2) git push --force origin main
+ 3) Create new service-account key and add as new Secret Manager version for 'medplat-service-key'
+ 4) Optionally disable/remove old service-account keys
+ 5) Run smoke test: API_BASE="https://medplat-backend-139218747785.europe-west1.run.app" node backend/test/test_topics_api_smoke.cjs (requires CLOUD_RUN_URL env)
+Log file written to: logs/purge_and_rotate_2025-11-03_22-14-59.log

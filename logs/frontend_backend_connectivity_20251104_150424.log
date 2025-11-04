@@ -1,0 +1,59 @@
+Timestamp: 20251104_150424
+
+=== Backend listener ===
+
+=== Direct backend /api/topics ===
+
+HTTP 000
+
+=== Restarting frontend dev server ===
+[1] 5926
+vite-start-pid:5926
+
+=== Vite output (Local/Network lines) ===
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+
+=== /api/topics via frontend (5173) ===
+
+HTTP 500
+
+=== tail backend out (last 20 lines) ===
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8080
+}
+
+Node.js v22.17.0
+
+=== tail frontend out (last 40 lines) ===
+nohup: ignoring input
+
+> medplat-frontend@1.0.0 dev
+> vite
+
+
+  VITE v4.5.14  ready in 2411 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+(node:5939) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+3:04:30 PM [vite] http proxy error at /api/topics:
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
