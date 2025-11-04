@@ -1,5 +1,5 @@
-import OpenAI from "openai";
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { getOpenAIClient } from './backend/openaiClient.js';
+const client = getOpenAIClient();
 
 export async function generateClinicalCase({ topic, model = "gpt-4o-mini", lang = "en" }) {
   const systemPrompt = `
@@ -19,16 +19,20 @@ Language: ${lang}.
 Keep tone realistic and educational.
 `;
 
-  const completion = await client.chat.completions.create({
+  const completion = await client.chatCompletion({
     model,
-    response_format: { type: "json_object" },
     messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Generate a complete structured case for topic "${topic}".` },
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Generate a complete structured case for topic "${topic}".` },
     ],
+    response_format: { type: 'json_object' },
   });
 
-  const text = completion.choices[0].message.content;
+  const text = completion && completion.choices && completion.choices[0] && completion.choices[0].message
+    ? completion.choices[0].message.content
+    : completion && completion.text
+    ? completion.text
+    : JSON.stringify(completion);
   const parsed = JSON.parse(text);
   return parsed;
 }
