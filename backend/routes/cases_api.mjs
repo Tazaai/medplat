@@ -1,6 +1,8 @@
 import express from 'express';
 import { initFirebase } from '../firebaseClient.js';
-import generateCase from '../../generate_case_clinical.mjs';
+// generate_case_clinical.mjs lives at the repository root (copied into the image root)
+// relative to this routes file it is one level up: ../generate_case_clinical.mjs
+import generateCase from '../generate_case_clinical.mjs';
 
 export default function casesApi() {
   const router = express.Router();
