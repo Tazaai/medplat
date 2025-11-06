@@ -175,5 +175,22 @@ app.get('/debug/import-topics', async (req, res) => {
 	}
 });
 
+// Lightweight environment diagnostics (safe - does NOT echo secret values)
+app.get('/debug/env', (req, res) => {
+	try {
+		return res.json({
+			ok: true,
+			hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+			hasFirebaseServiceKey: !!process.env.FIREBASE_SERVICE_KEY,
+			GCP_PROJECT: process.env.GCP_PROJECT || null,
+			TOPICS_COLLECTION: process.env.TOPICS_COLLECTION || null,
+			NODE_ENV: process.env.NODE_ENV || null,
+			pid: process.pid,
+		});
+	} catch (err) {
+		return res.status(500).json({ ok: false, error: String(err) });
+	}
+});
+
 export default app;
 // (paste code above)
