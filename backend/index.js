@@ -52,71 +52,70 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => res.json({ status: 'MedPlat OK', pid: process.pid }));
 
 // Mount known routes if present. Fail gracefully if route files missing.
-async function mountRoutes() {
-	const routes = [
-		{ path: '/api/location', file: './routes/location_api.mjs' },
-		{ path: '/api/topics', file: './routes/topics_api.mjs' },
-		{ path: '/api/dialog', file: './routes/dialog_api.mjs' },
-		{ path: '/api/gamify', file: './routes/gamify_api.mjs' },
-		{ path: '/api/comment', file: './routes/comment_api.mjs' },
-		{ path: '/api/cases', file: './routes/cases_api.mjs' },
-	];
+// For reliability explicitly import and mount known route modules.
+// This avoids subtle timing/dynamic import issues in some container runtimes.
+function normalizeRouter(mod) {
+	let router = mod && (mod.default || mod);
+	if (typeof router === 'function') router = router();
+	return router && router.stack ? router : null;
+}
 
-	// Debug: list route files present in the routes directory
-	try {
-		const routeDir = path.join(__dirname, 'routes');
-		const files = fs.existsSync(routeDir) ? fs.readdirSync(routeDir) : [];
-		console.log('DEBUG ROUTES: files in routes/:', files);
-	} catch (e) {
-		console.warn('DEBUG ROUTES: could not list routes folder:', e && e.message ? e.message : e);
-	}
+try {
+	// Import route modules explicitly
+	// If you add new route files, import and mount them here.
+	import topicsMod from './routes/topics_api.mjs';
+	import dialogMod from './routes/dialog_api.mjs';
+	import gamifyMod from './routes/gamify_api.mjs';
+	import commentMod from './routes/comment_api.mjs';
+	import locationMod from './routes/location_api.mjs';
+	import casesMod from './routes/cases_api.mjs';
 
-	for (const r of routes) {
-		// For better debugging in Cloud Run, check the file exists before importing
-		const fullPath = path.join(__dirname, r.file);
-		if (!fs.existsSync(fullPath)) {
-			console.warn(`⚠️ Route file not found: ${fullPath}`);
-			continue;
-		}
-		try {
-			// dynamic import of ESM route modules
-			// route modules should export a default function or an express.Router
-			// For compatibility accept both: factory function or router object
-			// eslint-disable-next-line no-await-in-loop
-			const mod = await import(r.file);
-			let router = mod.default;
-			if (typeof router === 'function') router = router();
-			if (router && router.stack) {
-				app.use(r.path, router);
-				console.log(`✅ Mounted ${r.path} -> ${r.file}`);
-			} else {
-				console.warn(`⚠️ Route ${r.file} did not export an express router`);
-			}
-		} catch (err) {
-			console.error(`❌ Could not mount ${r.file}:`, err && err.stack ? err.stack : err);
-		}
+	const topicsRouter = normalizeRouter(topicsMod);
+	const dialogRouter = normalizeRouter(dialogMod);
+	const gamifyRouter = normalizeRouter(gamifyMod);
+	const commentRouter = normalizeRouter(commentMod);
+	const locationRouter = normalizeRouter(locationMod);
+	const casesRouter = normalizeRouter(casesMod);
+
+	if (locationRouter) {
+		app.use('/api/location', locationRouter);
+		console.log('✅ Mounted /api/location');
 	}
+	if (topicsRouter) {
+		app.use('/api/topics', topicsRouter);
+		console.log('✅ Mounted /api/topics');
+	} else {
+		console.warn('⚠️ /api/topics route not mounted (topics_api.mjs missing or invalid export)');
+	}
+	if (dialogRouter) {
+		app.use('/api/dialog', dialogRouter);
+		console.log('✅ Mounted /api/dialog');
+	}
+	if (gamifyRouter) {
+		app.use('/api/gamify', gamifyRouter);
+		console.log('✅ Mounted /api/gamify');
+	}
+	if (commentRouter) {
+		app.use('/api/comment', commentRouter);
+		console.log('✅ Mounted /api/comment');
+	}
+	if (casesRouter) {
+		app.use('/api/cases', casesRouter);
+		console.log('✅ Mounted /api/cases');
+	}
+} catch (err) {
+	console.error('Route import failed:', err && err.stack ? err.stack : err);
+	// continue — server can still run for diagnostics
 }
 
 // Start server with Cloud Run friendly host/port
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Ensure routes are mounted before the server starts listening
-mountRoutes()
-	.then(() => {
-		console.log('All route import attempts finished');
-		app.listen(PORT, HOST, () => {
-			console.log(`🚀 MedPlat backend listening on ${HOST}:${PORT}`);
-		});
-	})
-	.catch((e) => {
-		console.error('Route mounting failed:', e && e.stack ? e.stack : e);
-		// Start the server even if mounting fails so the service remains available for diagnostics
-		app.listen(PORT, HOST, () => {
-			console.log(`🚀 MedPlat backend listening (with mount errors) on ${HOST}:${PORT}`);
-		});
-	});
+// Start listening immediately — routes have been mounted above (explicit imports)
+app.listen(PORT, HOST, () => {
+	console.log(`🚀 MedPlat backend listening on ${HOST}:${PORT}`);
+});
 
 // Temporary debug endpoint to list mounted routes (useful in Cloud Run)
 app.get('/debug/routes', (req, res) => {
