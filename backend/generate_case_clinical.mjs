@@ -1,5 +1,23 @@
 import OpenAI from 'openai';
 
+/**
+ * Try to extract a JSON object string from freeform model text.
+ * Returns the parsed object or null on failure.
+ */
+export function extractJSON(text = '') {
+  if (!text || typeof text !== 'string') return null;
+  // Remove common markdown fences and extract the first {...} block
+  // This is intentionally simple and fast; it prefers the first JSON-looking block.
+  const unwrapped = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```$/g, '');
+  const match = unwrapped.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[0]);
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang = 'en' }) {
   // Initialize the official OpenAI client using the runtime secret
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -19,22 +37,20 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
     // Normalize response text across SDK shapes
     const text = response?.choices?.[0]?.message?.content ?? response?.choices?.[0]?.text ?? JSON.stringify(response);
 
-    // Try to parse JSON output from the model
-    try {
-      const parsed = JSON.parse(text);
-      return parsed;
-    } catch (parseErr) {
-      console.warn('generateClinicalCase: OpenAI returned non-JSON, returning fallback structure', parseErr && parseErr.message);
-      return {
-        meta: { topic },
-        history: String(text),
-        exam: '',
-        labs: '',
-        imaging: '',
-        diagnosis: '',
-        discussion: '',
-      };
-    }
+    // Try to extract a JSON object from the model text (handles fences/prefixes)
+    const extracted = extractJSON(text);
+    if (extracted) return extracted;
+
+    console.warn('generateClinicalCase: OpenAI returned non-JSON, returning fallback structure');
+    return {
+      meta: { topic },
+      history: String(text),
+      exam: '',
+      labs: '',
+      imaging: '',
+      diagnosis: '',
+      discussion: '',
+    };
   } catch (err) {
     // Network/auth/parsing errors should not crash the endpoint — log and return a stable fallback
     console.error('⚠️ OpenAI error or parse failure:', err && err.message ? err.message : String(err));
