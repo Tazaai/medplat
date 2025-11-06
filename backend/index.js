@@ -7,6 +7,7 @@ import path from 'path';
 import url from 'url';
 import fs from 'fs';
 import topicsRouter from './routes/topics_api.mjs';
+import panelRouter from './routes/panel_api.mjs';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -31,6 +32,10 @@ app.use(express.urlencoded({ extended: true }));
 // This is intentionally a static import so Cloud Run serves /api/topics reliably.
 app.use('/api/topics', topicsRouter);
 console.log('✅ Mounted /api/topics (static import)');
+
+// Mount expert panel router statically so it's available early in startup
+app.use('/api/panel', panelRouter);
+console.log('✅ Mounted /api/panel (static import)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set
