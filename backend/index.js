@@ -171,6 +171,13 @@ const HOST = process.env.HOST || '0.0.0.0';
 // Top-level await is supported in Node 18 ESM; run mount then start listening.
 await mountRoutes();
 
+// Extend request timeout for long-running AI operations (e.g. expert panel reviews)
+app.use((req, res, next) => {
+	req.setTimeout(300000); // 5 minutes for AI generation
+	res.setTimeout(300000);
+	next();
+});
+
 app.listen(PORT, HOST, () => {
 	console.log(`🚀 MedPlat backend listening on ${HOST}:${PORT}`);
 });

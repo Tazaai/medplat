@@ -27,10 +27,10 @@ export default function panelApi() {
       ];
 
       const response = await client.chat.completions.create({
-        model: process.env.PANEL_MODEL || 'gpt-4o',
+        model: process.env.PANEL_MODEL || 'gpt-4o-mini',
         messages,
-        temperature: 0.7,
-        max_tokens: 1500,
+        temperature: 0.8,
+        max_tokens: 2000,
       });
 
       const text = response?.choices?.[0]?.message?.content ?? response?.choices?.[0]?.text ?? JSON.stringify(response);
