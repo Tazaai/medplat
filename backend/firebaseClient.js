@@ -62,6 +62,12 @@ function initFirebase() {
 
     // Initialize firebase-admin if not already initialized
     try {
+      // Log non-secret metadata to help debugging (do not log private_key)
+      try {
+        console.log('ℹ️ Firebase credential parsed for project:', cred.project_id, 'client_email:', cred.client_email);
+      } catch (logErr) {
+        // ignore
+      }
       if (!admin.apps || admin.apps.length === 0) {
         admin.initializeApp({
           credential: admin.credential.cert(cred),
