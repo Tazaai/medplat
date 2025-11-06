@@ -111,7 +111,8 @@ export default function topicsApi() {
     try {
       const docs = await readAllTopics();
       const topics = docs.map((d) => ({ id: d.id || d._id || null, topic: d.topic || d.title || d.name || '' }));
-      res.json({ ok: true, topics });
+      // Include whether the Firebase client was initialized to help debugging
+      return res.json({ ok: true, firestore_initialized: !!(fb && fb.initialized), topics });
     } catch (e) {
       console.warn('GET /api/topics failed:', e && e.message ? e.message : e);
       res.status(500).json({ ok: false, topics: [] });

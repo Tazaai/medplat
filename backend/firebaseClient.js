@@ -1,7 +1,7 @@
 // Lightweight Firebase client shim for local dev and CI checks.
 // Do NOT commit real credentials. CI creates/uses Secret Manager.
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+import admin from 'firebase-admin';
+import fs from 'fs';
 
 function makeNoopFirestore() {
   return {
@@ -24,70 +24,66 @@ function makeNoopFirestore() {
   };
 }
 
+// Initialize Firebase Admin SDK using the FIREBASE_SERVICE_KEY env secret.
+// Returns an object { initialized, admin, firestore } where firestore is either
+// a real Firestore instance or a noop fallback.
 function initFirebase() {
-  const fs = require('fs');
+  const raw = process.env.FIREBASE_SERVICE_KEY;
+  let key = raw;
 
-  // Prefer the environment variable, but allow a runtime file (created by CI
-  // at /tmp/firebase_key.json) for runners that prefer file-based secrets.
-  let key = process.env.FIREBASE_SERVICE_KEY;
+  // If no env var, try common runtime paths as a fallback (CI may write to /tmp)
   if (!key) {
+    const path1 = '/tmp/firebase_key.json';
+    const path2 = '/tmp/key.json';
     try {
-      const path1 = '/tmp/firebase_key.json';
-      const path2 = '/tmp/key.json';
       if (fs.existsSync(path1)) {
         key = fs.readFileSync(path1, 'utf8');
         console.log('ℹ️ Loaded Firebase key from', path1);
       } else if (fs.existsSync(path2)) {
-        // Some workflows write the GCP service account to /tmp/key.json — try that too.
         key = fs.readFileSync(path2, 'utf8');
         console.log('ℹ️ Loaded Firebase key from', path2);
-      } else {
-        // Local dev convenience: if the repository contains a keys/serviceAccountKey.json,
-        // try to use that for local testing only. This file SHOULD NOT be committed in
-        // production workflows; it's a local fallback to help contributors run the server.
-        try {
-          const repoKeyUrl = new URL('../keys/serviceAccountKey.json', import.meta.url);
-          if (fs.existsSync(repoKeyUrl.pathname)) {
-            key = fs.readFileSync(repoKeyUrl.pathname, 'utf8');
-            console.log('ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)');
-          }
-        } catch (repoErr) {
-          // ignore and continue to warn below
-        }
       }
-    } catch (fileErr) {
-      console.warn('⚠️ Could not read firebase key file:', fileErr.message);
+    } catch (e) {
+      console.warn('⚠️ Could not read firebase key files:', e && e.message ? e.message : e);
     }
   }
 
   if (!key) {
-    console.warn('⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (expected for local dev)');
+    console.warn('⚠️ FIREBASE_SERVICE_KEY not set — Firebase not initialized (fallback noop)');
     return { initialized: false, firestore: makeNoopFirestore() };
   }
 
   try {
-    let cred = JSON.parse(key);
-    // Some workflows/store formats may leave literal "\\n" sequences in the private_key.
-    // Ensure private_key has real newlines before passing to firebase-admin.
+    let cred = typeof key === 'string' ? JSON.parse(key) : key;
+    // Normalize private_key newlines if necessary
     if (cred && cred.private_key && typeof cred.private_key === 'string' && cred.private_key.indexOf('\\n') !== -1) {
       cred = Object.assign({}, cred, { private_key: cred.private_key.replace(/\\n/g, '\n') });
     }
-    // Attempt a real firebase-admin init if the package is installed.
+
+    // Initialize firebase-admin if not already initialized
     try {
-      // use createRequire to load CommonJS firebase-admin when available
-      const admin = require('firebase-admin');
       if (!admin.apps || admin.apps.length === 0) {
-        admin.initializeApp({ credential: admin.credential.cert(cred) });
-        console.log('✅ Firebase initialized using FIREBASE_SERVICE_KEY');
+        admin.initializeApp({
+          credential: admin.credential.cert(cred),
+          projectId: cred.project_id,
+          databaseURL: `https://${cred.project_id}.firebaseio.com`,
+        });
+        console.log('✅ Firebase initialized for project:', cred.project_id);
       }
-      return { initialized: true, admin, firestore: admin.firestore() };
-    } catch (innerErr) {
-      // firebase-admin not installed or initialization failed — fallback to a noop client
-      console.warn('⚠️ firebase-admin not available or failed to init — using noop Firebase client:', innerErr.message);
-      return { initialized: false, cred, firestore: makeNoopFirestore() };
+      const firestore = admin.firestore();
+      // Recommended Firestore setting to ignore undefined properties
+      try {
+        firestore.settings && firestore.settings({ ignoreUndefinedProperties: true });
+      } catch (e) {
+        // ignore if settings not supported in this env
+      }
+      return { initialized: true, admin, firestore };
+    } catch (inner) {
+      console.error('🔥 Firebase initialization failed:', inner && inner.message ? inner.message : inner);
+      return { initialized: false, firestore: makeNoopFirestore() };
     }
   } catch (e) {
-    console.error('❌ Invalid FIREBASE_SERVICE_KEY JSON:', e.message);
+    console.error('❌ Invalid FIREBASE_SERVICE_KEY JSON:', e && e.message ? e.message : e);
     return { initialized: false, firestore: makeNoopFirestore() };
   }
 }
