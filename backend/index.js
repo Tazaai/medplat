@@ -5,6 +5,7 @@ import express from 'express';
 import path from 'path';
 import url from 'url';
 import fs from 'fs';
+import topicsRouter from './routes/topics_api.mjs';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -21,6 +22,11 @@ try {
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Ensure topics router is mounted (explicit top-level import + mount per request)
+// This is intentionally a static import so Cloud Run serves /api/topics reliably.
+app.use('/api/topics', topicsRouter);
+console.log('✅ Mounted /api/topics (static import)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set
@@ -83,18 +89,12 @@ async function mountRoutes() {
 			import('./routes/cases_api.mjs'),
 		]);
 
-	// Log module shapes to help diagnose mount-time issues
-		try {
-			console.log('MODULE: topicsMod keys=', Object.keys(topicsMod || {}), 'defaultType=', typeof (topicsMod && topicsMod.default), 'defaultLen=', topicsMod && topicsMod.default && topicsMod.default.length);
-			if (topicsMod && topicsMod.default) console.log('MODULE: topicsMod.default (snippet)=', String(topicsMod.default).slice(0, 400));
-		} catch (e) {}
+		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
 	try { console.log('MODULE: commentMod keys=', Object.keys(commentMod || {}), 'defaultType=', typeof (commentMod && commentMod.default)); } catch (e) {}
 	try { console.log('MODULE: locationMod keys=', Object.keys(locationMod || {}), 'defaultType=', typeof (locationMod && locationMod.default)); } catch (e) {}
 	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
-
-	const topicsRouter = normalizeRouter(topicsMod);
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const commentRouter = normalizeRouter(commentMod);
@@ -111,16 +111,8 @@ async function mountRoutes() {
 			console.error('❌ Could not mount ./routes/location_api.mjs:', e && e.stack ? e.stack : e);
 		}
 
-		try {
-			if (topicsRouter) {
-				app.use('/api/topics', topicsRouter);
-				console.log('✅ Mounted /api/topics -> ./routes/topics_api.mjs');
-			} else {
-				console.warn('⚠️ /api/topics route not mounted (topics_api.mjs missing or invalid export)');
-			}
-		} catch (e) {
-			console.error('❌ Could not mount ./routes/topics_api.mjs:', e && e.stack ? e.stack : e);
-		}
+		// /api/topics is mounted via a top-level static import above to ensure
+		// the route exists early in the startup path and avoids dynamic import timing issues.
 
 		try {
 			if (dialogRouter) {
