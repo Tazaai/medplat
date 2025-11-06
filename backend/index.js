@@ -2,6 +2,7 @@
 // Listens on process.env.PORT || 8080 and binds to 0.0.0.0
 
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
 import url from 'url';
 import fs from 'fs';
@@ -9,6 +10,9 @@ import topicsRouter from './routes/topics_api.mjs';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
+
+// Enable permissive CORS early so it applies to all routes (frontend needs this)
+app.use(cors({ origin: '*' }));
 
 // Startup-time diagnostic: list route files immediately so we see
 // whether the routes/ folder is present in each container instance.
