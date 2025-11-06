@@ -52,23 +52,47 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => res.json({ status: 'MedPlat OK', pid: process.pid }));
 
 // Mount known routes if present. Fail gracefully if route files missing.
-// For reliability explicitly import and mount known route modules.
-// This avoids subtle timing/dynamic import issues in some container runtimes.
+// Use dynamic imports so we can catch import/time issues at startup
+// and avoid static `import` statements inside blocks (which cause
+// SyntaxError in ESM when used incorrectly).
 function normalizeRouter(mod) {
-	let router = mod && (mod.default || mod);
-	if (typeof router === 'function') router = router();
-	return router && router.stack ? router : null;
+	try {
+		const info = { hasModule: !!mod, keys: mod ? Object.keys(mod) : [], hasDefault: !!(mod && mod.default) };
+		let router = mod && (mod.default || mod);
+		// if module exported a factory, call it to obtain the router
+		if (typeof router === 'function') router = router();
+		// Basic validation: express routers have a 'stack' array
+		if (router && Array.isArray(router.stack)) return router;
+		console.warn('normalizeRouter: unexpected module shape', info, 'routerType', typeof router);
+		return null;
+	} catch (e) {
+		console.error('normalizeRouter: error while normalizing module', e && e.stack ? e.stack : e);
+		return null;
+	}
 }
 
-try {
-	// Import route modules explicitly
-	// If you add new route files, import and mount them here.
-	import topicsMod from './routes/topics_api.mjs';
-	import dialogMod from './routes/dialog_api.mjs';
-	import gamifyMod from './routes/gamify_api.mjs';
-	import commentMod from './routes/comment_api.mjs';
-	import locationMod from './routes/location_api.mjs';
-	import casesMod from './routes/cases_api.mjs';
+async function mountRoutes() {
+	try {
+		// Dynamic imports keep this code robust in diverse container runtimes
+		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod] = await Promise.all([
+			import('./routes/topics_api.mjs'),
+			import('./routes/dialog_api.mjs'),
+			import('./routes/gamify_api.mjs'),
+			import('./routes/comment_api.mjs'),
+			import('./routes/location_api.mjs'),
+			import('./routes/cases_api.mjs'),
+		]);
+
+	// Log module shapes to help diagnose mount-time issues
+		try {
+			console.log('MODULE: topicsMod keys=', Object.keys(topicsMod || {}), 'defaultType=', typeof (topicsMod && topicsMod.default), 'defaultLen=', topicsMod && topicsMod.default && topicsMod.default.length);
+			if (topicsMod && topicsMod.default) console.log('MODULE: topicsMod.default (snippet)=', String(topicsMod.default).slice(0, 400));
+		} catch (e) {}
+	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
+	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
+	try { console.log('MODULE: commentMod keys=', Object.keys(commentMod || {}), 'defaultType=', typeof (commentMod && commentMod.default)); } catch (e) {}
+	try { console.log('MODULE: locationMod keys=', Object.keys(locationMod || {}), 'defaultType=', typeof (locationMod && locationMod.default)); } catch (e) {}
+	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
 
 	const topicsRouter = normalizeRouter(topicsMod);
 	const dialogRouter = normalizeRouter(dialogMod);
@@ -77,42 +101,75 @@ try {
 	const locationRouter = normalizeRouter(locationMod);
 	const casesRouter = normalizeRouter(casesMod);
 
-	if (locationRouter) {
-		app.use('/api/location', locationRouter);
-		console.log('✅ Mounted /api/location');
+		// Mount each router individually and guard against a single broken module bringing down startup
+		try {
+			if (locationRouter) {
+				app.use('/api/location', locationRouter);
+				console.log('✅ Mounted /api/location -> ./routes/location_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/location_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (topicsRouter) {
+				app.use('/api/topics', topicsRouter);
+				console.log('✅ Mounted /api/topics -> ./routes/topics_api.mjs');
+			} else {
+				console.warn('⚠️ /api/topics route not mounted (topics_api.mjs missing or invalid export)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/topics_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (dialogRouter) {
+				app.use('/api/dialog', dialogRouter);
+				console.log('✅ Mounted /api/dialog -> ./routes/dialog_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/dialog_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (gamifyRouter) {
+				app.use('/api/gamify', gamifyRouter);
+				console.log('✅ Mounted /api/gamify -> ./routes/gamify_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/gamify_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (commentRouter) {
+				app.use('/api/comment', commentRouter);
+				console.log('✅ Mounted /api/comment -> ./routes/comment_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/comment_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (casesRouter) {
+				app.use('/api/cases', casesRouter);
+				console.log('✅ Mounted /api/cases -> ./routes/cases_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/cases_api.mjs:', e && e.stack ? e.stack : e);
+		}
+	} catch (err) {
+		console.error('Route import failed:', err && err.stack ? err.stack : err);
+		// continue — server can still run for diagnostics
 	}
-	if (topicsRouter) {
-		app.use('/api/topics', topicsRouter);
-		console.log('✅ Mounted /api/topics');
-	} else {
-		console.warn('⚠️ /api/topics route not mounted (topics_api.mjs missing or invalid export)');
-	}
-	if (dialogRouter) {
-		app.use('/api/dialog', dialogRouter);
-		console.log('✅ Mounted /api/dialog');
-	}
-	if (gamifyRouter) {
-		app.use('/api/gamify', gamifyRouter);
-		console.log('✅ Mounted /api/gamify');
-	}
-	if (commentRouter) {
-		app.use('/api/comment', commentRouter);
-		console.log('✅ Mounted /api/comment');
-	}
-	if (casesRouter) {
-		app.use('/api/cases', casesRouter);
-		console.log('✅ Mounted /api/cases');
-	}
-} catch (err) {
-	console.error('Route import failed:', err && err.stack ? err.stack : err);
-	// continue — server can still run for diagnostics
 }
 
-// Start server with Cloud Run friendly host/port
+// Start server with Cloud Run friendly host/port after mounting routes
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Start listening immediately — routes have been mounted above (explicit imports)
+// Top-level await is supported in Node 18 ESM; run mount then start listening.
+await mountRoutes();
+
 app.listen(PORT, HOST, () => {
 	console.log(`🚀 MedPlat backend listening on ${HOST}:${PORT}`);
 });
