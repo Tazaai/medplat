@@ -26,7 +26,7 @@ goals, architecture, workflows, and deployment sequence.
 | Component | Revision | URL |
 |------------|-----------|-----|
 | Backend | 00967-xwk | https://medplat-backend-2pr2rrffwq-ew.a.run.app |
-| Frontend | 00301-6bs | https://medplat-frontend-139218747785.europe-west1.run.app |
+| Frontend | 00302-b95 | https://medplat-frontend-139218747785.europe-west1.run.app |
 
 ---
 

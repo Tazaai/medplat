@@ -31,7 +31,9 @@ curl -X POST https://medplat-backend-2pr2rrffwq-ew.a.run.app/api/gamify \
 ```
 
 ### Frontend Changes
-- **Status:** Code committed, build in progress
+- **Status:** ✅ Deployed
+- **Revision:** `medplat-frontend-00302-b95`
+- **URL:** https://medplat-frontend-139218747785.europe-west1.run.app
 - **Files Modified:**
   - `frontend/src/components/Level2CaseLogic.jsx` - 12-question UI with progress bar, delayed explanations, color-coded scoring
   - `backend/routes/gamify_api.mjs` - Full OpenAI integration replacing stub
