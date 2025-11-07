@@ -2,11 +2,14 @@
 import { useState, useEffect } from "react";
 import useLevel2CaseEngine from "./useLevel2CaseEngine";
 import { API_BASE } from "../config";
+import { db } from "../firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Level2CaseLogic({ caseData, gamify = true }) {
   const [reviewMode, setReviewMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [encouragement, setEncouragement] = useState("");
+  const [levelTitle, setLevelTitle] = useState("Medical Student");
   const {
     questions,
     setQuestions,
@@ -15,6 +18,7 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     answerQuestion,
     resetQuiz,
     score,
+    isComplete,
   } = useLevel2CaseEngine([]);
 
   // Fetch MCQs for this case
@@ -43,6 +47,17 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     if (gamify && caseData) fetchMCQs();
   }, [caseData, gamify, setQuestions]);
 
+  // Determine level title based on score
+  useEffect(() => {
+    const maxScore = questions.length * 3;
+    const percentage = (score / maxScore) * 100;
+    
+    if (percentage >= 90) setLevelTitle("Expert");
+    else if (percentage >= 75) setLevelTitle("Specialist");
+    else if (percentage >= 50) setLevelTitle("Doctor");
+    else setLevelTitle("Medical Student");
+  }, [score, questions.length]);
+
   // Encouragement messages (scaled for 12 questions, 36 max points)
   useEffect(() => {
     if (!reviewMode) return;
@@ -55,6 +70,41 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     else if (percentage < 90) setEncouragement("👨‍⚕️ Excellent — Specialist level!");
     else setEncouragement("🏆 Outstanding — Expert panel level!");
   }, [reviewMode, score, questions.length]);
+
+  // Save score to Firebase when quiz is complete
+  useEffect(() => {
+    if (!isComplete || !caseData?.meta?.topic) return;
+
+    const saveScore = async () => {
+      try {
+        const topic = caseData.meta.topic;
+        const lang = caseData.meta.language || "en";
+        const maxScore = questions.length * 3;
+        
+        const scoreDoc = {
+          topic,
+          lang,
+          score,
+          maxScore,
+          percentage: Math.round((score / maxScore) * 100),
+          level: 2,
+          levelTitle,
+          questionCount: questions.length,
+          answers: Object.keys(answers).length,
+          timestamp: serverTimestamp(),
+          caseId: `${topic}_${Date.now()}`,
+        };
+
+        const docRef = doc(db, "quiz_scores", `${topic}_${Date.now()}`);
+        await setDoc(docRef, scoreDoc);
+        console.log("✅ Score saved to Firebase");
+      } catch (error) {
+        console.warn("⚠️ Could not save score to Firebase:", error.message);
+      }
+    };
+
+    saveScore();
+  }, [isComplete, score, levelTitle, questions.length, answers, caseData]);
 
   if (!gamify) {
     return (
