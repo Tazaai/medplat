@@ -17,7 +17,27 @@ export default function casesApi() {
       if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
       const result = await generateCase({ topic, model, lang: language });
-      return res.json({ ok: true, topic, case: result });
+      
+      // Transform lowercase keys to uppercase format expected by frontend
+      const transformed = {
+        Topic: result.meta?.topic || topic,
+        Patient_History: result.history || '',
+        Objective_Findings: result.exam || '',
+        Paraclinical_Investigations: `${result.labs || ''}\n\n${result.imaging || ''}`.trim(),
+        Final_Diagnosis: { Diagnosis: result.diagnosis || 'No confirmed final diagnosis.' },
+        Management: result.discussion || '',
+        meta: {
+          topic: result.meta?.topic || topic,
+          age: result.meta?.age || '',
+          sex: result.meta?.sex || '',
+          setting: result.meta?.setting || '',
+          language,
+          region,
+          model,
+        }
+      };
+      
+      return res.json({ ok: true, topic, case: transformed });
     } catch (err) {
       console.error('❌ /api/cases generation error:', err && err.stack ? err.stack : err);
       return res.status(500).json({ ok: false, error: String(err && err.message ? err.message : err) });
