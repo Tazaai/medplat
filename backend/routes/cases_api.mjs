@@ -13,41 +13,71 @@ export default function casesApi() {
   // POST /api/cases - generate a new case dynamically
   router.post('/', async (req, res) => {
     try {
-      const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini' } = req.body || {};
+      const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini', category } = req.body || {};
       if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
-      const result = await generateCase({ topic, model, lang: language, region });
+      // Step 1: Generate draft case
+      const draftResult = await generateCase({ topic, model, lang: language, region });
       
-      // Transform comprehensive schema to frontend-expected format
+      // Step 2: Send draft to internal panel for auto-review (invisible to user)
+      let reviewedResult = draftResult;
+      let panelNote = '';
+      
+      try {
+        const internalPanelResponse = await fetch('http://localhost:8080/api/internal-panel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic,
+            caseData: draftResult,
+            category: category || extractCategory(topic),
+            language,
+            region
+          })
+        });
+        
+        const panelData = await internalPanelResponse.json();
+        if (panelData.ok && panelData.case) {
+          reviewedResult = panelData.case;
+          panelNote = panelData.panelNote || '✅ Reviewed by internal specialist panel';
+          console.log(`✅ Internal panel reviewed case for: ${topic}`);
+        }
+      } catch (panelError) {
+        console.warn('⚠️ Internal panel unavailable, using draft:', panelError.message);
+        panelNote = '⚠️ Internal review unavailable';
+      }
+      
+      // Step 3: Transform to frontend format
       const transformed = {
-        Topic: result.meta?.topic || topic,
-        Patient_History: result.history?.presenting_complaint || result.history || '',
-        Objective_Findings: result.exam?.general || result.exam || '',
+        Topic: reviewedResult.meta?.topic || topic,
+        Patient_History: reviewedResult.history?.presenting_complaint || reviewedResult.history || '',
+        Objective_Findings: reviewedResult.exam?.general || reviewedResult.exam || '',
         Paraclinical_Investigations: {
-          labs: result.paraclinical?.labs || result.labs || [],
-          imaging: result.paraclinical?.imaging || result.imaging || [],
-          ecg: result.paraclinical?.ecg || '',
-          other: result.paraclinical?.other_tests || []
+          labs: reviewedResult.paraclinical?.labs || reviewedResult.labs || [],
+          imaging: reviewedResult.paraclinical?.imaging || reviewedResult.imaging || [],
+          ecg: reviewedResult.paraclinical?.ecg || '',
+          other: reviewedResult.paraclinical?.other_tests || []
         },
-        Differential_Diagnoses: result.differentials || [],
+        Differential_Diagnoses: reviewedResult.differentials || [],
         Final_Diagnosis: { 
-          Diagnosis: result.final_diagnosis?.name || result.diagnosis || 'No confirmed final diagnosis.',
-          Rationale: result.final_diagnosis?.rationale || ''
+          Diagnosis: reviewedResult.final_diagnosis?.name || reviewedResult.diagnosis || 'No confirmed final diagnosis.',
+          Rationale: reviewedResult.final_diagnosis?.rationale || ''
         },
-        Management: result.management?.immediate || result.discussion || '',
-        Pathophysiology: result.pathophysiology || {},
-        Red_Flags: result.red_flags || [],
-        Evidence_and_References: result.evidence || {},
-        Teaching: result.teaching || {},
-        Expert_Panel_and_Teaching: result.panel_notes || {},
+        Management: reviewedResult.management?.immediate || reviewedResult.discussion || '',
+        Pathophysiology: reviewedResult.pathophysiology || {},
+        Red_Flags: reviewedResult.red_flags || [],
+        Evidence_and_References: reviewedResult.evidence || {},
+        Teaching: reviewedResult.teaching || {},
+        Expert_Panel_and_Teaching: reviewedResult.panel_notes || {},
         meta: {
-          topic: result.meta?.topic || topic,
-          age: result.meta?.demographics?.age || result.meta?.age || '',
-          sex: result.meta?.demographics?.sex || result.meta?.sex || '',
-          setting: result.meta?.geography_of_living || result.meta?.setting || '',
+          topic: reviewedResult.meta?.topic || topic,
+          age: reviewedResult.meta?.demographics?.age || reviewedResult.meta?.age || '',
+          sex: reviewedResult.meta?.demographics?.sex || reviewedResult.meta?.sex || '',
+          setting: reviewedResult.meta?.geography_of_living || reviewedResult.meta?.setting || '',
           language,
           region,
           model,
+          panelNote  // Include panel review note
         }
       };
       
@@ -57,6 +87,20 @@ export default function casesApi() {
       return res.status(500).json({ ok: false, error: String(err && err.message ? err.message : err) });
     }
   });
+
+  // Helper: extract category from topic (simple keyword matching)
+  function extractCategory(topic) {
+    const t = topic.toLowerCase();
+    if (t.includes('heart') || t.includes('cardiac') || t.includes('mi')) return 'Cardiology';
+    if (t.includes('stroke') || t.includes('seizure') || t.includes('neuro')) return 'Neurology';
+    if (t.includes('lung') || t.includes('asthma') || t.includes('copd')) return 'Pulmonology';
+    if (t.includes('gi') || t.includes('abdomen') || t.includes('liver')) return 'Gastroenterology';
+    if (t.includes('kidney') || t.includes('renal')) return 'Nephrology';
+    if (t.includes('diabetes') || t.includes('thyroid')) return 'Endocrinology';
+    if (t.includes('infection') || t.includes('sepsis')) return 'Infectious Disease';
+    if (t.includes('trauma') || t.includes('fracture')) return 'Trauma';
+    return 'General Medicine';
+  }
 
   // POST /api/cases/save - save a case document to Firestore
   router.post('/save', async (req, res) => {
