@@ -11,6 +11,37 @@ Overview
 
 MedPlat is a clinical case simulator and gamified MCQ platform. Development follows a local-first workflow: run the repository checks locally, fix any issues, then open a PR with `agent.md` (the output from `review_report.sh`) attached.
 
+## ✨ Key Features
+
+### 1. Clinical Case Generation
+- **1115 Medical Topics** across 30 specialties (Cardiology, Neurology, Emergency Medicine, etc.)
+- **AI-Powered Cases** using GPT-4o/4o-mini
+- **Region-Adaptive**: Guidelines for Denmark, US, UK, Germany, WHO (global)
+- **Multilingual**: English, Danish, Farsi, Arabic, Urdu, Spanish, German, + custom
+
+### 2. Gamified Learning (12-MCQ System)
+- Adaptive difficulty based on performance
+- 3-point scoring (Expert/Specialist/Doctor/Medical Student levels)
+- Delayed explanations to prevent answer-peeking
+- Firebase score persistence for progress tracking
+- Performance analytics and encouragement messages
+
+### 3. Expert Panel Review (NEW)
+- **12 Simulated Expert Roles**:
+  - Medical Student, Doctor, 3 Specialists
+  - 2 Generalists, 2 EM Specialists
+  - Field Researcher, Professor, USMLE Expert
+  - AI/Coding Expert, Web Developer, Competitor Voice
+- **Global Feedback**: Reviews apply to all specialties (not hardcoded)
+- **Scalability Focus**: Highlights dynamic improvements to case generator
+- **GPT-4o Powered**: High-quality multi-perspective analysis
+
+### 4. Interactive Diagnosis Workflow
+- Topic/Area selection with category filtering
+- Real-time AI chat for case discussion
+- PDF export and clipboard copy
+- Analytics dashboard for quiz performance
+
 Quick start
 -----------
 
