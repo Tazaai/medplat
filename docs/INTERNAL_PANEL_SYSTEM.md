@@ -115,13 +115,17 @@ curl -X POST https://medplat-backend-139218747785.europe-west1.run.app/api/cases
 
 | Feature | Internal Panel | External Panel |
 |---------|---------------|----------------|
-| **Visibility** | Invisible to users | Visible (manual request) |
-| **Trigger** | Automatic (every case) | Manual (developer/evaluator) |
+| **Visibility** | Invisible to users | Visible (manual request ONLY) |
+| **Trigger** | Automatic (every case) | **Manual copy/paste to ChatGPT** |
 | **Purpose** | Quality assurance | System improvement feedback |
+| **Integration** | ✅ Integrated in project code | ❌ NOT integrated (manual use only) |
 | **Output** | Improved case JSON | Text review with suggestions |
 | **Roles** | 7 clinical experts | 12 experts (clinical + technical) |
-| **Model** | GPT-4o-mini | GPT-4o |
-| **Endpoint** | `/api/internal-panel` | `/api/expert-panel` |
+| **Model** | GPT-4o-mini | GPT-4o (when used manually) |
+| **Endpoint** | `/api/internal-panel` | `/api/expert-panel` (for manual use) |
+| **Workflow** | Backend auto-calls during case generation | Developer manually copies case → pastes to ChatGPT |
+
+**IMPORTANT:** The external panel (`/api/expert-panel`) is **NOT** automatically triggered. It exists only for developers to manually request reviews for system improvements, not for end-user workflow.
 
 ## Future Enhancements
 

@@ -63,10 +63,14 @@
 
 ---
 
-#### 2️⃣ External Expert Panel (Manual, Visible for Developers)
-**Endpoint:** `/api/expert-panel` (triggered manually or by frontend after case generation)
+#### 2️⃣ External Expert Panel (Manual, NOT Integrated in Project)
+**Endpoint:** `/api/expert-panel` (available but NOT auto-triggered)
 
-**Purpose:** Meta-feedback for developers/evaluators to improve the overall system.
+**Purpose:** Manual meta-feedback for developers/evaluators to improve the overall system.
+
+**Usage:** Developer manually copies case data → pastes to ChatGPT for external review
+
+**NOT Integrated:** This panel is **NOT** called automatically by the project code. It's only available for manual developer use outside the normal user workflow.
 
 **Composition:**
 - Same clinical experts as internal panel **+ additional roles:**
@@ -75,17 +79,19 @@
   - Competitor Voice
 
 **Use Cases:**
-- DevOps testing and CI review
-- Copilot/ChatGPT external evaluation
-- System-wide improvements (not case-specific)
-- UI/UX feedback
+- Manual DevOps testing and CI review
+- Copy/paste to ChatGPT for external evaluation
+- System-wide improvement suggestions (not case-specific)
+- UI/UX feedback from technical perspective
 - Scalability analysis
 
 **Key Features:**
 - Reviews apply globally to ALL specialties (not hardcoded per topic)
 - Highlights missing rescue therapies, red flags, regional differences
 - Provides "Global Consensus" with scalable improvements
-- Uses GPT-4o for high-quality multi-perspective analysis
+- Uses GPT-4o for high-quality multi-perspective analysis (when called manually)
+
+**Important:** Frontend does NOT auto-trigger this endpoint. Users never see external panel reviews automatically.
 
 ---
 
