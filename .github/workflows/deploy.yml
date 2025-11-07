@@ -177,18 +177,15 @@ jobs:
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
           printf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json
-          # If the secret exists, add a new version; if it doesn't, attempt to create it.
+          # Only create the secret if it doesn't exist. Never overwrite existing versions.
           if gcloud secrets describe medplat-firebase-key --project=$GCP_PROJECT >/dev/null 2>&1; then
-            echo "Secret medplat-firebase-key exists — adding new version"
-            if ! gcloud secrets versions add medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT; then
-              echo "Warning: failed to add new version to medplat-firebase-key (permission?). Continuing without failing."
-            fi
+            echo "✅ Secret medplat-firebase-key exists — using existing version (not overwriting)"
           else
-            echo "Secret medplat-firebase-key does not exist. Attempting to create..."
+            echo "Secret medplat-firebase-key does not exist. Creating initial version..."
             if gcloud secrets create medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT >/dev/null 2>&1; then
-              echo "Created medplat-firebase-key"
+              echo "✅ Created medplat-firebase-key"
             else
-              echo "Warning: failed to create medplat-firebase-key (permission?). Continuing without failing."
+              echo "⚠️ Warning: failed to create medplat-firebase-key (permission?). Continuing without failing."
             fi
           fi
 
@@ -197,18 +194,15 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           printf '%s' "$OPENAI_API_KEY" > /tmp/openai_key.txt
-          # If the secret exists, add a new version; if it doesn't, attempt to create it.
+          # Only create the secret if it doesn't exist. Never overwrite existing versions.
           if gcloud secrets describe medplat-openai-key --project=$GCP_PROJECT >/dev/null 2>&1; then
-            echo "Secret medplat-openai-key exists — adding new version"
-            if ! gcloud secrets versions add medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT; then
-              echo "Warning: failed to add new version to medplat-openai-key (permission?). Continuing without failing."
-            fi
+            echo "✅ Secret medplat-openai-key exists — using existing version (not overwriting)"
           else
-            echo "Secret medplat-openai-key does not exist. Attempting to create..."
+            echo "Secret medplat-openai-key does not exist. Creating initial version..."
             if gcloud secrets create medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT >/dev/null 2>&1; then
-              echo "Created medplat-openai-key"
+              echo "✅ Created medplat-openai-key"
             else
-              echo "Warning: failed to create medplat-openai-key (permission?). Continuing without failing."
+              echo "⚠️ Warning: failed to create medplat-openai-key (permission?). Continuing without failing."
             fi
           fi
 

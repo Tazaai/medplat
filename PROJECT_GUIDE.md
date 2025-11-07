@@ -53,9 +53,12 @@ Important: MedPlat is a dynamic AI case generator — the system does not ship o
 | 🧠 **AI Case Generation** | Use expert-panel reasoning to build base cases. |
 | 🎮 **Gamification** | Generate 12 adaptive MCQs per case with delayed expert explanations. |
 | 🌍 **Localization** | Dynamic multilingual output via backend AI (no translation files). |
-| 🔐 **Secure Infrastructure** | Use GitHub Secrets + Artifact Registry + Cloud Run. |
+| 🔐 **Secure Infrastructure** | Use GitHub Secrets + Secret Manager + Cloud Run with permanent secrets. |
 | 🧪 **Local-First Testing** | All code must pass local validation before deployment. |
 | ☁️ **CI/CD Integration** | Automated secret validation → test → deploy → verify. |
+| 🏷️ **Stable Deployments** | Tag working images as `:stable` for easy rollback. |
+
+**⚠️ Important**: See [`docs/SECRET_MANAGEMENT.md`](docs/SECRET_MANAGEMENT.md) for secret persistence and rollback procedures.
 
 ---
 
