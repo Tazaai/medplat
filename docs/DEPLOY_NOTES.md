@@ -135,3 +135,49 @@ VITE_API_BASE=https://medplat-backend-139218747785.europe-west1.run.app
 **Deployed by:** GitHub Copilot Agent  
 **Date:** November 7, 2025  
 **Status:** ✅ Production-ready
+
+---
+
+## Deployment: Case Generation Integration - November 7, 2025
+
+### Summary
+Enabled dynamic case generation with topic dropdown → case display flow. Backend now serves cases via `/api/cases` POST endpoint, frontend integrated with proper topic selection and display.
+
+### Backend Updates
+- **Revision:** `medplat-backend-00966-ljw`
+- **Changes:**
+  - Moved case generation to `/api/cases` POST (root endpoint)
+  - Accepts `topic`, `language`, `region`, `level`, `model` parameters
+  - Returns `{ok, topic, case}` structure
+  - Moved save functionality to `/api/cases/save`
+
+### Frontend Updates  
+- **Revision:** `medplat-frontend-00301-6bs`
+- **Changes:**
+  - Updated `generateCase()` to use `/api/cases` endpoint
+  - Sends topic, language, region, level, model from UI
+  - Parses response from `data.case` structure
+  - Added user-friendly error messaging
+
+### Commits
+- **a00100f** - Backend: add /api/cases endpoint for dynamic case generation
+- **9033a49** - Frontend: integrate /api/cases generation into CaseView.jsx
+
+### Feature Flow
+1. User selects topic from dropdown (populated from `topics2` collection)
+2. User clicks "Generate Case" button
+3. Frontend POSTs to `/api/cases` with topic + preferences
+4. Backend calls OpenAI via `generate_case_clinical.mjs`
+5. Case displayed in CaseView with structured sections
+6. Optional: User can request Expert Panel Review
+
+### Known Issues
+- OpenAI API key in Secret Manager may need rotation/verification
+- First observed error: "401 Incorrect API key" - requires secret update
+
+### Next Actions
+- Verify OPENAI_API_KEY secret in Secret Manager is current
+- Test full flow: topic selection → generation → display → panel review
+- Monitor response times for case generation (target < 30s)
+
+---
