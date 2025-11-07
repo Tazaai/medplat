@@ -9,13 +9,9 @@ export default function ExpertPanelReview({ caseData }) {
   const [error, setError] = useState(null);
   const [expandedReviewers, setExpandedReviewers] = useState({});
 
-  // Auto-load expert review if it's already attached to caseData
-  React.useEffect(() => {
-    if (caseData?.expertReview && !panelData) {
-      console.log("📋 Auto-loading expert panel review from case data");
-      parseAndSetReview(caseData.expertReview);
-    }
-  }, [caseData?.expertReview]);
+  // External panel is MANUAL ONLY - no auto-load
+  // This component is for developers to manually request external panel review
+  // (Internal panel review happens automatically on backend - invisible to users)
 
   const parseAndSetReview = (reviewText) => {
     let parsedReview = reviewText;

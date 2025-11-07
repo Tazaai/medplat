@@ -201,26 +201,8 @@ export default function CaseView() {
       const normalizedCase = normalizeCaseData(data?.case || {});
       setCaseData(normalizedCase);
       
-      // Auto-trigger expert panel review after case generation
-      console.log("🔄 Auto-requesting expert panel review...");
-      fetch(`${API_BASE}/api/expert-panel`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          topic: chosenTopic, 
-          language: getLanguage(), 
-          region: getEffectiveRegion(), 
-          caseData: normalizedCase 
-        }),
-      })
-        .then((r) => r.json())
-        .then((d) => {
-          if (d?.review) {
-            console.log("✅ Expert panel review received");
-            setCaseData((prev) => ({ ...prev, expertReview: d.review }));
-          }
-        })
-        .catch((e) => console.warn("⚠️ Expert panel auto-review failed:", e));
+      // Internal panel review happens automatically on backend (invisible to user)
+      // External panel review is MANUAL ONLY (copy/paste to ChatGPT for system improvements)
         
     } catch (err) {
       console.error("❌ Error generating case:", err);
