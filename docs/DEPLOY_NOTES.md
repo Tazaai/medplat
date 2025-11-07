@@ -1,5 +1,32 @@
 # Deployment Notes - Gamification v2 Upgrade
 
+## 🔧 Firebase Connectivity Fix — Nov 2025
+
+### Root Cause
+The Secret Manager secret `medplat-firebase-key` was **empty**, causing Firebase initialization failure in Cloud Run.
+
+### Resolution
+1. Uploaded valid `firebase_key.json` to Secret Manager:
+   ```bash
+   gcloud secrets versions add medplat-firebase-key --data-file=firebase_key.json
+   ```
+2. Redeployed backend to refresh secret binding.
+3. Firestore successfully initialized and reading from `topics2`.
+
+### Verification
+
+| Test | Result |
+|------|--------|
+| `/api/topics` | ✅ 1115 topics returned |
+| `collection_used` | ✅ topics2 |
+| `firestore_initialized` | ✅ true |
+| Frontend dropdown | ✅ Populated with 1115 topics |
+
+Backend URL: `https://medplat-backend-2pr2rrffwq-ew.a.run.app`  
+Frontend URL: `https://medplat-frontend-139218747785.europe-west1.run.app`
+
+---
+
 ## Latest Deployment: November 7, 2025 (Gamify v2)
 
 ### Summary
