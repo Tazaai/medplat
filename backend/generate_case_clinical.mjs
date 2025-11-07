@@ -18,18 +18,102 @@ export function extractJSON(text = '') {
   }
 }
 
-export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang = 'en' }) {
+export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang = 'en', region = 'EU/DK' }) {
   // Initialize the official OpenAI client using the runtime secret
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const systemPrompt = `You are a medical expert and clinical case builder.\nGenerate a concise but realistic clinical case for topic: "${topic}".\nReturn in structured JSON format:\n{\n  \"meta\": { \"topic\": \"\", \"age\": \"\", \"sex\": \"\", \"setting\": \"\" },\n  \"history\": \"\",\n  \"exam\": \"\",\n  \"labs\": \"\",\n  \"imaging\": \"\",\n  \"diagnosis\": \"\",\n  \"discussion\": \"\"\n}\nLanguage: ${lang}.\nKeep tone realistic and educational.`;
+  const systemPrompt = `You are an expert clinical case generator for the MedPlat platform.
+
+Generate a comprehensive, realistic clinical case for: "${topic}"
+
+CRITICAL REQUIREMENTS:
+- Include medication lists with allergies
+- Specify hemodynamic profile (warm/cold, wet/dry)
+- Include test kinetics and timing
+- Provide imaging timing and escalation rationale
+- List accepted vs rejected differentials with arguments
+- Apply region-specific guidelines (${region})
+- Include disposition, follow-up, and social needs
+- Add red flags and rescue therapies
+- Include internal expert panel notes (internal medicine, surgery, emergency medicine perspectives)
+
+Language: ${lang}
+
+Return ONLY valid JSON matching this exact structure:
+{
+  "meta": {
+    "topic": "${topic}",
+    "language": "${lang}",
+    "region": "${region}",
+    "demographics": {"age": 0, "sex": ""},
+    "geography_of_living": ""
+  },
+  "history": {
+    "presenting_complaint": "",
+    "onset_duration_severity": "",
+    "context_triggers": "",
+    "post_event": "",
+    "past_medical_history": [],
+    "medications_current": [],
+    "allergies": []
+  },
+  "exam": {
+    "vitals": {},
+    "orthostatics": {},
+    "general": "",
+    "cardiorespiratory": "",
+    "hemodynamic_profile": "",
+    "pain_distress": ""
+  },
+  "paraclinical": {
+    "labs": [],
+    "ecg": "",
+    "imaging": [{"modality": "", "timing": "", "rationale": ""}],
+    "other_tests": [],
+    "test_kinetics": [{"test": "", "timing_relation": "", "notes": ""}]
+  },
+  "differentials": [
+    {"name": "", "status": "ACCEPTED|REJECTED|KEEP_OPEN", "why_for": "", "why_against": ""}
+  ],
+  "red_flags": [],
+  "final_diagnosis": {"name": "", "rationale": ""},
+  "pathophysiology": {"mechanism": "", "systems_organs": ""},
+  "etiology": {"underlying_cause": ""},
+  "management": {
+    "immediate": [],
+    "escalation_if_wrong_dx": [],
+    "region_guidelines": [{"society": "", "year": "", "applies_to": "", "note": ""}],
+    "timing_windows": [{"action": "", "window": ""}]
+  },
+  "disposition": {
+    "admit_vs_discharge": "",
+    "unit": "",
+    "follow_up": "",
+    "social_needs": ""
+  },
+  "evidence": {
+    "prevalence": "",
+    "incidence": "",
+    "key_tests": [{"test": "", "sensitivity": "", "specificity": "", "notes": ""}],
+    "prognosis": ""
+  },
+  "teaching": {
+    "pearls": [],
+    "mnemonics": []
+  },
+  "panel_notes": {
+    "internal_medicine": "",
+    "surgery": "",
+    "emergency_medicine": ""
+  }
+}`;
 
   try {
     const response = await client.chat.completions.create({
       model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Generate a complete structured case for topic "${topic}".` },
+        { role: 'user', content: `Generate a complete, advanced clinical case for "${topic}". Include all required fields with realistic, detailed content.` },
       ],
       temperature: 0.7,
     });
@@ -43,7 +127,7 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
 
     console.warn('generateClinicalCase: OpenAI returned non-JSON, returning fallback structure');
     return {
-      meta: { topic },
+      meta: { topic, language: lang, region },
       history: String(text),
       exam: '',
       labs: '',

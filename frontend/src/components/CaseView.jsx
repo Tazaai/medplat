@@ -198,7 +198,30 @@ export default function CaseView() {
       });
       if (!res.ok) throw new Error(res.statusText || 'Case generation failed');
       const data = await res.json();
-      setCaseData(normalizeCaseData(data?.case || {}));
+      const normalizedCase = normalizeCaseData(data?.case || {});
+      setCaseData(normalizedCase);
+      
+      // Auto-trigger expert panel review after case generation
+      console.log("🔄 Auto-requesting expert panel review...");
+      fetch(`${API_BASE}/api/expert-panel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          topic: chosenTopic, 
+          language: getLanguage(), 
+          region: getEffectiveRegion(), 
+          caseData: normalizedCase 
+        }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.review) {
+            console.log("✅ Expert panel review received");
+            setCaseData((prev) => ({ ...prev, expertReview: d.review }));
+          }
+        })
+        .catch((e) => console.warn("⚠️ Expert panel auto-review failed:", e));
+        
     } catch (err) {
       console.error("❌ Error generating case:", err);
       alert(`Failed to generate case: ${err.message}`);

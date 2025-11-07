@@ -16,21 +16,35 @@ export default function casesApi() {
       const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini' } = req.body || {};
       if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
-      const result = await generateCase({ topic, model, lang: language });
+      const result = await generateCase({ topic, model, lang: language, region });
       
-      // Transform lowercase keys to uppercase format expected by frontend
+      // Transform comprehensive schema to frontend-expected format
       const transformed = {
         Topic: result.meta?.topic || topic,
-        Patient_History: result.history || '',
-        Objective_Findings: result.exam || '',
-        Paraclinical_Investigations: `${result.labs || ''}\n\n${result.imaging || ''}`.trim(),
-        Final_Diagnosis: { Diagnosis: result.diagnosis || 'No confirmed final diagnosis.' },
-        Management: result.discussion || '',
+        Patient_History: result.history?.presenting_complaint || result.history || '',
+        Objective_Findings: result.exam?.general || result.exam || '',
+        Paraclinical_Investigations: {
+          labs: result.paraclinical?.labs || result.labs || [],
+          imaging: result.paraclinical?.imaging || result.imaging || [],
+          ecg: result.paraclinical?.ecg || '',
+          other: result.paraclinical?.other_tests || []
+        },
+        Differential_Diagnoses: result.differentials || [],
+        Final_Diagnosis: { 
+          Diagnosis: result.final_diagnosis?.name || result.diagnosis || 'No confirmed final diagnosis.',
+          Rationale: result.final_diagnosis?.rationale || ''
+        },
+        Management: result.management?.immediate || result.discussion || '',
+        Pathophysiology: result.pathophysiology || {},
+        Red_Flags: result.red_flags || [],
+        Evidence_and_References: result.evidence || {},
+        Teaching: result.teaching || {},
+        Expert_Panel_and_Teaching: result.panel_notes || {},
         meta: {
           topic: result.meta?.topic || topic,
-          age: result.meta?.age || '',
-          sex: result.meta?.sex || '',
-          setting: result.meta?.setting || '',
+          age: result.meta?.demographics?.age || result.meta?.age || '',
+          sex: result.meta?.demographics?.sex || result.meta?.sex || '',
+          setting: result.meta?.geography_of_living || result.meta?.setting || '',
           language,
           region,
           model,

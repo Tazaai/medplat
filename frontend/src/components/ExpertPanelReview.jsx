@@ -1,5 +1,5 @@
 // ~/medplat/frontend/src/components/ExpertPanelReview.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Users, AlertCircle, CheckCircle } from "lucide-react";
 import { API_BASE } from "../config";
 
@@ -8,6 +8,34 @@ export default function ExpertPanelReview({ caseData }) {
   const [panelData, setPanelData] = useState(null);
   const [error, setError] = useState(null);
   const [expandedReviewers, setExpandedReviewers] = useState({});
+
+  // Auto-load expert review if it's already attached to caseData
+  React.useEffect(() => {
+    if (caseData?.expertReview && !panelData) {
+      console.log("📋 Auto-loading expert panel review from case data");
+      parseAndSetReview(caseData.expertReview);
+    }
+  }, [caseData?.expertReview]);
+
+  const parseAndSetReview = (reviewText) => {
+    let parsedReview = reviewText;
+    if (typeof parsedReview === 'string') {
+      try {
+        // Try to extract JSON from markdown code blocks
+        const jsonMatch = parsedReview.match(/```json\s*([\s\S]*?)\s*```/) || 
+                         parsedReview.match(/```\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          parsedReview = JSON.parse(jsonMatch[1]);
+        } else {
+          parsedReview = JSON.parse(parsedReview);
+        }
+      } catch (e) {
+        // If not valid JSON, display as text
+        parsedReview = { rawReview: parsedReview };
+      }
+    }
+    setPanelData(parsedReview);
+  };
 
   const fetchPanelReview = async () => {
     setLoading(true);
@@ -30,25 +58,7 @@ export default function ExpertPanelReview({ caseData }) {
         throw new Error(data.error || "Panel review failed");
       }
 
-      // Parse the review string if it's JSON
-      let parsedReview = data.review || data.parsed || data;
-      if (typeof parsedReview === 'string') {
-        try {
-          // Try to extract JSON from markdown code blocks
-          const jsonMatch = parsedReview.match(/```json\s*([\s\S]*?)\s*```/) || 
-                           parsedReview.match(/```\s*([\s\S]*?)\s*```/);
-          if (jsonMatch) {
-            parsedReview = JSON.parse(jsonMatch[1]);
-          } else {
-            parsedReview = JSON.parse(parsedReview);
-          }
-        } catch (e) {
-          // If not valid JSON, display as text
-          parsedReview = { rawReview: parsedReview };
-        }
-      }
-
-      setPanelData(parsedReview);
+      parseAndSetReview(data.review || data.parsed || data);
     } catch (err) {
       setError(err.message || "Failed to fetch panel review");
       console.error("Panel review error:", err);
