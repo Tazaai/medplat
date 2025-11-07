@@ -1,6 +1,7 @@
 // ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
+import ExpertPanelReview from "./ExpertPanelReview";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -425,6 +426,14 @@ export default function CaseView() {
       {/* Case rendering */}
       {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
       {caseData && !gamify && renderBookCase(caseData)}
+
+      {/* Expert Panel Review Section */}
+      {caseData && !gamify && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h2 className="text-xl font-bold mb-4">🩺 Expert Panel Review</h2>
+          <ExpertPanelReview caseData={caseData} />
+        </div>
+      )}
 
       {/* Actions */}
       {caseData && (
