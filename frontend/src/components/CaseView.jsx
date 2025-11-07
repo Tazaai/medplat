@@ -185,25 +185,23 @@ export default function CaseView() {
     setLoading(true);
     setCaseData(null);
     try {
-      const res = await fetch(`${API_BASE}/api/dialog`, {
+      const res = await fetch(`${API_BASE}/api/cases`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          area,
-          // send the resolved topic (custom or selected)
           topic: chosenTopic,
-          customSearch: customTopic,
           language: getLanguage(),
+          region: getEffectiveRegion(),
+          level: "intermediate",
           model,
-          gamify,
-          userLocation: getEffectiveRegion(),
         }),
       });
-      if (!res.ok) throw new Error(res.statusText || 'Dialog failed');
+      if (!res.ok) throw new Error(res.statusText || 'Case generation failed');
       const data = await res.json();
-      setCaseData(normalizeCaseData(data?.aiReply?.json || data?.aiReply || {}));
+      setCaseData(normalizeCaseData(data?.case || {}));
     } catch (err) {
       console.error("❌ Error generating case:", err);
+      alert(`Failed to generate case: ${err.message}`);
     }
     setLoading(false);
   };
