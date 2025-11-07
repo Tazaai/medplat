@@ -1,8 +1,32 @@
 # 🧠 MedPlat – Clinical AI Platform (Full Project Guide)
 ⚠️ **SYSTEM CONTEXT FILE — Protected Reference**  
-Used by GitHub Actions, Codox GPT, and local scripts to understand MedPlat’s  
+Used by GitHub Actions, Codox GPT, and local scripts to understand MedPlat's  
 goals, architecture, workflows, and deployment sequence.  
 **Do not edit automatically** — only with explicit developer authorization.
+
+---
+
+## 🧠 MedPlat System Update — November 2025
+
+### ✅ Base Case Generation (Level 0/1)
+- `/api/cases` → now returns schema-compliant JSON following the unified meta/history/exam/etc. structure.
+- Added external expert-panel `/api/panel/review` for critical system feedback (multi-role).
+- Checkbox in **CaseView.jsx** toggles gamification on/off.
+- No static cases; every case generated dynamically from `topics2`.
+
+### 🎮 Gamification v2
+- `/api/gamify` → 12 adaptive MCQs, progressive difficulty.
+- **Model:** `gpt-4o-mini` (fast + cost-efficient).
+- **Logic:** Q1-3 (history/exam) → Q4-7 (labs/differentials) → Q8-10 (diagnosis/management) → Q11-12 (complications).
+- Robust JSON fallbacks + Firebase `logUserStep` analytics.
+- **Frontend:** `Level2CaseLogic.jsx` with delayed explanations, color-coded scoring, review summary.
+- **Docs Tag:** `v1.6.1-gamify-v2`.
+
+### ☁️ Deployment
+| Component | Revision | URL |
+|------------|-----------|-----|
+| Backend | 00967-xwk | https://medplat-backend-2pr2rrffwq-ew.a.run.app |
+| Frontend | 00301-6bs | https://medplat-frontend-139218747785.europe-west1.run.app |
 
 ---
 
