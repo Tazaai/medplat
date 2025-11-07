@@ -23,10 +23,17 @@ goals, architecture, workflows, and deployment sequence.
 - **Docs Tag:** `v1.6.1-gamify-v2`.
 
 ### ☁️ Deployment
-| Component | Revision | URL |
-|------------|-----------|-----|
-| Backend | 00967-xwk | https://medplat-backend-2pr2rrffwq-ew.a.run.app |
-| Frontend | 00302-b95 | https://medplat-frontend-139218747785.europe-west1.run.app |
+| Component | Revision | URL | Status |
+|------------|-----------|-----|--------|
+| Backend | latest | https://medplat-backend-139218747785.europe-west1.run.app | ✅ 1115 topics |
+| Frontend | latest | https://medplat-frontend-139218747785.europe-west1.run.app | ✅ React + Vite |
+
+**Latest Updates (Nov 7, 2025):**
+- ✅ Firebase connectivity restored (Secret Manager key fixed)
+- ✅ Frontend rebuilt with React 18.3.1 + Vite 5.3.1 + serve
+- ✅ Multi-stage Docker build for production deployment
+- ✅ Backend uses GCR images with secret bindings
+- ✅ Frontend uses VITE_API_BASE environment variable
 
 ---
 
