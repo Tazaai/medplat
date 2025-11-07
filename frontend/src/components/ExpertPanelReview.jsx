@@ -13,10 +13,15 @@ export default function ExpertPanelReview({ caseData }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/panel/review`, {
+      const response = await fetch(`${API_BASE}/api/expert-panel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_json: caseData }),
+        body: JSON.stringify({ 
+          topic: caseData?.Topic || caseData?.meta?.topic || "Unknown",
+          language: caseData?.meta?.language || "en",
+          region: caseData?.meta?.region || "EU/DK",
+          caseData 
+        }),
       });
 
       const data = await response.json();
@@ -25,7 +30,25 @@ export default function ExpertPanelReview({ caseData }) {
         throw new Error(data.error || "Panel review failed");
       }
 
-      setPanelData(data.parsed || data);
+      // Parse the review string if it's JSON
+      let parsedReview = data.review || data.parsed || data;
+      if (typeof parsedReview === 'string') {
+        try {
+          // Try to extract JSON from markdown code blocks
+          const jsonMatch = parsedReview.match(/```json\s*([\s\S]*?)\s*```/) || 
+                           parsedReview.match(/```\s*([\s\S]*?)\s*```/);
+          if (jsonMatch) {
+            parsedReview = JSON.parse(jsonMatch[1]);
+          } else {
+            parsedReview = JSON.parse(parsedReview);
+          }
+        } catch (e) {
+          // If not valid JSON, display as text
+          parsedReview = { rawReview: parsedReview };
+        }
+      }
+
+      setPanelData(parsedReview);
     } catch (err) {
       setError(err.message || "Failed to fetch panel review");
       console.error("Panel review error:", err);
@@ -222,6 +245,16 @@ export default function ExpertPanelReview({ caseData }) {
                   <li key={idx}>{issue}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Raw Review Display (fallback for text-only responses) */}
+          {panelData.rawReview && (
+            <div className="p-4 bg-gray-100 rounded-lg border border-gray-300">
+              <h3 className="font-bold text-gray-800 mb-3">Expert Panel Review:</h3>
+              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono">
+                {panelData.rawReview}
+              </pre>
             </div>
           )}
 
