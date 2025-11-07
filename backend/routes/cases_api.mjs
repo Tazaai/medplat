@@ -10,22 +10,22 @@ export default function casesApi() {
   const firestore = fb && fb.firestore;
   const collectionName = process.env.CASES_COLLECTION || 'cases';
 
-  // POST /api/cases/generate - generate a case using the AI generator
-  router.post('/generate', async (req, res) => {
+  // POST /api/cases - generate a new case dynamically
+  router.post('/', async (req, res) => {
     try {
-      const { topic, model = 'gpt-4o-mini', lang = 'en' } = req.body || {};
+      const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini' } = req.body || {};
       if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
-      const result = await generateCase({ topic, model, lang });
-      return res.json({ ok: true, case: result });
+      const result = await generateCase({ topic, model, lang: language });
+      return res.json({ ok: true, topic, case: result });
     } catch (err) {
-      console.error('❌ /api/cases/generate error:', err && err.stack ? err.stack : err);
-      return res.status(500).json({ ok: false, error: String(err) });
+      console.error('❌ /api/cases generation error:', err && err.stack ? err.stack : err);
+      return res.status(500).json({ ok: false, error: String(err && err.message ? err.message : err) });
     }
   });
 
-  // POST /api/cases - save a case document (existing behaviour)
-  router.post('/', async (req, res) => {
+  // POST /api/cases/save - save a case document to Firestore
+  router.post('/save', async (req, res) => {
     try {
       const payload = req.body || {};
       // attach metadata
