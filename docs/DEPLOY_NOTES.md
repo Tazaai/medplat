@@ -1,6 +1,57 @@
-# Deployment Notes - Expert Panel Review Feature
+# Deployment Notes - Gamification v2 Upgrade
 
-## Deployment: November 7, 2025
+## Latest Deployment: November 7, 2025 (Gamify v2)
+
+### Summary
+Upgraded gamification engine to adaptive v2 with 12-question MCQs, gpt-4o-mini optimization, early-step restriction, and enhanced UI with delayed expert explanations.
+
+### Backend Deployment  
+- **Revision:** `medplat-backend-00967-xwk`
+- **Region:** `europe-west1`
+- **Service URL:** https://medplat-backend-2pr2rrffwq-ew.a.run.app
+- **Container Image:** `europe-west1-docker.pkg.dev/medplat-458911/medplat/backend`
+- **Build ID:** `eedb63b3-50ae-4877-b86d-b3615e9656f3`
+
+**Gamify v2 Features:**
+- Generate exactly 12 adaptive MCQs per clinical case
+- Progressive difficulty: Q1-3 (history/exam) → Q4-7 (labs/differential) → Q8-10 (diagnosis/treatment) → Q11-12 (complications/management)
+- Early-step restriction: no diagnosis questions in first 3 MCQs
+- Robust JSON parsing with 3 fallback strategies
+- Quality filters for distractors and explanations
+- Uses `gpt-4o-mini` (fast, cost-effective)
+- Firebase logging utility (`logUserStep.mjs`) for quiz analytics
+
+**API Verification:**
+```bash
+curl -X POST https://medplat-backend-2pr2rrffwq-ew.a.run.app/api/gamify \
+  -H "Content-Type: application/json" \
+  -d '{"caseId":"test","text":"{\"meta\":{\"topic\":\"MI\"}}"}'
+
+# Response: {"ok":true,"mcqs":[...],"caseId":"test","count":12}
+```
+
+### Frontend Changes
+- **Status:** Code committed, build in progress
+- **Files Modified:**
+  - `frontend/src/components/Level2CaseLogic.jsx` - 12-question UI with progress bar, delayed explanations, color-coded scoring
+  - `backend/routes/gamify_api.mjs` - Full OpenAI integration replacing stub
+  - `backend/utils/logUserStep.mjs` - NEW: Firebase quiz logging utility
+
+**UI Enhancements:**
+- Progress bar showing question N of 12
+- Color-coded review: green (+3 points) for correct, red (0 points) for wrong
+- Expert explanations delayed until end-of-quiz review mode
+- Percentage-based encouragement messages
+- Enhanced completion screen with statistics
+
+### Code Changes
+**Commits:**
+1. `efad5cb` - feat(gamify): upgrade to adaptive v2 with 12-MCQ bulk generation and gpt-4o-mini
+2. `7726bee` - feat(gamify): update Level2CaseLogic UI for adaptive v2
+
+**Git Tag:** `v1.6.1-gamify-v2` (pending)
+
+### Previous Deployment: November 7, 2025 (Expert Panel Review)
 
 ### Summary
 Successfully deployed complete Expert Panel Review feature with backend timeout optimization, frontend UI, and regression testing framework.
