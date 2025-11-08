@@ -99,7 +99,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -108,6 +108,7 @@ async function mountRoutes() {
 			import('./routes/cases_api.mjs'),
 			import('./routes/quickref_api.mjs'),
 			import('./routes/evidence_api.mjs'),
+			import('./routes/panel_discussion_api.mjs'),
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -118,6 +119,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
 	try { console.log('MODULE: quickrefMod keys=', Object.keys(quickrefMod || {}), 'defaultType=', typeof (quickrefMod && quickrefMod.default)); } catch (e) {}
 	try { console.log('MODULE: evidenceMod keys=', Object.keys(evidenceMod || {}), 'defaultType=', typeof (evidenceMod && evidenceMod.default)); } catch (e) {}
+	try { console.log('MODULE: panelDiscussionMod keys=', Object.keys(panelDiscussionMod || {}), 'defaultType=', typeof (panelDiscussionMod && panelDiscussionMod.default)); } catch (e) {}
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const commentRouter = normalizeRouter(commentMod);
@@ -125,6 +127,7 @@ async function mountRoutes() {
 	const casesRouter = normalizeRouter(casesMod);
 	const quickrefRouter = normalizeRouter(quickrefMod);
 	const evidenceRouter = normalizeRouter(evidenceMod);
+	const panelDiscussionRouter = normalizeRouter(panelDiscussionMod);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -191,6 +194,15 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/evidence_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (panelDiscussionRouter) {
+				app.use('/api/panel-discussion', panelDiscussionRouter);
+				console.log('✅ Mounted /api/panel-discussion -> ./routes/panel_discussion_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/panel_discussion_api.mjs:', e && e.stack ? e.stack : e);
 		}
 	} catch (err) {
 		console.error('Route import failed:', err && err.stack ? err.stack : err);

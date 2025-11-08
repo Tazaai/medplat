@@ -61,9 +61,11 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 
 **Differentials:**
 - Present ≥1 metabolic, ≥1 structural, and ≥1 functional cause
-- Provide "for/against" reasoning for each
+- Provide "for/against" reasoning for EACH differential (pedagogical "why not" for rejected ones)
 - Include confidence level or probability estimate
 - Explain why top differential is most likely
+- For REJECTED differentials: Explicitly state what clinical finding RULES OUT this diagnosis
+- Example: "Pulmonary embolism REJECTED because: D-dimer negative, Wells score low, no tachycardia"
 
 **Management:**
 - Highlight timing windows for critical interventions
@@ -93,7 +95,14 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 **Cultural/Regional Adaptation:**
 - Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
 - Drug names: region-appropriate (generic + local brand if relevant)
-- Guidelines: ${region === 'US' ? 'AHA, ACEP, ACC' : region === 'EU/DK' ? 'ESC, NICE, NNBV' : 'WHO, local guidelines'}
+- Guidelines (AUTO-SELECT based on region):
+  * ${region === 'US' ? '🇺🇸 US: AHA (Cardiology), ACC (Cardiac), ACEP (Emergency), ATS (Respiratory), IDSA (Infectious Disease), ADA (Diabetes)' : ''}
+  * ${region === 'EU/DK' ? '🇪🇺 EU/DK: ESC (Cardiology), NICE (UK), NNBV (Denmark), ERS (Respiratory), ESCMID (Infectious Disease), EASD (Diabetes)' : ''}
+  * ${region === 'UK' ? '🇬🇧 UK: NICE (National), BTS (Respiratory), BCS (Cardiac), RCOG (Obstetrics), SIGN (Scotland)' : ''}
+  * ${region === 'CA' ? '🇨🇦 Canada: CCS (Cardiology), CTS (Respiratory), IDSA (Infectious Disease), Diabetes Canada' : ''}
+  * ${!['US', 'EU/DK', 'UK', 'CA'].includes(region) ? '🌍 International: WHO, ESC, AHA (consensus guidelines)' : ''}
+- Cite specific guideline year (2020-2024) and recommendation class when available
+- Reference local formulary restrictions if known (e.g., Denmark PBS, UK BNF)
 
 ⚙️ TECHNICAL CONSTRAINTS:
 - NO empty fields, NO placeholders ("etc.", "...", "TBD")
