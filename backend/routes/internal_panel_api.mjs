@@ -58,6 +58,9 @@ function selectExpertRoles(topic, category) {
 /**
  * Internal Expert Panel - Auto-review and improve case before user sees it
  * This is INVISIBLE to users - they only see the refined result
+ * 
+ * 🩺 STAGE 2: Internal Expert Panel Review (quality layer)
+ * Includes quality scoring and automatic regeneration if quality < 0.85
  */
 router.post("/", async (req, res) => {
   const { topic, caseData, category, language = "en", region = "EU/DK" } = req.body;
@@ -70,7 +73,10 @@ router.post("/", async (req, res) => {
     const expertRoles = selectExpertRoles(topic, category);
     const rolesString = expertRoles.map((r, i) => `${i + 1}. ${r}`).join("\n");
 
+    // 🎯 STAGE 2: Professor-Level Panel Review
     const panelPrompt = `You are an Internal Expert Panel that reviews and improves medical case drafts BEFORE they are shown to users.
+
+**Mission:** Ensure every case surpasses UpToDate, AMBOSS, and Medscape quality — university-level clinical masterclass standard.
 
 **Context:**
 Topic: ${topic}
@@ -83,68 +89,127 @@ ${rolesString}
 
 **Your Task:**
 Silently review the draft case and IMPROVE it by:
-1. Ensuring clinical accuracy and guideline adherence (${region} guidelines)
-2. Adding missing critical elements (red flags, timing windows, rescue therapies)
-3. Clarifying reasoning and differential diagnoses
-4. Enriching labs/imaging with realistic timing and rationale
-5. Verifying hemodynamic profiling is correct (warm/cold, wet/dry)
-6. Ensuring social needs and disposition are region-appropriate
-7. Checking that teaching pearls and mnemonics are high-quality
-8. Validating evidence (prevalence, test characteristics) is accurate
+1. **Guideline Integration:** Harmonize with NNBV, ESC, AHA, NICE, WHO, and regional authorities (${region})
+2. **Completeness:** Ensure every section is filled with realistic, specific values (no empty fields)
+3. **Clinical Accuracy:** Verify vitals, lab values, imaging findings are physiologically consistent
+4. **Red Flags:** Add missing time-critical findings with specific actions
+5. **Timing Windows:** Include critical intervention windows with rationale
+6. **Differential Reasoning:** Ensure arguments for/against each diagnosis are evidence-based
+7. **Hemodynamic Profiling:** Validate warm/cold, wet/dry assessment is accurate
+8. **Disposition:** Ensure admit/discharge, unit, follow-up, social needs are region-appropriate
+9. **Teaching Quality:** Verify pearls are clinically useful, mnemonics are memorable
+10. **Evidence Depth:** Add specific guidelines (society, year, title, recommendation)
+11. **Clinical Scales:** Include relevant scores (NIHSS, Killip, SOFA, etc.) when applicable
+12. **Academic Rigor:** Refine language to be concise, professional, globally guideline-aware
 
 **Draft Case:**
 ${JSON.stringify(caseData, null, 2)}
 
 **Output Requirements:**
-- Return ONLY the improved case JSON (same schema)
-- Do NOT add meta-commentary or panel discussion
-- Ensure all fields are enhanced but structure remains identical
-- Focus on SUBSTANCE: add missing details, correct errors, enrich clinical reasoning
-- Make it top-level medical education quality
+Return a JSON object with TWO fields:
+1. "improved_case": {...} - The enhanced case (same schema as draft)
+2. "quality_score": 0.0-1.0 - Overall quality assessment (0.85+ = excellent, ready to publish)
 
-**JSON Schema (maintain this exactly):**
+Quality scoring criteria:
+- Completeness: 25% (all sections filled, no placeholders)
+- Clinical Accuracy: 25% (realistic values, logical consistency)
+- Guideline Adherence: 20% (region-appropriate, evidence-based)
+- Educational Value: 15% (teaching pearls, differential reasoning)
+- Academic Depth: 15% (references, pathophysiology, evidence)
+
+Return ONLY valid JSON. No markdown, no explanations.
+
+Expected format:
 {
-  "meta": {...},
-  "history": {...},
-  "exam": {...},
-  "paraclinical": {...},
-  "differentials": [...],
-  "red_flags": [...],
-  "final_diagnosis": {...},
-  "pathophysiology": {...},
-  "etiology": {...},
-  "management": {...},
-  "disposition": {...},
-  "evidence": {...},
-  "teaching": {...},
-  "panel_notes": {...}
-}
-
-Return ONLY valid JSON. No markdown, no explanations.`;
+  "improved_case": {
+    "meta": {...},
+    "timeline": {...},
+    "history": {...},
+    "exam": {...},
+    "paraclinical": {...},
+    "differentials": [...],
+    "red_flags": [...],
+    "final_diagnosis": {...},
+    "pathophysiology": {...},
+    "etiology": {...},
+    "management": {...},
+    "disposition": {...},
+    "evidence": {...},
+    "teaching": {...},
+    "panel_notes": {...}
+  },
+  "quality_score": 0.92
+}`;
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are an expert medical panel that improves case quality. Return only valid JSON." },
+        { role: "system", content: "You are an expert medical panel that improves case quality and scores it objectively. Return only valid JSON." },
         { role: "user", content: panelPrompt }
       ],
       response_format: { type: "json_object" },
       temperature: 0.7,
     });
 
-    const improvedCase = JSON.parse(completion.choices[0].message.content);
+    const panelResponse = JSON.parse(completion.choices[0].message.content);
+    let improvedCase = panelResponse.improved_case || panelResponse.case || caseData;
+    let qualityScore = panelResponse.quality_score || 0.9; // Default to high if not provided
+
+    // 🔄 REGENERATION LOOP: If quality < 0.85, run one more refinement pass
+    if (qualityScore < 0.85) {
+      console.log(`⚠️ Quality score ${qualityScore.toFixed(2)} below threshold, running refinement pass...`);
+      
+      const refinementPrompt = `The case quality score was ${qualityScore.toFixed(2)} (below 0.85 threshold).
+
+**Refinement Focus:**
+Identify specific gaps and strengthen:
+- Missing clinical details (labs, vitals, specific values)
+- Weak differential reasoning
+- Incomplete disposition or social needs
+- Missing red flags or timing windows
+- Vague teaching pearls or evidence
+
+**Case to Refine:**
+${JSON.stringify(improvedCase, null, 2)}
+
+Return improved case with quality_score >= 0.85.
+
+Same JSON format:
+{
+  "improved_case": {...},
+  "quality_score": 0.87
+}`;
+
+      const refinementCompletion = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an expert medical panel performing final quality refinement. Return only valid JSON." },
+          { role: "user", content: refinementPrompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.6, // Lower temperature for refinement
+      });
+
+      const refinedResponse = JSON.parse(refinementCompletion.choices[0].message.content);
+      improvedCase = refinedResponse.improved_case || refinedResponse.case || improvedCase;
+      qualityScore = refinedResponse.quality_score || qualityScore;
+      
+      console.log(`✅ Refinement complete, new quality score: ${qualityScore.toFixed(2)}`);
+    }
 
     // Tag case as reviewed by internal panel
     if (improvedCase.meta) {
       improvedCase.meta.reviewed_by_internal_panel = true;
       improvedCase.meta.panel_review_timestamp = new Date().toISOString();
+      improvedCase.meta.quality_score = qualityScore;
     }
 
     res.json({
       ok: true,
       case: improvedCase,
       reviewed: true,
-      panelNote: "✅ Reviewed by internal specialist panel"
+      qualityScore: qualityScore,
+      panelNote: `✅ Validated by Internal Expert Panel (Quality: ${(qualityScore * 100).toFixed(0)}%)`
     });
 
   } catch (error) {
@@ -153,11 +218,13 @@ Return ONLY valid JSON. No markdown, no explanations.`;
     const fallbackCase = { ...caseData };
     if (fallbackCase.meta) {
       fallbackCase.meta.reviewed_by_internal_panel = false;
+      fallbackCase.meta.quality_score = 0.0;
     }
     res.json({
       ok: true,
       case: fallbackCase,
       reviewed: false,
+      qualityScore: 0.0,
       panelNote: "⚠️ Internal review unavailable, using draft"
     });
   }

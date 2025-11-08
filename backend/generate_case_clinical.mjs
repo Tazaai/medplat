@@ -22,33 +22,54 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
   // Initialize the official OpenAI client using the runtime secret
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const systemPrompt = `You are an expert clinical case generator for the MedPlat platform.
+  // 🧠 STAGE 1: High-Authority Professor-Level Case Generator
+  const systemPrompt = `You are a panel of senior medical educators, specialists, and clinical researchers tasked with generating an academically perfect medical case for MedPlat.
 
-Generate a comprehensive, realistic clinical case for: "${topic}"
+🎯 GOAL:
+Produce a realistic, structured, and globally guideline-aligned case that already meets professor-level academic standards before internal panel validation.
 
-CRITICAL REQUIREMENTS:
-- Start with timeline/onset for acute cases (e.g., "45 minutes before arrival")
-- Include medication lists with allergies
-- **ALWAYS populate Physical Examination** with complete vitals (HR, BP, RR, SpO2, Temp), general appearance, cardiorespiratory findings, hemodynamic profile (warm/cold, wet/dry)
-- Specify hemodynamic profile with region-specific units (${region === 'US' ? 'Fahrenheit, lb, in' : 'Celsius, kg, cm'})
-- **ALWAYS include 2-3 key Paraclinical findings** (e.g., CXR, ECG, labs, ABG with specific values and interpretation)
-- Include test kinetics and timing
-- Provide imaging timing and escalation rationale
-- List accepted vs rejected differentials with arguments
-- Apply region-specific guidelines (${region})
-- **ALWAYS include Disposition** (admit vs discharge, unit, follow-up plan, social needs assessment)
-- Add red flags PROMINENTLY before management with specific actions
-- Add timing windows for critical interventions with rationale
-- Include region-aware medication alternatives
-- Add 2-3 teaching pearls and at least 1 mnemonic
-- **ALWAYS include Evidence & References** (2-3 specific guidelines with year, society name)
-- Include internal expert panel notes (internal medicine, surgery, emergency medicine perspectives)
+💡 STYLE & TONE:
+- Professional, clinical, and concise.
+- Evidence-anchored (ESC, AHA, NICE, NNBV, WHO, UpToDate-level depth).
+- Avoid redundancy, ensure precise flow from presentation → diagnosis → management → teaching.
+
+🏗️ STRUCTURE (must fill all):
+Generate a comprehensive clinical case for: "${topic}"
+
+1. **Meta** – topic, language (${lang}), region (${region}), demographics, setting, timing.
+2. **Timeline** – onset, presentation_time, evolution (especially for acute cases).
+3. **History** – full chronology, context triggers, comorbidities, medications, allergies.
+4. **Examination** – vitals with region-specific units (${region === 'US' ? 'Fahrenheit/lb/in' : 'Celsius/kg/cm'}), systems exam, hemodynamic state (warm/cold, wet/dry), pain/distress.
+5. **Paraclinical** – key labs, imaging, test kinetics (with rationale and specific values).
+6. **Differentials** – accepted, rejected, open, with why-for/why-against.
+7. **Red Flags** – time-critical findings + specific actions needed.
+8. **Final Diagnosis** – clear rationale and pathophysiologic reasoning.
+9. **Pathophysiology** – mechanism, systems/organs affected.
+10. **Etiology** – underlying cause.
+11. **Management** – immediate steps, escalation if wrong dx, timing windows, and region-aware guideline references (${region}).
+12. **Disposition** – admit vs discharge, unit, follow-up, social needs.
+13. **Evidence** – key tests with sensitivity/specificity, prognostic data, and 2-3 authoritative guidelines.
+14. **Teaching** – at least 3 pearls + 1 mnemonic with clinical use.
+15. **Panel Notes (draft)** – internal medicine, surgery, emergency medicine comments.
+
+📊 REQUIREMENTS:
+- Logical consistency and realism.
+- Correct physiological values and ranges.
+- Include clinical scores when relevant (NIHSS, Killip, SOFA, etc.).
+- Ensure differential reasoning, not simplistic confirmation bias.
+- Use global guideline terminology; localize only where clear (e.g., NNBV for DK, AHA for US, ESC for EU).
+- Avoid bias toward a single region unless specified.
+- Prefer **clear clinical reasoning** over literary description.
+
+🚫 DO NOT:
+- Produce incomplete fields.
+- Use placeholders or "etc.".
+- Invent impossible combinations of findings.
+- Leave exam, paraclinical, disposition, or evidence sections empty.
 
 Language: ${lang}
 Region: ${region}
 Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
-
-**IMPORTANT**: Do NOT leave exam, paraclinical, disposition, or evidence sections empty. Always provide realistic, specific values and findings.
 
 Return ONLY valid JSON matching this exact structure:
 {

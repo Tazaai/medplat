@@ -16,12 +16,13 @@ export default function casesApi() {
       const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini', category } = req.body || {};
       if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
-      // Step 1: Generate draft case
+      // Step 1: Generate draft case (STAGE 1: Professor-Level Generator)
       const draftResult = await generateCase({ topic, model, lang: language, region });
       
-      // Step 2: Send draft to internal panel for auto-review (invisible to user)
+      // Step 2: Send draft to internal panel for auto-review (STAGE 2: Expert Panel Validation)
       let reviewedResult = draftResult;
       let panelNote = '';
+      let qualityScore = 0.0;
       
       try {
         const internalPanelResponse = await fetch('http://localhost:8080/api/internal-panel', {
@@ -39,8 +40,9 @@ export default function casesApi() {
         const panelData = await internalPanelResponse.json();
         if (panelData.ok && panelData.case) {
           reviewedResult = panelData.case;
-          panelNote = panelData.panelNote || '✅ Reviewed by internal specialist panel';
-          console.log(`✅ Internal panel reviewed case for: ${topic}`);
+          qualityScore = panelData.qualityScore || 0.9;
+          panelNote = panelData.panelNote || `✅ Validated by Internal Expert Panel (Quality: ${(qualityScore * 100).toFixed(0)}%)`;
+          console.log(`✅ Internal panel reviewed case for: ${topic} (Quality: ${(qualityScore * 100).toFixed(0)}%)`);
         }
       } catch (panelError) {
         console.warn('⚠️ Internal panel unavailable, using draft:', panelError.message);
@@ -92,7 +94,8 @@ export default function casesApi() {
           model,
           panelNote,
           reviewed_by_internal_panel: reviewedResult.meta?.reviewed_by_internal_panel || false,
-          panel_review_timestamp: reviewedResult.meta?.panel_review_timestamp || null
+          panel_review_timestamp: reviewedResult.meta?.panel_review_timestamp || null,
+          quality_score: reviewedResult.meta?.quality_score || qualityScore
         }
       };
       

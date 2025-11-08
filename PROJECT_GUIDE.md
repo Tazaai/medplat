@@ -24,96 +24,77 @@
 | `/api/location` | GET | Detect user region for guideline adaptation |
 | `/api/comment` | POST | Save user feedback/comments |
 
-### Expert Panel System (Two-Layer Architecture)
+### 🧬 INTERNAL EXPERT PANEL (inside case generator — invisible to users)
 
-#### 1️⃣ Internal Dynamic Expert Panel (Automatic, Invisible)
-**Endpoint:** `/api/internal-panel` (called automatically by `/api/cases`)
+### 🩺 Purpose
 
-**Purpose:** Auto-review and improve every case BEFORE showing it to users.
+Automatically **reviews, validates, and enhances** each generated case before it is shown to the user. Acts as a professor-level multidisciplinary review board, ensuring every case meets academic, clinical, and educational excellence.
 
-**Behavior:**
-- When user requests case generation, backend creates **draft case** → sends to internal panel
-- Panel reviews and **improves** the case (adds missing elements, ensures guideline accuracy)
-- **Refined case** returned to user with note: `"✅ Reviewed by internal specialist panel"`
-- User never sees panel discussion, only high-quality validated cases
-
-**Permanent Members (every case):**
-- Medical Student (learning perspective)
-- Professor (academic rigor and teaching)
-- Researcher (evidence-based medicine)
-
-**Dynamic Specialists (auto-selected by topic/category):**
-- **Cardiology:** Cardiologist + Emergency Physician + Internist + Cardiac Surgeon
-- **Neurology:** Neurologist + Neuroradiologist + Internal Medicine + Emergency Physician
-- **Infectious Disease:** ID Specialist + Intensivist + Emergency Physician + Clinical Microbiologist
-- **Endocrinology:** Endocrinologist + Internist + Emergency Physician + Clinical Pharmacist
-- **Trauma:** Trauma Surgeon + Orthopedic Surgeon + Emergency Physician + Anesthesiologist
-- **Toxicology:** Toxicologist + Clinical Pharmacist + Emergency Physician + Intensivist
-- *(12 specialty categories total)*
-
-**Review Focus:**
-- Clinical accuracy and guideline adherence (region-specific)
-- Missing critical elements (red flags, timing windows, rescue therapies)
-- Differential diagnoses reasoning
-- Hemodynamic profiling accuracy
-- Evidence-based data validation
-- Teaching quality
-
-**Model:** GPT-4o-mini (fast, cost-effective for every case)
+> 🧠 Goal: Deliver reasoning, structure, and quality that **surpass UpToDate, AMBOSS, and Medscape**, setting MedPlat as the global benchmark for intelligent clinical learning.
 
 ---
 
-#### 2️⃣ External Expert Panel (Manual, NOT Integrated in Project)
-**Endpoint:** `/api/expert-panel` (available but NOT auto-triggered)
+### 🧩 Dynamic Composition
 
-**Purpose:** Manual meta-feedback for developers/evaluators to improve the overall system.
+The internal panel is automatically assembled based on the case’s specialty and complexity.
 
-**Usage:** Developer manually copies case data → pastes to ChatGPT for external review
+**Standard composition (context-adaptive):**
 
-**NOT Integrated:** This panel is **NOT** called automatically by the project code. It's only available for manual developer use outside the normal user workflow.
-
-**Composition:**
-- Same clinical experts as internal panel **+ additional roles:**
-  - AI Education & Coding Expert
-  - Web Developer (system realism & structure)
-  - Competitor Voice
-
-**Use Cases:**
-- Manual DevOps testing and CI review
-- Copy/paste to ChatGPT for external evaluation
-- System-wide improvement suggestions (not case-specific)
-- UI/UX feedback from technical perspective
-- Scalability analysis
-
-**Key Features:**
-- Reviews apply globally to ALL specialties (not hardcoded per topic)
-- Highlights missing rescue therapies, red flags, regional differences
-- Provides "Global Consensus" with scalable improvements
-- Uses GPT-4o for high-quality multi-perspective analysis (when called manually)
-
-**Important:** Frontend does NOT auto-trigger this endpoint. Users never see external panel reviews automatically.
+- 3 senior specialists from the relevant field (e.g., Cardiology, Toxicology, Neurology, etc.)
+- 2 general practitioners (GPs)
+- 2 emergency medicine consultants
+- 1 clinical pharmacist
+- 1 field researcher (for public health / epidemiology)
+- 1 university professor of medicine (for academic oversight)
+- 1 radiologist (optional, per case need)
+- 1 internal AI-education logic reviewer (for structure and reasoning clarity)
 
 ---
 
-### Expert Panel Review (New Feature)
-The `/api/expert-panel` endpoint provides comprehensive case review from 12 simulated expert roles:
-- 1 Medical Student
-- 1 Medical Doctor
-- 3 Specialists (different fields)
-- 2 Generalists
-- 2 Emergency Medicine Specialists
-- 1 Field Researcher
-- 1 University Professor of Medicine
-- 1 USMLE Expert
-- 1 AI Education & Coding Expert
-- 1 Web Developer (system realism & structure)
-- 1 Competitor Voice
+### ⚙️ Behavior
 
-**Key Features:**
-- Reviews apply globally to ALL specialties (not hardcoded per topic)
-- Highlights missing rescue therapies, red flags, regional differences
-- Provides "Global Consensus" with scalable improvements
-- Uses GPT-4o for high-quality multi-perspective analysis
+- Runs **automatically inside `/api/dialog`** immediately after raw case generation.
+- The panel silently:
+
+  - Reviews all structured fields (history, exam, labs, management, teaching).
+  - Checks **guideline accuracy**, **timing windows**, and **evidence depth**.
+  - Adds missing **red flags**, **social/disposition notes**, or **ethical concerns**.
+  - Ensures **clinical scales and quantifications** (e.g., NIHSS, Killip, SOFA) appear when relevant.
+  - Refines language to be concise, academic, and globally guideline-aware.
+- Only the refined, consensus-approved version is returned.
+- Users only see the tag:
+
+  > ✅ *Validated by Internal Expert Panel*
+
+---
+
+### 🎯 Focus and Quality Criteria
+
+1. **Realism & Completeness:** every section filled, logical, and region-adapted.
+2. **Guideline Integration:** harmonize with **NNBV, ESC, AHA, NICE, WHO**, and regional authorities.
+3. **Academic Depth:** teaching pearls, mnemonics, and evidence hierarchy always included.
+4. **Diversity of Reasoning:** encourage alternative explanations and clinical uncertainty when realistic.
+5. **Scalability:** logic remains dynamic and specialty-aware — never static or hardcoded.
+6. **Regeneration Loop:** if internal panel quality score < 0.85 (out of 1.0) → automatic refinement before publishing.
+
+---
+
+### 🏆 Vision
+
+> MedPlat’s internal panel must ensure every case reads like a **university-level clinical masterclass** — structured, evidence-anchored, and pedagogically superior to any existing reference source.
+
+---
+
+### Implementation notes (developer guidance)
+
+- The internal panel should be invoked as a synchronous quality layer after raw generation and before user return; do not expose internal deliberations.
+- Maintain a structured metadata tag on cases: `meta.internal_panel = { reviewed: true, score: 0.92, timestamp: ISOString }`.
+- Log panel actions in `logs/` for auditability but avoid sensitive data leakage.
+- Keep `/api/internal-panel` read-only for data stores; it must not perform Firestore writes to topic collections.
+
+---
+
+### Would you like this exact block copied into `PROJECT_GUIDE.md` (it will replace the previous panel section)?
 
 ---
 
