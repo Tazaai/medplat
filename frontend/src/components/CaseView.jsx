@@ -474,24 +474,15 @@ export default function CaseView() {
 
       {/* Loading message with educational context */}
       {loading && (
-        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Generating professor-level case...</h3>
-              <p className="mt-1 text-sm text-blue-700">
-                Our AI panel is crafting a high-quality, guideline-anchored case with detailed pathophysiology, evidence-based management, and teaching pearls. This takes 15-30 seconds.
-              </p>
-              <p className="mt-1 text-xs text-blue-600 italic">
-                ✨ Quality over speed — each case undergoes internal expert validation (≥95% quality standard)
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center mt-10 text-gray-600">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <p className="mt-3 text-sm font-semibold text-blue-800">Generating professor-level case...</p>
+          <p className="mt-1 text-xs text-blue-600">
+            Quality over speed — crafting high-quality, guideline-anchored case (15-30s)
+          </p>
+          <p className="mt-1 text-xs text-gray-500 italic">
+            ✨ Internal expert validation (≥95% quality standard)
+          </p>
         </div>
       )}
 
