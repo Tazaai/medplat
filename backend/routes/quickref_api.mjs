@@ -1,15 +1,16 @@
 import express from "express";
 import OpenAI from "openai";
 
-const router = express.Router();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export default function quickrefApi() {
+  const router = express.Router();
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Quick Reference API - Tooltip definitions for medical terms
- * GET/POST /api/quickref?term=<term>
- * Returns 3-line summary + 1 citation for hover tooltips
- */
-router.get("/", async (req, res) => {
+  /**
+   * Quick Reference API - Tooltip definitions for medical terms
+   * GET/POST /api/quickref?term=<term>
+   * Returns 3-line summary + 1 citation for hover tooltips
+   */
+  router.get("/", async (req, res) => {
   const term = req.query.term || req.body?.term;
   
   if (!term) {
@@ -135,4 +136,5 @@ Return ONLY valid JSON.`;
   }
 });
 
-export default router;
+  return router;
+}

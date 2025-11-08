@@ -1,15 +1,16 @@
 import express from "express";
 import OpenAI from "openai";
 
-const router = express.Router();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export default function evidenceApi() {
+  const router = express.Router();
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Evidence Comparison API - Test performance data
- * POST /api/evidence
- * Returns sensitivity/specificity comparisons for diagnostic tests
- */
-router.post("/", async (req, res) => {
+  /**
+   * Evidence Comparison API - Test performance data
+   * POST /api/evidence
+   * Returns sensitivity/specificity comparisons for diagnostic tests
+   */
+  router.post("/", async (req, res) => {
   const { condition, tests, context } = req.body;
 
   if (!condition) {
@@ -89,4 +90,5 @@ Return ONLY valid JSON.`;
   }
 });
 
-export default router;
+  return router;
+}
