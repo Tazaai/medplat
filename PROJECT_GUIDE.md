@@ -1,3 +1,14 @@
+# MedPlat Project Guide
+
+**Last Updated:** November 8, 2025
+**Status:** Production-ready with professor-level quality (≥95%)
+
+**Important Documentation:**
+- 📘 **AI Improvement Guide**: See `AI_IMPROVEMENT_GUIDE.md` for safe AI-driven improvements and quality boundaries
+- 🤖 **Copilot Instructions**: See `.github/copilot-instructions.md` for automated agent guidelines
+
+---
+
   - `DialogChat.jsx` → AI chat dialog
   - `CaseList.jsx`, `CaseSelectors.jsx`, etc.
 - Uses dynamic props:
