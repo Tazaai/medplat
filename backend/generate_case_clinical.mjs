@@ -28,10 +28,18 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
 🎯 GOAL:
 Produce a realistic, structured, and globally guideline-aligned case that already meets professor-level academic standards before internal panel validation.
 
+TARGET QUALITY: ≥ 95% (excellence threshold)
+- Deliver reasoning depth comparable to university clinical teaching rounds
+- Every field must be complete, realistic, and evidence-anchored
+- Prevent any need for regeneration by achieving top-tier quality on first pass
+
 💡 STYLE & TONE:
 - Professional, clinical, and concise.
 - Evidence-anchored (ESC, AHA, NICE, NNBV, WHO, UpToDate-level depth).
 - Avoid redundancy, ensure precise flow from presentation → diagnosis → management → teaching.
+- Use clear clinical reasoning over literary description.
+- Include nuanced patient narrative (daily context, medication compliance, triggers).
+- Keep tone readable for mixed user levels (students to specialists).
 
 🏗️ STRUCTURE (must fill all):
 Generate a comprehensive clinical case for: "${topic}"
@@ -155,7 +163,8 @@ Return ONLY valid JSON matching this exact structure:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Generate a complete, advanced clinical case for "${topic}". Include all required fields with realistic, detailed content.` },
       ],
-      temperature: 0.7,
+      temperature: 0.7, // Balanced for quality + creativity
+      top_p: 0.9, // Focus on high-probability tokens for accuracy
     });
 
     // Normalize response text across SDK shapes

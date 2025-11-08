@@ -367,8 +367,23 @@ export default function CaseView() {
 
       {/* Controls */}
       <div className="flex flex-wrap gap-2 items-center">
+        {/* Custom search banner */}
+        {customTopic.trim() && (
+          <div className="w-full bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-2">
+            <p className="text-sm text-blue-800">
+              🔍 <strong>Custom search active</strong> — area and topic selectors disabled
+            </p>
+          </div>
+        )}
+
         {/* area */}
-        <select value={area} onChange={(e) => setArea(e.target.value)} className="border p-2 rounded">
+        <select 
+          value={area} 
+          onChange={(e) => setArea(e.target.value)} 
+          className="border p-2 rounded"
+          disabled={customTopic.trim().length > 0}
+          style={customTopic.trim() ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
+        >
           <option value="">Choose area</option>
           {areas.map((a) => (
             <option key={a} value={a}>{a}</option>
@@ -376,14 +391,26 @@ export default function CaseView() {
         </select>
 
         {/* topic */}
-        <select value={topic} onChange={(e) => setTopic(e.target.value)} className="border p-2 rounded">
+        <select 
+          value={topic} 
+          onChange={(e) => setTopic(e.target.value)} 
+          className="border p-2 rounded"
+          disabled={customTopic.trim().length > 0}
+          style={customTopic.trim() ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
+        >
           <option value="">Choose topic</option>
             {topics.map((t) => (
               <option key={t.id || t.topic} value={t.topic}>{t.topic}</option>
             ))}
         </select>
 
-        <input type="text" value={customTopic} onChange={(e) => setCustomTopic(e.target.value)} placeholder="Custom search" className="border p-2 rounded w-64" />
+        <input 
+          type="text" 
+          value={customTopic} 
+          onChange={(e) => setCustomTopic(e.target.value)} 
+          placeholder="Custom search (e.g., 'IBD and pregnancy')" 
+          className="border p-2 rounded w-80" 
+        />
 
         {/* language */}
         <select value={lang} onChange={(e) => setLang(e.target.value)} className="border p-2 rounded">

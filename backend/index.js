@@ -99,13 +99,15 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
 			import('./routes/comment_api.mjs'),
 			import('./routes/location_api.mjs'),
 			import('./routes/cases_api.mjs'),
+			import('./routes/quickref_api.mjs'),
+			import('./routes/evidence_api.mjs'),
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -114,11 +116,15 @@ async function mountRoutes() {
 	try { console.log('MODULE: commentMod keys=', Object.keys(commentMod || {}), 'defaultType=', typeof (commentMod && commentMod.default)); } catch (e) {}
 	try { console.log('MODULE: locationMod keys=', Object.keys(locationMod || {}), 'defaultType=', typeof (locationMod && locationMod.default)); } catch (e) {}
 	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
+	try { console.log('MODULE: quickrefMod keys=', Object.keys(quickrefMod || {}), 'defaultType=', typeof (quickrefMod && quickrefMod.default)); } catch (e) {}
+	try { console.log('MODULE: evidenceMod keys=', Object.keys(evidenceMod || {}), 'defaultType=', typeof (evidenceMod && evidenceMod.default)); } catch (e) {}
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const commentRouter = normalizeRouter(commentMod);
 	const locationRouter = normalizeRouter(locationMod);
 	const casesRouter = normalizeRouter(casesMod);
+	const quickrefRouter = normalizeRouter(quickrefMod);
+	const evidenceRouter = normalizeRouter(evidenceMod);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -167,6 +173,24 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/cases_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (quickrefRouter) {
+				app.use('/api/quickref', quickrefRouter);
+				console.log('✅ Mounted /api/quickref -> ./routes/quickref_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/quickref_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (evidenceRouter) {
+				app.use('/api/evidence', evidenceRouter);
+				console.log('✅ Mounted /api/evidence -> ./routes/evidence_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/evidence_api.mjs:', e && e.stack ? e.stack : e);
 		}
 	} catch (err) {
 		console.error('Route import failed:', err && err.stack ? err.stack : err);

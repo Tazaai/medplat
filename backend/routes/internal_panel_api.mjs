@@ -155,11 +155,11 @@ Expected format:
     let improvedCase = panelResponse.improved_case || panelResponse.case || caseData;
     let qualityScore = panelResponse.quality_score || 0.9; // Default to high if not provided
 
-    // 🔄 REGENERATION LOOP: If quality < 0.85, run one more refinement pass
-    if (qualityScore < 0.85) {
-      console.log(`⚠️ Quality score ${qualityScore.toFixed(2)} below threshold, running refinement pass...`);
+    // 🔄 REGENERATION LOOP: If quality < 0.95, run one more refinement pass
+    if (qualityScore < 0.95) {
+      console.log(`⚠️ Quality score ${qualityScore.toFixed(2)} below 0.95 threshold, running refinement pass...`);
       
-      const refinementPrompt = `The case quality score was ${qualityScore.toFixed(2)} (below 0.85 threshold).
+      const refinementPrompt = `The case quality score was ${qualityScore.toFixed(2)} (below 0.95 threshold).
 
 **Refinement Focus:**
 Identify specific gaps and strengthen:
@@ -172,12 +172,12 @@ Identify specific gaps and strengthen:
 **Case to Refine:**
 ${JSON.stringify(improvedCase, null, 2)}
 
-Return improved case with quality_score >= 0.85.
+Return improved case with quality_score >= 0.95.
 
 Same JSON format:
 {
   "improved_case": {...},
-  "quality_score": 0.87
+  "quality_score": 0.96
 }`;
 
       const refinementCompletion = await client.chat.completions.create({
