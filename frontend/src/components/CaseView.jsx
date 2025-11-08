@@ -123,6 +123,7 @@ export default function CaseView() {
 
   const [userLocation, setUserLocation] = useState("unspecified");
   const [manualRegion, setManualRegion] = useState("");
+  const [customRegion, setCustomRegion] = useState("");
 
   const caseRef = useRef(null);
 
@@ -177,7 +178,12 @@ export default function CaseView() {
     return /^[a-z]{2}$/.test(customLang.trim()) ? customLang.trim() : "en";
   };
 
-  const getEffectiveRegion = () => manualRegion || userLocation || "global";
+  const getEffectiveRegion = () => {
+    if (manualRegion === "custom") {
+      return customRegion.trim() || "global";
+    }
+    return manualRegion || userLocation || "global";
+  };
 
   const generateCase = async () => {
     const chosenTopic = customTopic.trim() || topic;
@@ -441,8 +447,20 @@ export default function CaseView() {
           <option value="United States">United States</option>
           <option value="United Kingdom">United Kingdom</option>
           <option value="Germany">Germany</option>
+          <option value="Canada">Canada</option>
+          <option value="Australia">Australia</option>
           <option value="WHO">WHO (global)</option>
+          <option value="custom">Other…</option>
         </select>
+        {manualRegion === "custom" && (
+          <input 
+            type="text" 
+            value={customRegion} 
+            onChange={(e) => setCustomRegion(e.target.value)} 
+            placeholder="Country name (e.g. Sweden)" 
+            className="border p-2 rounded" 
+          />
+        )}
 
         {/* gamify */}
         <label className="flex items-center gap-1">
