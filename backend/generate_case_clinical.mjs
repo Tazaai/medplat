@@ -29,21 +29,26 @@ Generate a comprehensive, realistic clinical case for: "${topic}"
 CRITICAL REQUIREMENTS:
 - Start with timeline/onset for acute cases (e.g., "45 minutes before arrival")
 - Include medication lists with allergies
-- Specify hemodynamic profile (warm/cold, wet/dry) with region-specific units (${region === 'US' ? 'Fahrenheit, lb, in' : 'Celsius, kg, cm'})
+- **ALWAYS populate Physical Examination** with complete vitals (HR, BP, RR, SpO2, Temp), general appearance, cardiorespiratory findings, hemodynamic profile (warm/cold, wet/dry)
+- Specify hemodynamic profile with region-specific units (${region === 'US' ? 'Fahrenheit, lb, in' : 'Celsius, kg, cm'})
+- **ALWAYS include 2-3 key Paraclinical findings** (e.g., CXR, ECG, labs, ABG with specific values and interpretation)
 - Include test kinetics and timing
 - Provide imaging timing and escalation rationale
 - List accepted vs rejected differentials with arguments
 - Apply region-specific guidelines (${region})
-- Include disposition, follow-up, and social needs
-- Add red flags PROMINENTLY before management
-- Add timing windows for critical interventions
+- **ALWAYS include Disposition** (admit vs discharge, unit, follow-up plan, social needs assessment)
+- Add red flags PROMINENTLY before management with specific actions
+- Add timing windows for critical interventions with rationale
 - Include region-aware medication alternatives
 - Add 2-3 teaching pearls and at least 1 mnemonic
+- **ALWAYS include Evidence & References** (2-3 specific guidelines with year, society name)
 - Include internal expert panel notes (internal medicine, surgery, emergency medicine perspectives)
 
 Language: ${lang}
 Region: ${region}
 Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
+
+**IMPORTANT**: Do NOT leave exam, paraclinical, disposition, or evidence sections empty. Always provide realistic, specific values and findings.
 
 Return ONLY valid JSON matching this exact structure:
 {
@@ -108,7 +113,8 @@ Return ONLY valid JSON matching this exact structure:
     "prevalence": "",
     "incidence": "",
     "key_tests": [{"test": "", "sensitivity": "", "specificity": "", "notes": ""}],
-    "prognosis": ""
+    "prognosis": "",
+    "guidelines": [{"society": "", "year": "", "title": "", "recommendation": ""}]
   },
   "teaching": {
     "pearls": ["", "", ""],

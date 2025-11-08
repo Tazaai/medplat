@@ -46,21 +46,21 @@ function RedFlagsList({ redFlags }) {
   if (!redFlags || redFlags.length === 0) return null;
 
   return (
-    <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-      <div className="flex items-center gap-2 mb-2">
-        <AlertTriangle className="w-5 h-5 text-red-600" />
-        <h4 className="font-bold text-red-900">⚠️ RED FLAGS - Immediate Actions Required</h4>
+    <div className="mb-4 p-4 bg-rose-50 border-l-4 border-rose-600 rounded-lg shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <AlertTriangle className="w-6 h-6 text-rose-700" />
+        <h4 className="font-bold text-rose-900 text-lg">⚠️ RED FLAGS - Immediate Actions Required</h4>
       </div>
       <ul className="space-y-2">
         {redFlags.map((flag, idx) => (
-          <li key={idx} className="text-red-800">
+          <li key={idx} className="text-rose-900 bg-white rounded p-2 border border-rose-200">
             {typeof flag === 'string' ? (
-              <span>• {flag}</span>
+              <span className="font-medium">• {flag}</span>
             ) : (
               <div>
-                <strong>• {flag.flag || flag.name}</strong>
-                {flag.significance && <p className="ml-4 text-sm">{flag.significance}</p>}
-                {flag.action_needed && <p className="ml-4 text-sm italic">Action: {flag.action_needed}</p>}
+                <strong className="text-rose-800">• {flag.flag || flag.name}</strong>
+                {flag.significance && <p className="ml-4 text-sm text-rose-700 mt-1">Significance: {flag.significance}</p>}
+                {flag.action_needed && <p className="ml-4 text-sm italic text-rose-800 mt-1 font-medium">→ Action: {flag.action_needed}</p>}
               </div>
             )}
           </li>
@@ -166,15 +166,15 @@ export default function CaseDisplay({ caseData }) {
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       {/* Header with Validation Badge */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold mb-2">{caseData.Topic}</h2>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold mb-3">{caseData.Topic}</h2>
         {isValidated && (
-          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 w-fit">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">✅ Validated by Internal Expert Panel</span>
+          <div className="flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-2 w-fit shadow-sm">
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="text-sm font-semibold">✅ Validated by Internal Expert Panel</span>
           </div>
         )}
-        <div className="mt-3 flex gap-4 text-sm">
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
           {caseData.meta?.age && <span>👤 {caseData.meta.age} years old</span>}
           {caseData.meta?.sex && <span>{caseData.meta.sex}</span>}
           {caseData.meta?.region && <span>📍 {caseData.meta.region}</span>}
