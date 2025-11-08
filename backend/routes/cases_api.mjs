@@ -47,27 +47,40 @@ export default function casesApi() {
         panelNote = '⚠️ Internal review unavailable';
       }
       
-      // Step 3: Transform to frontend format
+      // Step 3: Transform to frontend format with enhanced fields
       const transformed = {
         Topic: reviewedResult.meta?.topic || topic,
+        Timeline: reviewedResult.timeline || null,
         Patient_History: reviewedResult.history?.presenting_complaint || reviewedResult.history || '',
+        History_Full: reviewedResult.history || {},
         Objective_Findings: reviewedResult.exam?.general || reviewedResult.exam || '',
+        Exam_Full: reviewedResult.exam || {},
+        Vitals: reviewedResult.exam?.vitals || {},
         Paraclinical_Investigations: {
           labs: reviewedResult.paraclinical?.labs || reviewedResult.labs || [],
           imaging: reviewedResult.paraclinical?.imaging || reviewedResult.imaging || [],
           ecg: reviewedResult.paraclinical?.ecg || '',
-          other: reviewedResult.paraclinical?.other_tests || []
+          other: reviewedResult.paraclinical?.other_tests || [],
+          test_kinetics: reviewedResult.paraclinical?.test_kinetics || []
         },
         Differential_Diagnoses: reviewedResult.differentials || [],
+        Red_Flags: reviewedResult.red_flags || [],
         Final_Diagnosis: { 
           Diagnosis: reviewedResult.final_diagnosis?.name || reviewedResult.diagnosis || 'No confirmed final diagnosis.',
           Rationale: reviewedResult.final_diagnosis?.rationale || ''
         },
         Management: reviewedResult.management?.immediate || reviewedResult.discussion || '',
+        Management_Full: {
+          immediate: reviewedResult.management?.immediate || [],
+          timing_windows: reviewedResult.management?.timing_windows || [],
+          region_guidelines: reviewedResult.management?.region_guidelines || [],
+          region_aware_alternatives: reviewedResult.management?.region_aware_alternatives || [],
+          escalation: reviewedResult.management?.escalation_if_wrong_dx || []
+        },
         Pathophysiology: reviewedResult.pathophysiology || {},
-        Red_Flags: reviewedResult.red_flags || [],
+        Disposition: reviewedResult.disposition || {},
         Evidence_and_References: reviewedResult.evidence || {},
-        Teaching: reviewedResult.teaching || {},
+        Teaching: reviewedResult.teaching || {pearls: [], mnemonics: []},
         Expert_Panel_and_Teaching: reviewedResult.panel_notes || {},
         meta: {
           topic: reviewedResult.meta?.topic || topic,
@@ -77,7 +90,9 @@ export default function casesApi() {
           language,
           region,
           model,
-          panelNote  // Include panel review note
+          panelNote,
+          reviewed_by_internal_panel: reviewedResult.meta?.reviewed_by_internal_panel || false,
+          panel_review_timestamp: reviewedResult.meta?.panel_review_timestamp || null
         }
       };
       

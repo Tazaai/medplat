@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
 import ExpertPanelReview from "./ExpertPanelReview";
+import CaseDisplay from "./CaseDisplay";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -428,7 +429,7 @@ export default function CaseView() {
 
       {/* Case rendering */}
       {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
-      {caseData && !gamify && renderBookCase(caseData)}
+      {caseData && !gamify && <CaseDisplay caseData={caseData} />}
 
       {/* Expert Panel Review Section */}
       {caseData && !gamify && (

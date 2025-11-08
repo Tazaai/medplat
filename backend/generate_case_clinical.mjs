@@ -27,17 +27,23 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
 Generate a comprehensive, realistic clinical case for: "${topic}"
 
 CRITICAL REQUIREMENTS:
+- Start with timeline/onset for acute cases (e.g., "45 minutes before arrival")
 - Include medication lists with allergies
-- Specify hemodynamic profile (warm/cold, wet/dry)
+- Specify hemodynamic profile (warm/cold, wet/dry) with region-specific units (${region === 'US' ? 'Fahrenheit, lb, in' : 'Celsius, kg, cm'})
 - Include test kinetics and timing
 - Provide imaging timing and escalation rationale
 - List accepted vs rejected differentials with arguments
 - Apply region-specific guidelines (${region})
 - Include disposition, follow-up, and social needs
-- Add red flags and rescue therapies
+- Add red flags PROMINENTLY before management
+- Add timing windows for critical interventions
+- Include region-aware medication alternatives
+- Add 2-3 teaching pearls and at least 1 mnemonic
 - Include internal expert panel notes (internal medicine, surgery, emergency medicine perspectives)
 
 Language: ${lang}
+Region: ${region}
+Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
 
 Return ONLY valid JSON matching this exact structure:
 {
@@ -46,7 +52,13 @@ Return ONLY valid JSON matching this exact structure:
     "language": "${lang}",
     "region": "${region}",
     "demographics": {"age": 0, "sex": ""},
-    "geography_of_living": ""
+    "geography_of_living": "",
+    "reviewed_by_internal_panel": false
+  },
+  "timeline": {
+    "onset": "",
+    "presentation_time": "",
+    "evolution": ""
   },
   "history": {
     "presenting_complaint": "",
@@ -58,7 +70,7 @@ Return ONLY valid JSON matching this exact structure:
     "allergies": []
   },
   "exam": {
-    "vitals": {},
+    "vitals": {"temp": "", "temp_unit": "${region === 'US' ? 'F' : 'C'}", "bp": "", "hr": "", "rr": "", "spo2": ""},
     "orthostatics": {},
     "general": "",
     "cardiorespiratory": "",
@@ -75,7 +87,7 @@ Return ONLY valid JSON matching this exact structure:
   "differentials": [
     {"name": "", "status": "ACCEPTED|REJECTED|KEEP_OPEN", "why_for": "", "why_against": ""}
   ],
-  "red_flags": [],
+  "red_flags": [{"flag": "", "significance": "", "action_needed": ""}],
   "final_diagnosis": {"name": "", "rationale": ""},
   "pathophysiology": {"mechanism": "", "systems_organs": ""},
   "etiology": {"underlying_cause": ""},
@@ -83,7 +95,8 @@ Return ONLY valid JSON matching this exact structure:
     "immediate": [],
     "escalation_if_wrong_dx": [],
     "region_guidelines": [{"society": "", "year": "", "applies_to": "", "note": ""}],
-    "timing_windows": [{"action": "", "window": ""}]
+    "timing_windows": [{"action": "", "window": "", "rationale": ""}],
+    "region_aware_alternatives": [{"medication": "", "alternative_in_${region}": "", "reason": ""}]
   },
   "disposition": {
     "admit_vs_discharge": "",
@@ -98,8 +111,8 @@ Return ONLY valid JSON matching this exact structure:
     "prognosis": ""
   },
   "teaching": {
-    "pearls": [],
-    "mnemonics": []
+    "pearls": ["", "", ""],
+    "mnemonics": [{"acronym": "", "meaning": "", "clinical_use": ""}]
   },
   "panel_notes": {
     "internal_medicine": "",

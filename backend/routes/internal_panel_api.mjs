@@ -134,6 +134,12 @@ Return ONLY valid JSON. No markdown, no explanations.`;
 
     const improvedCase = JSON.parse(completion.choices[0].message.content);
 
+    // Tag case as reviewed by internal panel
+    if (improvedCase.meta) {
+      improvedCase.meta.reviewed_by_internal_panel = true;
+      improvedCase.meta.panel_review_timestamp = new Date().toISOString();
+    }
+
     res.json({
       ok: true,
       case: improvedCase,
@@ -144,9 +150,13 @@ Return ONLY valid JSON. No markdown, no explanations.`;
   } catch (error) {
     console.error("❌ Internal panel error:", error);
     // Fallback: return original case if panel fails
+    const fallbackCase = { ...caseData };
+    if (fallbackCase.meta) {
+      fallbackCase.meta.reviewed_by_internal_panel = false;
+    }
     res.json({
       ok: true,
-      case: caseData,
+      case: fallbackCase,
       reviewed: false,
       panelNote: "⚠️ Internal review unavailable, using draft"
     });

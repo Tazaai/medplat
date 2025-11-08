@@ -16,12 +16,12 @@
 ✅ .github/workflows/
 
 ## 🔐 Validating environment variables (GitHub Secrets expected)...
-❌ Missing OPENAI_API_KEY
-❌ Missing GCP_PROJECT
-❌ Missing GCP_SA_KEY
-❌ Missing FIREBASE_SERVICE_KEY
-❌ Missing VITE_API_BASE
-🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+✅ OPENAI_API_KEY present
+✅ GCP_PROJECT present
+✅ GCP_SA_KEY present
+✅ FIREBASE_SERVICE_KEY present
+✅ VITE_API_BASE present
+🎉 All required secrets configured!
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -46,7 +46,7 @@
 ✅ Firebase initialized
 
 ## 🧠 OpenAI configuration...
-⚠️ OpenAI API key reference missing
+✅ OpenAI API key integration detected
 
 ## 🐳 Docker & Cloud Run config...
 ✅ Backend Dockerfile OK
@@ -61,7 +61,7 @@
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 0 / 5
+Secrets configured: 5 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -72,10 +72,10 @@ Secrets configured: 0 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 429ms
+up to date in 497ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 15292,
+  pid: 54440,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -83,61 +83,37 @@ STARTUP ROUTES: {
     'dialog_api.mjs',
     'gamify_api.mjs',
     'location_api.mjs',
+    'panel_api.mjs',
     'topics_api.mjs'
   ]
 }
-DEBUG ROUTES: files in routes/: [
-  'cases_api.mjs',
-  'comment_api.mjs',
-  'dialog_api.mjs',
-  'gamify_api.mjs',
-  'location_api.mjs',
-  'topics_api.mjs'
-]
+✅ Mounted /api/topics (static import)
+✅ Mounted /api/panel (static import)
+MODULE: dialogMod keys= [ 'default' ] defaultType= function
+MODULE: gamifyMod keys= [ 'default' ] defaultType= function
+MODULE: commentMod keys= [ 'default' ] defaultType= function
+MODULE: locationMod keys= [ 'default' ] defaultType= function
+MODULE: casesMod keys= [ 'default' ] defaultType= function
+🔥 Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 ✅ Mounted /api/location -> ./routes/location_api.mjs
-ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)
-✅ Firebase initialized using FIREBASE_SERVICE_KEY
-✅ Mounted /api/topics -> ./routes/topics_api.mjs
 ✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
 ✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
 ✅ Mounted /api/comment -> ./routes/comment_api.mjs
-ℹ️ Loaded Firebase key from repo keys/serviceAccountKey.json (local dev)
 ✅ Mounted /api/cases -> ./routes/cases_api.mjs
-All route import attempts finished
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
-
-Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at node:net:2206:7
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1976:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '0.0.0.0',
-  port: 8080
-}
-
-Node.js v22.17.0
+🚀 MedPlat backend listening on 0.0.0.0:8080
 🌐 Testing health endpoint...
 ✅ Health OK
 📡 Testing /api/topics...
+🔥 Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 ✅ Topics OK
 🧠 Testing /api/dialog...
 ✅ Dialog OK
 🔥 Testing /api/gamify...
-✅ Gamify OK
+⚠️ Gamify endpoint issue
 �� Cleaning up...
 ✅ Local backend tests complete
 ✅ Local backend smoke tests passed
-🚨 Deployment NOT READY — missing secrets.
-Note: Backend smoke tests passed locally despite missing secrets (local fallbacks in use).
+✅ READY FOR DEPLOYMENT — All major checks passed and local backend smoke tests passed.
 \nNext steps:
-- Configure required secrets in GitHub → Settings → Secrets → Actions before merging.
 - Include agent.md in your PR description for reviewer traceability.
-- Run './scripts/run_local_checks.sh' locally (it runs this script + extended checks).
+- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + extended checks).
