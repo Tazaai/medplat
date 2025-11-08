@@ -108,14 +108,17 @@ ${JSON.stringify(caseData, null, 2)}
 **Output Requirements:**
 Return a JSON object with TWO fields:
 1. "improved_case": {...} - The enhanced case (same schema as draft)
-2. "quality_score": 0.0-1.0 - Overall quality assessment (0.85+ = excellent, ready to publish)
+2. "quality_score": 0.0-1.0 - Overall quality assessment (0.95+ = excellent, ready to publish)
 
-Quality scoring criteria:
-- Completeness: 25% (all sections filled, no placeholders)
-- Clinical Accuracy: 25% (realistic values, logical consistency)
-- Guideline Adherence: 20% (region-appropriate, evidence-based)
-- Educational Value: 15% (teaching pearls, differential reasoning)
-- Academic Depth: 15% (references, pathophysiology, evidence)
+Quality scoring criteria (UPDATED weights for professor-level assessment):
+- Completeness: 20% (all sections filled, no placeholders)
+- Clinical Accuracy: 20% (realistic values, logical consistency)
+- Guideline Adherence: 15% (region-appropriate, evidence-based)
+- Pathophysiology Depth: 20% (detailed mechanism, molecular → organ system → clinical) **[INCREASED]**
+- Educational Value: 20% (teaching pearls, pitfalls, reflection questions, mnemonics) **[INCREASED]**
+- Academic Rigor: 5% (professional tone, references)
+
+MINIMUM ACCEPTABLE: 0.95 (cases below this trigger micro-refinement)
 
 Return ONLY valid JSON. No markdown, no explanations.
 
@@ -202,7 +205,18 @@ Same JSON format:
       improvedCase.meta.reviewed_by_internal_panel = true;
       improvedCase.meta.panel_review_timestamp = new Date().toISOString();
       improvedCase.meta.quality_score = qualityScore;
+      
+      // Preserve Stage 1 generator metadata
+      if (caseData.meta?.generator_version) {
+        improvedCase.meta.generator_version = caseData.meta.generator_version;
+      }
+      if (caseData.meta?.quality_estimate !== undefined) {
+        improvedCase.meta.quality_estimate = caseData.meta.quality_estimate;
+      }
     }
+
+    // 📊 Telemetry: Log quality score for monitoring
+    console.log(`📊 Quality Metrics | Topic: ${topic} | Category: ${category || 'General'} | Score: ${qualityScore.toFixed(3)} | Generator: ${caseData.meta?.generator_version || 'unknown'}`);
 
     res.json({
       ok: true,

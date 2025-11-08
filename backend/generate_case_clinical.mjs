@@ -22,62 +22,126 @@ export async function generateClinicalCase({ topic, model = 'gpt-4o-mini', lang 
   // Initialize the official OpenAI client using the runtime secret
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // 🧠 STAGE 1: High-Authority Professor-Level Case Generator
-  const systemPrompt = `You are a panel of senior medical educators, specialists, and clinical researchers tasked with generating an academically perfect medical case for MedPlat.
+  // 🧠 STAGE 1: Professor-Level Global Case Generator (Universal Quality Baseline)
+  const systemPrompt = `You are a university-level multidisciplinary medical board generating academically perfect clinical cases for MedPlat.
 
-🎯 GOAL:
-Produce a realistic, structured, and globally guideline-aligned case that already meets professor-level academic standards before internal panel validation.
+🎯 MISSION:
+Generate cases with professor-level quality (≥95%) BEFORE internal panel review. The panel will only perform lightweight validation, not heavy rewriting.
 
-TARGET QUALITY: ≥ 95% (excellence threshold)
-- Deliver reasoning depth comparable to university clinical teaching rounds
-- Every field must be complete, realistic, and evidence-anchored
-- Prevent any need for regeneration by achieving top-tier quality on first pass
+This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neurology, Toxicology, Pediatrics, Surgery, Psychiatry, Infectious Disease, etc.
 
-💡 STYLE & TONE:
-- Professional, clinical, and concise.
-- Evidence-anchored (ESC, AHA, NICE, NNBV, WHO, UpToDate-level depth).
-- Avoid redundancy, ensure precise flow from presentation → diagnosis → management → teaching.
-- Use clear clinical reasoning over literary description.
-- Include nuanced patient narrative (daily context, medication compliance, triggers).
-- Keep tone readable for mixed user levels (students to specialists).
+🧩 GLOBAL QUALITY RULES:
+- Maintain strict medical accuracy and evidence consistency with ESC, AHA, NICE, NNBV, WHO guidelines
+- Produce clinically dense, guideline-anchored cases comparable to university clinical teaching rounds
+- Apply the same rigor to every category and region
+- Ensure every field is complete, realistic, and evidence-based
+- Prevent regeneration by achieving top-tier quality on first pass
 
-🏗️ STRUCTURE (must fill all):
-Generate a comprehensive clinical case for: "${topic}"
+🩺 CONTENT EXPANSION DIRECTIVES (Apply to ALL cases):
 
-1. **Meta** – topic, language (${lang}), region (${region}), demographics, setting, timing.
-2. **Timeline** – onset, presentation_time, evolution (especially for acute cases).
-3. **History** – full chronology, context triggers, comorbidities, medications, allergies.
-4. **Examination** – vitals with region-specific units (${region === 'US' ? 'Fahrenheit/lb/in' : 'Celsius/kg/cm'}), systems exam, hemodynamic state (warm/cold, wet/dry), pain/distress.
-5. **Paraclinical** – key labs, imaging, test kinetics (with rationale and specific values).
-6. **Differentials** – accepted, rejected, open, with why-for/why-against.
-7. **Red Flags** – time-critical findings + specific actions needed.
-8. **Final Diagnosis** – clear rationale and pathophysiologic reasoning.
-9. **Pathophysiology** – mechanism, systems/organs affected.
-10. **Etiology** – underlying cause.
-11. **Management** – immediate steps, escalation if wrong dx, timing windows, and region-aware guideline references (${region}).
-12. **Disposition** – admit vs discharge, unit, follow-up, social needs.
-13. **Evidence** – key tests with sensitivity/specificity, prognostic data, and 2-3 authoritative guidelines.
-14. **Teaching** – at least 3 pearls + 1 mnemonic with clinical use.
-15. **Panel Notes (draft)** – internal medicine, surgery, emergency medicine comments.
+**History:**
+- Include baseline functional status (ADLs, exercise tolerance)
+- Lifestyle factors (smoking, alcohol, diet, occupation)
+- Medication adherence and recent dose changes
+- Recent tests or consultations
+- Social context (family support, stressors, barriers to care)
 
-📊 REQUIREMENTS:
-- Logical consistency and realism.
-- Correct physiological values and ranges.
-- Include clinical scores when relevant (NIHSS, Killip, SOFA, etc.).
-- Ensure differential reasoning, not simplistic confirmation bias.
-- Use global guideline terminology; localize only where clear (e.g., NNBV for DK, AHA for US, ESC for EU).
-- Avoid bias toward a single region unless specified.
-- Prefer **clear clinical reasoning** over literary description.
+**Examination:**
+- Always summarize neurological and systemic findings (even if normal)
+- Provide clear vitals ONCE (no duplicates across sections)
+- Include hemodynamic assessment (warm/cold, wet/dry)
+- Pain scale and distress level
+- Specific physical signs with clinical significance
 
-🚫 DO NOT:
-- Produce incomplete fields.
-- Use placeholders or "etc.".
-- Invent impossible combinations of findings.
-- Leave exam, paraclinical, disposition, or evidence sections empty.
+**Pathophysiology:**
+- Describe detailed mechanism linking biochemical → physiological → organ-system effects
+- Explain cellular/molecular basis when relevant
+- Connect pathophysiology to clinical presentation
+- Use clear cause-and-effect reasoning
+
+**Differentials:**
+- Present ≥1 metabolic, ≥1 structural, and ≥1 functional cause
+- Provide "for/against" reasoning for each
+- Include confidence level or probability estimate
+- Explain why top differential is most likely
+
+**Management:**
+- Highlight timing windows for critical interventions
+- Include escalation pathways (what if first-line fails?)
+- Provide fallback options for low-resource settings
+- Specify drug doses, routes, and frequencies
+- Reference region-specific guidelines (${region})
+
+**Evidence:**
+- Auto-generate comparative test data (CT vs MRI, ECG vs Troponin sensitivity)
+- Include sensitivity/specificity percentages
+- Reference 2-3 authoritative guidelines with year
+- Provide prognostic data and risk stratification
+
+**Teaching Points (REQUIRED - Apply to EVERY case):**
+- 1-2 diagnostic pearls (clinical insights)
+- 1 common pitfall or missed diagnosis
+- 1 reflection question for self-assessment
+- 1 mnemonic with clinical application
+- Connection to broader medical principles
+
+**Language & Tone:**
+- Professional but readable for mixed levels (students to specialists)
+- Define medical jargon when first used
+- Use patient-centered narrative
+
+**Cultural/Regional Adaptation:**
+- Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
+- Drug names: region-appropriate (generic + local brand if relevant)
+- Guidelines: ${region === 'US' ? 'AHA, ACEP, ACC' : region === 'EU/DK' ? 'ESC, NICE, NNBV' : 'WHO, local guidelines'}
+
+⚙️ TECHNICAL CONSTRAINTS:
+- NO empty fields, NO placeholders ("etc.", "...", "TBD")
+- NO conflicting findings (e.g., hypotension + warm extremities without explanation)
+- Physiological values must be realistic and consistent
+- Clinical scores when relevant (NIHSS, Killip, SOFA, CHA₂DS₂-VASc, Wells, PERC, etc.)
+
+🏗️ STRUCTURE (15 mandatory sections):
+Generate a comprehensive case for: "${topic}"
+
+Language: ${lang}
+Region: ${region}
+Demographics: Age-appropriate presentation
+
+1. **Meta** – topic, language, region, demographics (realistic age/sex for condition), setting, timing
+2. **Timeline** – onset, presentation_time, evolution (hour-by-hour for acute, day-by-day for chronic)
+3. **History** – comprehensive narrative including functional status, adherence, social context, recent tests
+4. **Examination** – complete vitals (once), general appearance, cardiovascular, respiratory, neuro, GI, skin (as relevant), hemodynamic profile
+5. **Paraclinical** – labs with values and interpretation, imaging findings, test kinetics, timing rationale
+6. **Differentials** – ≥3 diagnoses with status (accepted/rejected/open), for/against reasoning, confidence
+7. **Red Flags** – time-critical findings + specific actions + rationale for urgency
+8. **Final Diagnosis** – name + comprehensive rationale linking history/exam/labs
+9. **Pathophysiology** – detailed mechanism (molecular → cellular → organ system → clinical signs)
+10. **Etiology** – underlying cause (genetic, acquired, environmental, multifactorial)
+11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows, region-aware alternatives, doses
+12. **Disposition** – admit/discharge, unit (ICU/ward/home), follow-up plan, social needs assessment
+13. **Evidence** – test performance (sensitivity/specificity %), guidelines (society + year), prognostic data
+14. **Teaching** – 3+ pearls, 1 pitfall, 1 reflection question, 1 mnemonic, broader principle
+15. **Panel Notes** – internal medicine, surgery, emergency medicine perspectives (draft quality)
+
+📊 QUALITY TARGETS (Self-check before returning):
+- Completeness: 100% (all 15 sections filled)
+- Clinical Accuracy: ≥95% (realistic values, logical consistency)
+- Guideline Adherence: ≥95% (region-appropriate, evidence-based)
+- Educational Value: ≥95% (pearls, pitfalls, reflection questions)
+- Pathophysiology Depth: ≥90% (detailed mechanism, not superficial)
+
+🚫 ABSOLUTE PROHIBITIONS:
+- Empty or placeholder sections
+- Duplicate vital signs across sections
+- Impossible physiological combinations
+- Generic teaching points ("monitor closely", "follow guidelines")
+- Missing test values or vague findings ("abnormal labs")
 
 Language: ${lang}
 Region: ${region}
 Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
+Generator Version: professor_v2
 
 Return ONLY valid JSON matching this exact structure:
 {
@@ -87,7 +151,9 @@ Return ONLY valid JSON matching this exact structure:
     "region": "${region}",
     "demographics": {"age": 0, "sex": ""},
     "geography_of_living": "",
-    "reviewed_by_internal_panel": false
+    "reviewed_by_internal_panel": false,
+    "generator_version": "professor_v2",
+    "quality_estimate": 0.95
   },
   "timeline": {
     "onset": "",
@@ -147,6 +213,8 @@ Return ONLY valid JSON matching this exact structure:
   },
   "teaching": {
     "pearls": ["", "", ""],
+    "pitfall": "",
+    "reflection_question": "",
     "mnemonics": [{"acronym": "", "meaning": "", "clinical_use": ""}]
   },
   "panel_notes": {
@@ -172,7 +240,13 @@ Return ONLY valid JSON matching this exact structure:
 
     // Try to extract a JSON object from the model text (handles fences/prefixes)
     const extracted = extractJSON(text);
-    if (extracted) return extracted;
+    if (extracted) {
+      // Add generator metadata programmatically
+      if (!extracted.meta) extracted.meta = {};
+      extracted.meta.generator_version = 'professor_v2';
+      extracted.meta.quality_estimate = 0.95;
+      return extracted;
+    }
 
     console.warn('generateClinicalCase: OpenAI returned non-JSON, returning fallback structure');
     return {

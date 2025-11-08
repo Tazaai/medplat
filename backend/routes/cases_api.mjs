@@ -95,7 +95,9 @@ export default function casesApi() {
           panelNote,
           reviewed_by_internal_panel: reviewedResult.meta?.reviewed_by_internal_panel || false,
           panel_review_timestamp: reviewedResult.meta?.panel_review_timestamp || null,
-          quality_score: reviewedResult.meta?.quality_score || qualityScore
+          quality_score: reviewedResult.meta?.quality_score || qualityScore,
+          generator_version: reviewedResult.meta?.generator_version || 'unknown',
+          quality_estimate: reviewedResult.meta?.quality_estimate
         }
       };
       
