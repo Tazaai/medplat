@@ -36,61 +36,76 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 - Apply the same rigor to every category and region
 - Ensure every field is complete, realistic, and evidence-based
 - Prevent regeneration by achieving top-tier quality on first pass
+- NEVER hardcode content for specific diagnoses — use pattern-based logic that adapts to ANY topic
 
 🩺 CONTENT EXPANSION DIRECTIVES (Apply to ALL cases):
 
-**History:**
-- Include baseline functional status (ADLs, exercise tolerance)
-- Lifestyle factors (smoking, alcohol, diet, occupation)
-- Medication adherence and recent dose changes
-- Recent tests or consultations
-- Social context (family support, stressors, barriers to care)
+**History (Context-Rich Narrative):**
+- Include baseline functional status (ADLs, exercise tolerance, mobility aids)
+- Occupation details with specific work exposures (chemicals, dust, stress, shift work)
+- Living situation (housing type, stairs, family support, isolation risk)
+- Lifestyle factors: smoking (pack-years), alcohol (units/week), diet patterns, exercise frequency
+- Medication adherence and recent dose changes or new prescriptions
+- Recent medical tests, consultations, or hospital visits
+- Family history with specific inheritance patterns when relevant
+- Environmental exposures (travel, pets, hobbies, recent infections)
 
-**Examination:**
-- Always summarize neurological and systemic findings (even if normal)
-- Provide clear vitals ONCE (no duplicates across sections)
-- Include hemodynamic assessment (warm/cold, wet/dry)
-- Pain scale and distress level
-- Specific physical signs with clinical significance
+**Examination (Numeric & Measurable):**
+- ALWAYS provide complete numeric vitals with UNITS (temp in °C/°F, BP in mmHg, HR in bpm, RR in /min, SpO2 in %)
+- Include mild or borderline findings for realism (e.g., "BP 138/88 mmHg — prehypertensive range")
+- Always summarize neurological findings (GCS, cranial nerves, motor/sensory, reflexes, gait) even if "normal"
+- Include hemodynamic assessment: warm/cold (perfusion), wet/dry (volume status)
+- Pain scale (0-10), distress level, body positioning
+- Specific physical signs with clinical significance (murmurs graded, lung crackles quantified)
+- Orthostatic vitals when relevant (lying/standing BP)
 
-**Pathophysiology:**
-- Describe detailed mechanism linking biochemical → physiological → organ-system effects
-- Explain cellular/molecular basis when relevant
-- Connect pathophysiology to clinical presentation
-- Use clear cause-and-effect reasoning
+**Pathophysiology (Molecular → Clinical):**
+- Structured flow: molecular/biochemical trigger → cellular dysfunction → organ system dysfunction → clinical manifestation
+- Explain cellular/molecular basis (ion channels, receptors, inflammatory cascades, metabolic pathways)
+- Connect pathophysiology directly to patient's symptoms and exam findings
+- Mention at least ONE cross-system consequence (e.g., hypoxia → pulmonary vasoconstriction → RV strain)
+- Use clear cause-and-effect reasoning with physiological precision
 
-**Differentials:**
+**Differentials (Evidence-Based Reasoning):**
 - Present ≥1 metabolic, ≥1 structural, and ≥1 functional cause
-- Provide "for/against" reasoning for EACH differential (pedagogical "why not" for rejected ones)
-- Include confidence level or probability estimate
-- Explain why top differential is most likely
+- Provide "for/against" reasoning for EACH differential with specific clinical evidence
+- For ACCEPTED differentials: List 3+ supporting findings
 - For REJECTED differentials: Explicitly state what clinical finding RULES OUT this diagnosis
-- Example: "Pulmonary embolism REJECTED because: D-dimer negative, Wells score low, no tachycardia"
+  - Example: "Pulmonary embolism REJECTED because: D-dimer 0.3 mg/L (negative), Wells score 1 (low), no tachycardia, normal SpO2"
+- Include confidence level or probability estimate (e.g., "85% probability given troponin + ST elevation")
+- Explain why top differential is most likely using Bayesian reasoning (pretest → posttest probability)
 
-**Management:**
-- Highlight timing windows for critical interventions
-- Include escalation pathways (what if first-line fails?)
-- Provide fallback options for low-resource settings
-- Specify drug doses, routes, and frequencies
-- Reference region-specific guidelines (${region})
+**Management (Actionable & Time-Sensitive):**
+- Highlight critical timing windows with rationale (e.g., "tPA within 4.5h of stroke onset — after this, hemorrhage risk outweighs benefit")
+- Include escalation pathways (what if first-line fails? what's next?)
+- Provide fallback options for low-resource settings (no ICU, limited imaging, generic drugs)
+- Specify drug doses, routes, frequencies, and duration (e.g., "Aspirin 300mg PO STAT, then 75mg OD")
+- Reference region-specific guidelines with year and recommendation class (${region})
+- Include monitoring parameters (vitals frequency, lab recheck timing, danger signs)
 
-**Evidence:**
-- Auto-generate comparative test data (CT vs MRI, ECG vs Troponin sensitivity)
-- Include sensitivity/specificity percentages
-- Reference 2-3 authoritative guidelines with year
-- Provide prognostic data and risk stratification
+**Evidence (Comparative & Statistical):**
+- Auto-generate comparative test data dynamically for the specific condition:
+  - Test performance: sensitivity/specificity % for key diagnostics (e.g., "Troponin I: 89% sens, 95% spec for AMI at 6h")
+  - Comparative modality effectiveness (e.g., "CT 95% sens vs MRI 99% sens for ICH, but CT faster")
+- Include ONE global guideline (WHO/ESC/AHA/NICE/GINA) with year and title
+- Include ONE region-specific statistic or prevalence data (auto-match to ${region})
+- Provide prognostic data (mortality %, 5-year survival, functional outcome scores)
 
-**Teaching Points (REQUIRED - Apply to EVERY case):**
-- 1-2 diagnostic pearls (clinical insights)
-- 1 common pitfall or missed diagnosis
-- 1 reflection question for self-assessment
-- 1 mnemonic with clinical application
-- Connection to broader medical principles
+**Teaching & Learning (MANDATORY for EVERY case):**
+- ≥2 diagnostic pearls (specific clinical insights, not generic advice)
+- ≥1 common pitfall or missed diagnosis with clinical consequence
+- ≥2 reflection questions:
+  - One clinical reasoning question (differential diagnosis logic)
+  - One management decision question (treatment choice or timing)
+- ≥2 learning objectives (what the learner should master from this case)
+- 1 mnemonic with clinical application context (when to use it, what it helps remember)
+- Connection to broader medical principles (e.g., shock physiology, acid-base, homeostasis)
 
 **Language & Tone:**
 - Professional but readable for mixed levels (students to specialists)
 - Define medical jargon when first used
-- Use patient-centered narrative
+- Use patient-centered narrative with realistic details (occupation, family, living situation)
+- Maintain clinical precision without sacrificing clarity
 
 **Cultural/Regional Adaptation:**
 - Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
@@ -107,8 +122,19 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 ⚙️ TECHNICAL CONSTRAINTS:
 - NO empty fields, NO placeholders ("etc.", "...", "TBD")
 - NO conflicting findings (e.g., hypotension + warm extremities without explanation)
-- Physiological values must be realistic and consistent
-- Clinical scores when relevant (NIHSS, Killip, SOFA, CHA₂DS₂-VASc, Wells, PERC, etc.)
+- ALL numeric values must include UNITS and be physiologically realistic
+- Clinical scores when relevant (NIHSS, Killip, SOFA, CHA₂DS₂-VASc, Wells, PERC, CURB-65, etc.)
+- Include mild or borderline findings for realism (not every value at extremes)
+
+🔬 DYNAMIC VALIDATION (Self-check before returning):
+EVERY case must score ≥0.95 across these criteria:
+- Completeness: 100% (all 15 sections filled with realistic content, no empty fields)
+- Clinical Accuracy: ≥95% (numeric values correct, no physiological contradictions)
+- Guideline Adherence: ≥95% (region-appropriate, evidence-based, cited guidelines)
+- Pathophysiology Depth: ≥95% (molecular → clinical flow, cross-system effects)
+- Educational Value: ≥95% (≥2 pearls, ≥2 reflection questions, ≥2 learning objectives)
+
+This validation applies DYNAMICALLY to ALL topics — adapt the pattern, not hardcoded examples.
 
 🏗️ STRUCTURE (15 mandatory sections):
 Generate a comprehensive case for: "${topic}"
@@ -137,8 +163,8 @@ Demographics: Age-appropriate presentation
 - Completeness: 100% (all 15 sections filled)
 - Clinical Accuracy: ≥95% (realistic values, logical consistency)
 - Guideline Adherence: ≥95% (region-appropriate, evidence-based)
-- Educational Value: ≥95% (pearls, pitfalls, reflection questions)
-- Pathophysiology Depth: ≥90% (detailed mechanism, not superficial)
+- Pathophysiology Depth: ≥95% (molecular → clinical mechanism with cross-system effects)
+- Educational Value: ≥95% (≥2 pearls, ≥2 reflection questions, ≥2 learning objectives, mnemonics)
 
 🚫 ABSOLUTE PROHIBITIONS:
 - Empty or placeholder sections
@@ -146,11 +172,14 @@ Demographics: Age-appropriate presentation
 - Impossible physiological combinations
 - Generic teaching points ("monitor closely", "follow guidelines")
 - Missing test values or vague findings ("abnormal labs")
+- Hardcoded content for specific diagnoses (use pattern-based logic that adapts to ANY topic)
+- Numeric values without units (always specify °C/°F, mmHg, bpm, mg/dL, etc.)
 
 Language: ${lang}
 Region: ${region}
 Units: ${region === 'US' ? 'Fahrenheit, pounds, inches' : 'Celsius, kilograms, centimeters'}
 Generator Version: professor_v2
+Target Quality: ≥0.95 (95-100% across all criteria)
 
 Return ONLY valid JSON matching this exact structure:
 {
@@ -223,7 +252,8 @@ Return ONLY valid JSON matching this exact structure:
   "teaching": {
     "pearls": ["", "", ""],
     "pitfall": "",
-    "reflection_question": "",
+    "reflection_questions": ["", ""],
+    "learning_objectives": ["", ""],
     "mnemonics": [{"acronym": "", "meaning": "", "clinical_use": ""}]
   },
   "panel_notes": {
