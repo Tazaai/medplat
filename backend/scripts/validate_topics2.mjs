@@ -147,10 +147,12 @@ const normalize = str =>
   if (cleanupArg) {
     console.log('🧹 Phase 3: Cleanup — Merging duplicate categories...');
     
-    // Category normalization map (only typos, not legitimate variants)
+    // Category normalization map (merge singular to plural, fix typos)
     const canonicalMap = {
+      "Infectious Disease": "Infectious Diseases",
       "infectios disease": "Infectious Diseases",
       "infectiouse disease": "Infectious Diseases",
+      "Paediatrics": "Pediatrics",
       "paediatrics": "Pediatrics"
     };
     
