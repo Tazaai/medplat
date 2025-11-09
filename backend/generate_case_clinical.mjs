@@ -59,12 +59,31 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 - Specific physical signs with clinical significance (murmurs graded, lung crackles quantified)
 - Orthostatic vitals when relevant (lying/standing BP)
 
-**Pathophysiology (Molecular → Clinical):**
-- Structured flow: molecular/biochemical trigger → cellular dysfunction → organ system dysfunction → clinical manifestation
-- Explain cellular/molecular basis (ion channels, receptors, inflammatory cascades, metabolic pathways)
-- Connect pathophysiology directly to patient's symptoms and exam findings
-- Mention at least ONE cross-system consequence (e.g., hypoxia → pulmonary vasoconstriction → RV strain)
-- Use clear cause-and-effect reasoning with physiological precision
+**Pathophysiology (Molecular → Clinical with Classification):**
+CRITICAL: Include BOTH classification system AND molecular-to-clinical flow
+
+**Classification Systems (Disease-Specific):**
+- Cardiovascular: Stanford (Type A/B), DeBakey (I/II/III), Killip class (MI), NYHA (HF), Forrester (shock)
+- Neurological: TOAST (stroke), International League (epilepsy), Hunt-Hess (SAH), Fisher (ICH)
+- Hepatic: Child-Pugh (cirrhosis), MELD (transplant), King's College (acute liver failure)
+- Respiratory: GOLD (COPD), ATS/ERS (asthma severity), Light's criteria (pleural effusion)
+- Renal: RIFLE/AKIN (AKI), CKD stages, nephrotic vs nephritic
+- Trauma: GCS, ATLS classifications, fracture classifications (Garden, Salter-Harris)
+
+**Molecular → Clinical Flow (Required Structure):**
+1. **Molecular/Biochemical Trigger**: Specific pathogen, genetic mutation, metabolic derangement, mechanical stress
+2. **Cellular Dysfunction**: Ion channel disruption, receptor activation, inflammatory cascade activation, apoptosis, necrosis
+3. **Organ System Effects**: Tissue-level consequences (edema, ischemia, inflammation, fibrosis)
+4. **Clinical Manifestations**: Direct connection to patient's symptoms and exam findings
+5. **Hemodynamic/Structural Consequences**: Cross-system effects (e.g., aortic dissection → coronary ostia involvement → MI, carotid involvement → stroke)
+
+**Example (Aortic Dissection Type A):**
+- **Classification**: Stanford Type A (ascending aorta involvement), DeBaKey Type I (ascending + descending)
+- **Molecular**: Cystic medial necrosis → elastin degradation + smooth muscle loss in aortic media → wall weakness
+- **Cellular**: Intimal tear → blood enters media → false lumen creation → propagation along aortic length
+- **Organ System**: Ascending dissection → coronary ostia shearing (→MI), aortic valve insufficiency, pericardial tamponade; arch involvement → carotid dissection (→stroke), subclavian (→pulse deficit)
+- **Clinical**: Tearing chest pain (intimal tear), differential BP readings (R vs L arm), pulse deficits (branch vessel involvement), aortic regurgitation murmur
+- **Hemodynamic**: False lumen expansion → true lumen compression → malperfusion syndrome (coronary, cerebral, renal, mesenteric, limb ischemia)
 
 **Differentials (Evidence-Based Reasoning):**
 - Present ≥1 metabolic, ≥1 structural, and ≥1 functional cause
@@ -159,7 +178,7 @@ EVERY case must score ≥0.95 across these criteria:
 - Completeness: 100% (all 15 sections filled with realistic content, no empty fields)
 - Clinical Accuracy: ≥95% (numeric values correct, no physiological contradictions)
 - Guideline Adherence: ≥95% (region-appropriate, evidence-based, cited guidelines)
-- Pathophysiology Depth: ≥95% (molecular → clinical flow, cross-system effects)
+- Pathophysiology Depth: ≥95% (molecular → clinical flow with disease classification, hemodynamic/structural consequences)
 - Educational Value: ≥95% (≥2 pearls, ≥2 reflection questions, ≥2 learning objectives)
 
 This validation applies DYNAMICALLY to ALL topics — adapt the pattern, not hardcoded examples.
@@ -179,7 +198,7 @@ Demographics: Age-appropriate presentation
 6. **Differentials** – ≥3 diagnoses with status (accepted/rejected/open), for/against reasoning, confidence
 7. **Red Flags** – time-critical findings + specific actions + rationale for urgency
 8. **Final Diagnosis** – name + comprehensive rationale linking history/exam/labs
-9. **Pathophysiology** – detailed mechanism (molecular → cellular → organ system → clinical signs)
+9. **Pathophysiology** – classification system (Stanford/DeBakey/NYHA/etc.) + molecular mechanism → cellular → organ → clinical + hemodynamic/structural consequences
 10. **Etiology** – underlying cause (genetic, acquired, environmental, multifactorial)
 11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows, region-aware alternatives, doses
 12. **Disposition** – admit/discharge, unit (ICU/ward/home), follow-up plan, social needs assessment
@@ -255,7 +274,14 @@ Return ONLY valid JSON matching this exact structure:
   ],
   "red_flags": [{"flag": "", "significance": "", "action_needed": ""}],
   "final_diagnosis": {"name": "", "rationale": ""},
-  "pathophysiology": {"mechanism": "", "systems_organs": ""},
+  "pathophysiology": {
+    "classification": "",
+    "molecular_mechanism": "",
+    "cellular_dysfunction": "",
+    "organ_system_effects": "",
+    "clinical_manifestations": "",
+    "hemodynamic_structural_consequences": ""
+  },
   "etiology": {"underlying_cause": ""},
   "management": {
     "immediate": [],

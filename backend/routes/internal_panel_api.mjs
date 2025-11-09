@@ -94,23 +94,28 @@ Silently review the draft case and IMPROVE it by:
    - Format all guidelines with URLs or DOIs: "[Society Year] Title - URL"
    - Ensure ${region}-specific guidelines appear first
    - Example: Copenhagen University Hospital protocol (local) → Sundhedsstyrelsen (national) → ESC (continental)
-2. **Completeness:** Ensure every section is filled with realistic, specific values (no empty fields)
-3. **Clinical Accuracy:** Verify vitals, lab values, imaging findings are physiologically consistent
-4. **Red Flags:** Add missing time-critical findings with specific actions
-5. **Timing Windows with Rationale:** ALWAYS explain pathophysiology → consequence → action
+2. **Pathophysiology Depth (Classification + Molecular Flow):** 
+   - Include relevant disease classification (Stanford/DeBaKey for dissection, Killip for MI, NYHA for HF, TOAST for stroke, etc.)
+   - Provide complete molecular → cellular → organ → clinical flow
+   - Explain hemodynamic/structural consequences (e.g., dissection → coronary ostia shear → MI, carotid involvement → stroke)
+   - Connect pathophysiology directly to patient's symptoms and exam findings
+3. **Completeness:** Ensure every section is filled with realistic, specific values (no empty fields)
+4. **Clinical Accuracy:** Verify vitals, lab values, imaging findings are physiologically consistent
+5. **Red Flags:** Add missing time-critical findings with specific actions
+6. **Timing Windows with Rationale:** ALWAYS explain pathophysiology → consequence → action
    - Example: "β-blockers can worsen bradycardia and reduce cardiac output → use with caution → hold until hemodynamically stable"
-6. **Differential Reasoning:** Ensure arguments for/against each diagnosis are evidence-based
-7. **Hemodynamic Profiling:** Validate warm/cold, wet/dry assessment is accurate
-8. **Disposition:** Ensure admit/discharge, unit, follow-up, social needs are region-appropriate
-9. **Teaching Quality:** Verify pearls are clinically useful, mnemonics are memorable
-10. **Evidence Depth:** Add specific guidelines with URLs/DOIs in hierarchical order (tier: regional/national/continental/international)
-11. **Clinical Scales:** Include relevant scores (NIHSS, Killip, SOFA, etc.) when applicable
-12. **Panel Discussion (Conference-Style):** Remove individual expert perspectives, create unified conference discussion with:
+7. **Differential Reasoning:** Ensure arguments for/against each diagnosis are evidence-based
+8. **Hemodynamic Profiling:** Validate warm/cold, wet/dry assessment is accurate
+9. **Disposition:** Ensure admit/discharge, unit, follow-up, social needs are region-appropriate
+10. **Teaching Quality:** Verify pearls are clinically useful, mnemonics are memorable
+11. **Evidence Depth:** Add specific guidelines with URLs/DOIs in hierarchical order (tier: local/regional/national/continental/international)
+12. **Clinical Scales:** Include relevant scores (NIHSS, Killip, SOFA, etc.) when applicable
+13. **Panel Discussion (Conference-Style):** Remove individual expert perspectives, create unified conference discussion with:
     - Specialist viewpoints with for/against arguments
     - Confidence scores and evidence citations
     - Points of debate (1-2 areas of disagreement)
     - Final consensus statement
-13. **Academic Rigor:** Refine language to be concise, professional, globally guideline-aware
+14. **Academic Rigor:** Refine language to be concise, professional, globally guideline-aware
 
 **Draft Case:**
 ${JSON.stringify(caseData, null, 2)}
@@ -122,11 +127,11 @@ Return a JSON object with TWO fields:
 
 Quality scoring criteria (UPDATED weights for professor-level assessment):
 - Completeness: 15% (all sections filled, no placeholders)
-- Clinical Accuracy: 20% (realistic values, logical consistency)
-- Guideline Adherence (5-Tier Hierarchical): 15% (local → regional → national → continental → international with URLs) **[UPDATED]**
-- Pathophysiology Depth: 20% (detailed mechanism, molecular → organ system → clinical) **[INCREASED]**
-- Educational Value: 20% (teaching pearls, pitfalls, reflection questions, mnemonics, conference discussion) **[INCREASED]**
-- Clinical Rationale Before Timing: 5% (pathophysiology → action for all timing windows) **[NEW]**
+- Clinical Accuracy: 15% (realistic values, logical consistency)
+- Guideline Adherence (5-Tier Hierarchical): 15% (local → regional → national → continental → international with URLs)
+- Pathophysiology Depth: 25% (classification system + molecular → cellular → organ → clinical flow + hemodynamic/structural consequences) **[INCREASED & ENHANCED]**
+- Educational Value: 20% (teaching pearls, pitfalls, reflection questions, mnemonics, conference discussion)
+- Clinical Rationale Before Timing: 5% (pathophysiology → action for all timing windows)
 - Academic Rigor: 5% (professional tone, references)
 
 MINIMUM ACCEPTABLE: 0.95 (cases below this trigger micro-refinement)
