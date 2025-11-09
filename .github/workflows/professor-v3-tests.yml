@@ -76,6 +76,28 @@ jobs:
             *.log
             test-results/
 
+      - name: Comment PR with results
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = `## 🧪 Professor-V3 Regression Tests
+            
+            Tests completed. Check workflow logs for detailed results.
+            
+            - 📊 Pass Rate Target: ≥80%
+            - ✅ Validation: Conference engine quality gates
+            - 🔬 Model: GPT-4o-mini (test) / GPT-4o (production)`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
       - name: Cleanup secrets
         if: always()
         run: |
