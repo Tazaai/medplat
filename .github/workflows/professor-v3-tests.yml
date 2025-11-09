@@ -1,0 +1,83 @@
+name: Professor-V3 Regression Tests
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    branches: ['main', 'feat/**']
+    paths:
+      - 'backend/generate_case_clinical.mjs'
+      - 'backend/routes/**'
+      - 'tests/test_professor_v3_conference_engine.mjs'
+      - '.github/workflows/professor-v3-tests.yml'
+
+jobs:
+  professor-v3-regression:
+    name: Professor-V3 Conference Engine Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
+
+      - name: Check required secrets
+        id: check-secrets
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "❌ OPENAI_API_KEY is missing"
+            echo "missing=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          if [ -z "$FIREBASE_SERVICE_KEY" ]; then
+            echo "❌ FIREBASE_SERVICE_KEY is missing"
+            echo "missing=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "✅ Required secrets present"
+          echo "missing=false" >> $GITHUB_OUTPUT
+
+      - name: Create Firebase service account file
+        env:
+          FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
+        run: |
+          echo "$FIREBASE_SERVICE_KEY" > backend/firebase-service-key.json
+          echo "✅ Firebase credentials configured"
+
+      - name: Run Professor-V3 regression tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: backend/firebase-service-key.json
+          NODE_ENV: test
+        run: |
+          echo "🧪 Running Professor-V3 Conference Engine regression tests..."
+          npm run test:professor-v3
+        timeout-minutes: 15
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: professor-v3-test-results
+          path: |
+            *.log
+            test-results/
+
+      - name: Cleanup secrets
+        if: always()
+        run: |
+          rm -f backend/firebase-service-key.json
+          echo "🧹 Cleaned up temporary credentials"
