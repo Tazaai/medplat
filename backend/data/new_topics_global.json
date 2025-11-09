@@ -1,0 +1,72 @@
+[
+  {
+    "category": "Infectious Diseases",
+    "topic": "Long COVID / Post-COVID-19 Syndrome",
+    "lang": "en",
+    "difficulty": "advanced",
+    "keywords": ["post-acute COVID", "long haulers", "persistent symptoms", "fatigue", "brain fog"]
+  },
+  {
+    "category": "Infectious Diseases",
+    "topic": "Mpox (Monkeypox) Management",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["mpox", "monkeypox", "poxvirus", "rash", "outbreak"]
+  },
+  {
+    "category": "Public Health",
+    "topic": "Climate Change & Health Impacts",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["global warming", "heat stress", "vector-borne diseases", "air quality", "environmental health"]
+  },
+  {
+    "category": "Psychiatry",
+    "topic": "Physician Burnout Prevention",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["burnout", "wellness", "resilience", "mental health", "self-care", "work-life balance"]
+  },
+  {
+    "category": "Radiology",
+    "topic": "Point-of-Care Ultrasound (POCUS) Basics",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["POCUS", "bedside ultrasound", "FAST exam", "diagnostic imaging", "emergency ultrasound"]
+  },
+  {
+    "category": "Addiction Medicine",
+    "topic": "Opioid Use Disorder Treatment",
+    "lang": "en",
+    "difficulty": "advanced",
+    "keywords": ["OUD", "buprenorphine", "methadone", "naloxone", "MAT", "harm reduction"]
+  },
+  {
+    "category": "Endocrinology",
+    "topic": "Gender-Affirming Hormone Therapy",
+    "lang": "en",
+    "difficulty": "advanced",
+    "keywords": ["transgender health", "hormone therapy", "GAHT", "testosterone", "estrogen", "gender dysphoria"]
+  },
+  {
+    "category": "Infectious Diseases",
+    "topic": "Antimicrobial Stewardship",
+    "lang": "en",
+    "difficulty": "advanced",
+    "keywords": ["antibiotic resistance", "ASP", "antimicrobial resistance", "de-escalation", "narrow-spectrum"]
+  },
+  {
+    "category": "Education",
+    "topic": "Medical Simulation Debriefing",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["simulation", "debriefing", "teaching", "feedback", "reflective practice"]
+  },
+  {
+    "category": "Telemedicine",
+    "topic": "Telemedicine Best Practices",
+    "lang": "en",
+    "difficulty": "intermediate",
+    "keywords": ["telehealth", "virtual care", "remote consultation", "digital health", "e-health"]
+  }
+]

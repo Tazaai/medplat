@@ -6,12 +6,15 @@
  * 1. Check for duplicates by `id` or identical `topic`
  * 2. Fix missing fields (category, lang, topic)
  * 3. Normalize all IDs to snake_case
- * 4. Optionally import new topics from JSON (--add)
+ * 4. Optionally cleanup: merge duplicate categories, remove orphans (--cleanup)
+ * 5. Optionally import new topics from JSON (--add)
  * 
  * Usage:
  *   node backend/scripts/validate_topics2.mjs
+ *   node backend/scripts/validate_topics2.mjs --cleanup
  *   node backend/scripts/validate_topics2.mjs --add=new_topics.json
- *   npm run validate:topics2
+ *   node backend/scripts/validate_topics2.mjs --cleanup --add=backend/data/new_topics_global.json
+ *   npm run validate:topics2 -- --cleanup
  */
 
 import { initializeApp } from "firebase-admin/app";
@@ -141,10 +144,75 @@ const normalize = str =>
   }
   console.log();
   
-  // Phase 3: Optional import new topics
+  // Phase 3: Optional cleanup (merge duplicate categories, remove orphans)
+  const cleanupArg = process.argv.includes("--cleanup");
+  if (cleanupArg) {
+    console.log('🧹 Phase 3: Cleanup — Merging duplicate categories...');
+    
+    // Category normalization map
+    const canonicalMap = {
+      "infectios disease": "Infectious Diseases",
+      "infectiouse disease": "Infectious Diseases",
+      "infectious disease": "Infectious Diseases",
+      "psychiatry": "Psychiatry",
+      "paediatrics": "Pediatrics",
+      "pediatrics": "Pediatrics"
+    };
+    
+    let merged = 0;
+    for (const [bad, good] of Object.entries(canonicalMap)) {
+      const snap = await db.collection("topics2").where("category", "==", bad).get();
+      if (!snap.empty) {
+        for (const doc of snap.docs) {
+          await db.collection("topics2").doc(doc.id).update({ category: good });
+          report.push({ action: "category_merged", id: doc.id, from: bad, to: good });
+          merged++;
+          console.log(`   ✓ Updated category: ${bad} → ${good} (${doc.id})`);
+        }
+      }
+    }
+    
+    if (merged === 0) {
+      console.log('✅ No duplicate categories found');
+    } else {
+      console.log(`✅ Merged ${merged} category entries`);
+    }
+    console.log();
+    
+    // Remove orphan categories with typos (≤1 topic and contains "infectios")
+    console.log('🗑️  Cleanup — Removing orphan typo categories...');
+    const allSnap = await db.collection("topics2").get();
+    const grouped = {};
+    for (const d of allSnap.docs) {
+      const cat = d.data().category;
+      grouped[cat] = grouped[cat] ? grouped[cat] + 1 : 1;
+    }
+    
+    let deleted = 0;
+    for (const [cat, count] of Object.entries(grouped)) {
+      if (count <= 1 && cat.toLowerCase().includes("infectios")) {
+        console.log(`   🗑️  Deleting orphan topic under "${cat}" (${count} topic)`);
+        const badSnap = await db.collection("topics2").where("category", "==", cat).get();
+        for (const doc of badSnap.docs) {
+          await db.collection("topics2").doc(doc.id).delete();
+          report.push({ action: "orphan_deleted", id: doc.id, category: cat });
+          deleted++;
+        }
+      }
+    }
+    
+    if (deleted === 0) {
+      console.log('✅ No orphan categories to remove');
+    } else {
+      console.log(`✅ Deleted ${deleted} orphan topic(s)`);
+    }
+    console.log();
+  }
+  
+  // Phase 4: Optional import new topics
   const addArg = process.argv.find(a => a.includes("--add"));
   if (addArg) {
-    console.log('📥 Phase 3: Importing new topics...');
+    console.log('📥 Phase 4: Importing new topics...');
     const filePath = addArg.split("=")[1];
     
     try {
