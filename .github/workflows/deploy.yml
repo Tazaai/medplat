@@ -169,23 +169,23 @@ jobs:
       - name: 🧰 Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: 🐳 Configure Artifact Registry
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+      - name: 🐳 Configure Docker for GCR
+        run: gcloud auth configure-docker gcr.io
 
       - name: 🔐 Ensure Firebase key secret in Secret Manager
         env:
           FIREBASE_SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_KEY }}
         run: |
           printf '%s' "$FIREBASE_SERVICE_KEY" > /tmp/firebase_key.json
-          # Only create the secret if it doesn't exist. Never overwrite existing versions.
-          if gcloud secrets describe medplat-firebase-key --project=$GCP_PROJECT >/dev/null 2>&1; then
-            echo "✅ Secret medplat-firebase-key exists — using existing version (not overwriting)"
+          # Use the actual secret name that exists in Secret Manager
+          if gcloud secrets describe FIREBASE_SERVICE_KEY --project=$GCP_PROJECT >/dev/null 2>&1; then
+            echo "✅ Secret FIREBASE_SERVICE_KEY exists — using existing version"
           else
-            echo "Secret medplat-firebase-key does not exist. Creating initial version..."
-            if gcloud secrets create medplat-firebase-key --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT >/dev/null 2>&1; then
-              echo "✅ Created medplat-firebase-key"
+            echo "Secret FIREBASE_SERVICE_KEY does not exist. Creating initial version..."
+            if gcloud secrets create FIREBASE_SERVICE_KEY --data-file=/tmp/firebase_key.json --project=$GCP_PROJECT >/dev/null 2>&1; then
+              echo "✅ Created FIREBASE_SERVICE_KEY"
             else
-              echo "⚠️ Warning: failed to create medplat-firebase-key (permission?). Continuing without failing."
+              echo "⚠️ Warning: failed to create FIREBASE_SERVICE_KEY (permission?). Continuing without failing."
             fi
           fi
 
@@ -194,29 +194,31 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           printf '%s' "$OPENAI_API_KEY" > /tmp/openai_key.txt
-          # Only create the secret if it doesn't exist. Never overwrite existing versions.
-          if gcloud secrets describe medplat-openai-key --project=$GCP_PROJECT >/dev/null 2>&1; then
-            echo "✅ Secret medplat-openai-key exists — using existing version (not overwriting)"
+          # Use the actual secret name that exists in Secret Manager
+          if gcloud secrets describe OPENAI_API_KEY --project=$GCP_PROJECT >/dev/null 2>&1; then
+            echo "✅ Secret OPENAI_API_KEY exists — using existing version"
           else
-            echo "Secret medplat-openai-key does not exist. Creating initial version..."
-            if gcloud secrets create medplat-openai-key --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT >/dev/null 2>&1; then
-              echo "✅ Created medplat-openai-key"
+            echo "Secret OPENAI_API_KEY does not exist. Creating initial version..."
+            if gcloud secrets create OPENAI_API_KEY --data-file=/tmp/openai_key.txt --project=$GCP_PROJECT >/dev/null 2>&1; then
+              echo "✅ Created OPENAI_API_KEY"
             else
-              echo "⚠️ Warning: failed to create medplat-openai-key (permission?). Continuing without failing."
+              echo "⚠️ Warning: failed to create OPENAI_API_KEY (permission?). Continuing without failing."
             fi
           fi
 
       - name: 🚀 Deploy Backend
         run: |
           cd backend
-          gcloud builds submit --tag europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/backend .
+          # Build and push to GCR (Google Container Registry)
+          gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-backend:latest .
+          # Deploy with correct secret names
           gcloud run deploy medplat-backend \
-            --image europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/backend \
+            --image gcr.io/$GCP_PROJECT/medplat-backend:latest \
             --region europe-west1 \
             --allow-unauthenticated \
             --port 8080 \
-            --set-secrets "OPENAI_API_KEY=medplat-openai-key:latest,FIREBASE_SERVICE_KEY=medplat-firebase-key:latest" \
-            --set-env-vars "TOPICS_COLLECTION=topics2" \
+            --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
+            --update-env-vars "GCP_PROJECT=$GCP_PROJECT,TOPICS_COLLECTION=topics2,NODE_ENV=production" \
             --project $GCP_PROJECT
 
       - name: 🎨 Build Frontend (generate artifact)
@@ -256,27 +258,15 @@ jobs:
         run: |
           BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
           cd frontend
-          # Force a fresh image by tagging with a timestamp. This avoids accidental reuse
-          # of older image tags or cached layers and guarantees Cloud Run receives the
-          # newly built image containing the latest frontend assets.
-          TIMESTAMP=$(date +%s)
-          IMAGE_TAG="europe-west1-docker.pkg.dev/$GCP_PROJECT/medplat/frontend:$TIMESTAMP"
-          echo "Building image $IMAGE_TAG"
-          # Ensure Cloud Build uses Kaniko-based execution so --no-cache is supported
-          # (some projects have builds/use_kaniko=false by default). Set it idempotently.
-          gcloud config set builds/use_kaniko true || true
-          # Force a fresh Cloud Build (no cached layers) to avoid stale assets
-          # and ensure the image contains the most recent `dist/` contents.
-          # Build and push the image with docker so we can pass --build-arg directly.
-          # gcloud builds submit doesn't accept --build-arg; using docker build + push
-          # works with the Artifact Registry credential helper (configured above).
-          docker build --tag "$IMAGE_TAG" --build-arg BUILD_DATE="$TIMESTAMP" .
-          docker push "$IMAGE_TAG"
+          echo "Building frontend with backend URL: $BACKEND_URL"
+          # Build and push to GCR
+          gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-frontend:latest .
+          # Deploy with backend URL
           gcloud run deploy medplat-frontend \
-            --image "$IMAGE_TAG" \
+            --image gcr.io/$GCP_PROJECT/medplat-frontend:latest \
             --region europe-west1 \
             --allow-unauthenticated \
-            --port 8080 \
+            --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
             --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
             --project $GCP_PROJECT
 
