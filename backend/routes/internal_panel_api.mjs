@@ -89,10 +89,11 @@ ${rolesString}
 
 **Your Task:**
 Silently review the draft case and IMPROVE it by:
-1. **Guideline Integration (Hierarchical):** Prioritize guidelines by region:
-   - Regional/Hospital → National → Continental → International
+1. **Guideline Integration (Hierarchical):** Prioritize guidelines by region (5 tiers):
+   - Local/Hospital → Regional (state/province) → National → Continental → International
    - Format all guidelines with URLs or DOIs: "[Society Year] Title - URL"
    - Ensure ${region}-specific guidelines appear first
+   - Example: Copenhagen University Hospital protocol (local) → Sundhedsstyrelsen (national) → ESC (continental)
 2. **Completeness:** Ensure every section is filled with realistic, specific values (no empty fields)
 3. **Clinical Accuracy:** Verify vitals, lab values, imaging findings are physiologically consistent
 4. **Red Flags:** Add missing time-critical findings with specific actions
@@ -122,7 +123,7 @@ Return a JSON object with TWO fields:
 Quality scoring criteria (UPDATED weights for professor-level assessment):
 - Completeness: 15% (all sections filled, no placeholders)
 - Clinical Accuracy: 20% (realistic values, logical consistency)
-- Guideline Adherence (Hierarchical): 15% (regional → national → international with URLs) **[UPDATED]**
+- Guideline Adherence (5-Tier Hierarchical): 15% (local → regional → national → continental → international with URLs) **[UPDATED]**
 - Pathophysiology Depth: 20% (detailed mechanism, molecular → organ system → clinical) **[INCREASED]**
 - Educational Value: 20% (teaching pearls, pitfalls, reflection questions, mnemonics, conference discussion) **[INCREASED]**
 - Clinical Rationale Before Timing: 5% (pathophysiology → action for all timing windows) **[NEW]**

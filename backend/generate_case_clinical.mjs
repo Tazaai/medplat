@@ -89,10 +89,11 @@ CRITICAL: Always explain WHY before WHEN and WHAT
 
 **Evidence & Guidelines (Hierarchical Priority by Region):**
 ALWAYS prioritize guidelines by user's detected region in this order:
-1️⃣ **Regional/Hospital** (if available): Local protocols with specific implementation notes
-2️⃣ **National**: Country-specific guidelines (e.g., Danish NNBV, NHS UK, AHA USA, CCS Canada)
-3️⃣ **Continental**: Regional consensus (EU, North America, Asia-Pacific)
-4️⃣ **International**: WHO, ESC, AHA (global consensus)
+1️⃣ **Local/Hospital** (if available): Institutional protocols, local hospital formulary, specific department SOPs
+2️⃣ **Regional**: State/province/district guidelines (e.g., Sundhedsstyrelsen Denmark, NHS London, California protocols)
+3️⃣ **National**: Country-wide guidelines (e.g., Danish NNBV, NHS UK, AHA USA, CCS Canada, Haute Autorité de Santé France)
+4️⃣ **Continental**: Regional consensus (ESC Europe, ACC North America, APCCM Asia-Pacific)
+5️⃣ **International**: WHO, global consensus statements (ESC/AHA joint, Cochrane)
 
 For EACH guideline cited:
 - Format: [Society Name Year] Title - URL or DOI
@@ -182,7 +183,7 @@ Demographics: Age-appropriate presentation
 10. **Etiology** – underlying cause (genetic, acquired, environmental, multifactorial)
 11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows, region-aware alternatives, doses
 12. **Disposition** – admit/discharge, unit (ICU/ward/home), follow-up plan, social needs assessment
-13. **Evidence** – hierarchical guidelines (regional → national → international with URLs), test performance (sensitivity/specificity %), prognostic data
+13. **Evidence** – hierarchical guidelines (local → regional → national → continental → international with URLs), test performance (sensitivity/specificity %), prognostic data
 14. **Teaching** – ≥3 pearls, ≥1 pitfall, ≥2 reflection questions, ≥2 learning objectives, mnemonics, broader principle
 15. **Panel Discussion** – Conference-style academic debate with specialist viewpoints, for/against arguments, confidence scores, evidence citations, consensus
 
@@ -274,7 +275,7 @@ Return ONLY valid JSON matching this exact structure:
     "incidence": "",
     "key_tests": [{"test": "", "sensitivity": "", "specificity": "", "notes": ""}],
     "prognosis": "",
-    "guidelines": [{"tier": "regional|national|continental|international", "society": "", "year": "", "title": "", "url_or_doi": "", "recommendation": ""}]
+    "guidelines": [{"tier": "local|regional|national|continental|international", "society": "", "year": "", "title": "", "url_or_doi": "", "recommendation": ""}]
   },
   "teaching": {
     "pearls": ["", "", ""],
