@@ -83,7 +83,7 @@ export default function casesApi() {
         Disposition: reviewedResult.disposition || {},
         Evidence_and_References: reviewedResult.evidence || {},
         Teaching: reviewedResult.teaching || {pearls: [], mnemonics: []},
-        Expert_Panel_and_Teaching: reviewedResult.panel_notes || {},
+        Expert_Panel_and_Teaching: reviewedResult.panel_discussion || reviewedResult.panel_notes || {},
         meta: {
           topic: reviewedResult.meta?.topic || topic,
           age: reviewedResult.meta?.demographics?.age || reviewedResult.meta?.age || '',
