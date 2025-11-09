@@ -106,18 +106,42 @@ CRITICAL: Always explain WHY before WHEN and WHAT
 - Reference region-specific guidelines with year and recommendation class (${region})
 - Include monitoring parameters (vitals frequency, lab recheck timing, danger signs)
 
-**Evidence & Guidelines (Hierarchical Priority by Region):**
-ALWAYS prioritize guidelines by user's detected region in this order:
-1️⃣ **Local/Hospital** (if available): Institutional protocols, local hospital formulary, specific department SOPs
-2️⃣ **Regional**: State/province/district guidelines (e.g., Sundhedsstyrelsen Denmark, NHS London, California protocols)
-3️⃣ **National**: Country-wide guidelines (e.g., Danish NNBV, NHS UK, AHA USA, CCS Canada, Haute Autorité de Santé France)
-4️⃣ **Continental**: Regional consensus (ESC Europe, ACC North America, APCCM Asia-Pacific)
-5️⃣ **International**: WHO, global consensus statements (ESC/AHA joint, Cochrane)
+**Evidence & Guidelines (Dynamic AI-Generated References):**
 
-For EACH guideline cited:
-- Format: [Society Name Year] Title - URL or DOI
-- Example: "[ESC 2021] ESC Guidelines for acute coronary syndrome - https://doi.org/10.1093/eurheartj/ehaa575"
-- If no URL available: Use format "Society Name (Year): Title, Recommendation Class I-A"
+**CRITICAL INSTRUCTION FOR AI MODEL:**
+You MUST generate **authentic, verifiable, region-specific** guidelines for ${region} and ${topic}.
+
+**Guideline Selection Priority (by detected region):**
+1️⃣ **Local/Hospital**: Institutional protocols (e.g., "Johns Hopkins Sepsis Protocol 2024", "Rigshospitalet Stroke Pathway 2023")
+2️⃣ **Regional**: State/province/district (e.g., Sundhedsstyrelsen Denmark, NHS Scotland, California CDPH)
+3️⃣ **National**: Country-wide (e.g., NICE UK, AHA USA, HAS France, DGIM Germany, SIGN Scotland)
+4️⃣ **Continental**: Regional consensus (ESC Europe, ACC North America, APCCM Asia-Pacific, CCS Canada)
+5️⃣ **International**: WHO, Cochrane, major joint guidelines (ESC/AHA joint statements)
+
+**AI Reference Generation Rules:**
+1. **Topic-Specificity**: Match specialty to topic (Cardiology → ESC/ACC, Stroke → ESO/AHA Stroke, Infection → IDSA/ESCMID)
+2. **Region-Matching Logic**:
+   - Denmark → Sundhedsstyrelsen, DSAM (Dansk Selskab for Akutmedicin), regional societies
+   - UK → NICE, SIGN, Royal Colleges (RCP, RCGP), NHS trusts
+   - USA → CDC, AHA/ACC, IDSA, specialty-specific societies, state departments
+   - France → HAS (Haute Autorité de Santé), ANSM, specialty societies
+   - Germany → AWMF, DGIM, specialty societies (DGK for cardiology)
+   - Spain → SEMI, AEP, regional health services
+   - Global fallback → WHO + one major continental society
+3. **URL Format**: Use DOI when available, official URLs only (no fictional links)
+4. **Year Validation**: Use 2020-2025 for recent guidelines (avoid outdated citations)
+5. **Avoid Placeholders**: NEVER output "Copenhagen" for non-Danish cases or generic "University Hospital"
+
+**Reference Format:**
+- "[Society Year] Title - DOI/URL" 
+- Example: "[ESC 2023] Acute coronary syndromes without persistent ST-segment elevation - https://doi.org/10.1093/eurheartj/ehad191"
+- If no URL: "Society (Year): Title, Recommendation Class I-A"
+
+**Minimum Requirements:**
+- At least ONE guideline from tiers 2-3 (regional/national)
+- At least ONE from tier 4 (continental)
+- At least ONE tier 5 (international) for global consistency
+- Total: 3-5 references per case (avoid reference overload)
 
 Auto-generate comparative test data dynamically:
 - Test performance: sensitivity/specificity % for key diagnostics (e.g., "Troponin I: 89% sens, 95% spec for AMI at 6h")
@@ -162,9 +186,16 @@ Simulate an authentic hospital conference with specialty-based roles and cross-d
      * "The Radiologist raises a valid concern, but..."
      * "I partially agree, however..."
    - Regional-anchored citations (local → national → international):
-     * First citation must be local/regional (e.g., "Copenhagen University Hospital 2021", "Danish Stroke Society 2023")
-     * Then continental (ESC, AHA, NICE)
-     * Then international (WHO)
+     * **CRITICAL**: References must match BOTH the region AND the specific topic/specialty
+     * First citation must be **authentic local/regional** for ${region} and ${topic}:
+       - If Denmark: Sundhedsstyrelsen, regional hospital protocols, Danish specialty societies
+       - If UK: NICE, SIGN, NHS England/Scotland/Wales, Royal Colleges
+       - If USA: CDC, state health departments, AHA/ACC, specialty societies
+       - If EU: National guidelines (e.g., Germany: DGIM, France: HAS, Spain: SEMI)
+       - **NEVER use Copenhagen/Danish examples for non-Danish regions**
+     * Then continental (ESC for Europe, ACC for North America, APCCM for Asia-Pacific)
+     * Then international (WHO, Cochrane, major society joint guidelines)
+     * **Validation**: Each reference must be real, verifiable, and topic-specific (not generic hospital names)
 
 3. **Moderator Summary:**
    - Synthesize agreement AND disagreement
@@ -439,6 +470,60 @@ Return ONLY valid JSON matching this exact structure:
         if (specialties.size < 3) {
           console.warn(`⚠️ Panel lacks specialty diversity (only ${specialties.size} different roles)`);
           extracted.meta.quality_estimate = Math.min(extracted.meta.quality_estimate, 0.92);
+        }
+        
+        // Reference validation check
+        const validateReferences = (caseData, region) => {
+          const references = [];
+          const warnings = [];
+          
+          // Extract references from various fields
+          const discussionText = JSON.stringify(panel.discussion_rounds || []);
+          const consensusText = panel.panel_consensus || panel.consensus || '';
+          const allText = discussionText + consensusText + JSON.stringify(caseData.management || {});
+          
+          // URL validation regex (https only, valid domains)
+          const urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)/gi;
+          const urls = allText.match(urlPattern) || [];
+          
+          // Check for Copenhagen/Danish references in non-Danish regions
+          const regionLower = (region || '').toLowerCase();
+          const isDanish = regionLower.includes('denmark') || regionLower.includes('danish') || regionLower.includes('dk');
+          
+          if (!isDanish) {
+            const danishPatterns = /(copenhagen|danish|sundhedsstyrelsen|rigshospitalet|danmark)/i;
+            if (danishPatterns.test(allText)) {
+              warnings.push('⚠️ Found Danish-specific references in non-Danish region');
+              extracted.meta.reference_accuracy = 'low';
+            }
+          }
+          
+          // Validate URLs are HTTPS
+          const httpUrls = urls.filter(u => u.startsWith('http://'));
+          if (httpUrls.length > 0) {
+            warnings.push(`⚠️ Found ${httpUrls.length} non-HTTPS URLs (should use https://)`);
+          }
+          
+          // Check for reference diversity (should have local + continental + international)
+          const hasLocal = /(sundhedsstyrelsen|nice|cdc|has|awmf|nhs)/i.test(allText);
+          const hasContinental = /(esc|acc|aha|apccm|ccs)/i.test(allText);
+          const hasInternational = /(who|cochrane)/i.test(allText);
+          
+          if (!hasLocal && !hasContinental && !hasInternational) {
+            warnings.push('⚠️ No recognizable guideline references found');
+            extracted.meta.reference_completeness = 'low';
+          } else if (hasLocal && hasContinental && hasInternational) {
+            extracted.meta.reference_completeness = 'excellent';
+          } else {
+            extracted.meta.reference_completeness = 'partial';
+          }
+          
+          return { references: urls, warnings };
+        };
+        
+        const refValidation = validateReferences(extracted, region);
+        if (refValidation.warnings.length > 0) {
+          refValidation.warnings.forEach(w => console.warn(w));
         }
       }
       

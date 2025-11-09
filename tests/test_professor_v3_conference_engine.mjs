@@ -183,6 +183,51 @@ function validateCase(caseData, testConfig) {
   if (!hasRegionalCitations) {
     validation.warnings.push(`No explicit ${testConfig.region} regional citations found`);
   }
+  
+  // Check 7b: Reference authenticity and region-matching
+  const validateReferences = (panel, region) => {
+    const refWarnings = [];
+    const fullText = JSON.stringify(panel);
+    
+    // Check for mismatched region references (e.g., Copenhagen in non-Danish cases)
+    const regionLower = region.toLowerCase();
+    const isDanish = regionLower.includes('denmark') || regionLower.includes('danish');
+    const isUK = regionLower.includes('uk') || regionLower.includes('united kingdom') || regionLower.includes('britain');
+    const isUS = regionLower.includes('usa') || regionLower.includes('united states') || regionLower.includes('america');
+    
+    if (!isDanish && /(copenhagen|danish|sundhedsstyrelsen|rigshospitalet)/i.test(fullText)) {
+      refWarnings.push('⚠️ Danish-specific references in non-Danish region');
+    }
+    if (!isUK && /(london\s+hospital|oxford\s+protocol)/i.test(fullText) && !/(nice|nhs)/i.test(fullText)) {
+      refWarnings.push('⚠️ UK hospital names without NICE/NHS (may be placeholder)');
+    }
+    if (!isUS && /(mayo\s+clinic|johns\s+hopkins)/i.test(fullText) && !/(cdc|aha|acc)/i.test(fullText)) {
+      refWarnings.push('⚠️ US hospital names without CDC/AHA (may be placeholder)');
+    }
+    
+    // Check for URL presence and validity
+    const urlPattern = /https?:\/\/[^\s)]+/gi;
+    const urls = fullText.match(urlPattern) || [];
+    const httpsUrls = urls.filter(u => u.startsWith('https://'));
+    
+    if (urls.length > 0 && httpsUrls.length < urls.length) {
+      refWarnings.push(`⚠️ Non-HTTPS URLs found (${urls.length - httpsUrls.length}/${urls.length})`);
+    }
+    
+    // Check for reference diversity (local + continental + international)
+    const hasLocal = /(sundhedsstyrelsen|nice|cdc|has|awmf|nhs|sign)/i.test(fullText);
+    const hasContinental = /(esc|acc|aha|apccm|ccs)/i.test(fullText);
+    const hasInternational = /(who|cochrane)/i.test(fullText);
+    
+    if (!hasLocal && !hasContinental) {
+      refWarnings.push('⚠️ No recognizable guideline societies found');
+    }
+    
+    return refWarnings;
+  };
+  
+  const refWarnings = validateReferences(panel, testConfig.region);
+  validation.warnings.push(...refWarnings);
 
   // Check 8: Quality metadata
   validation.checks.qualityMetadata = {
