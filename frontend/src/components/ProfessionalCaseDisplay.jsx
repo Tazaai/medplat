@@ -2,6 +2,9 @@
 // World-class medical case display - Netflix-level UX, UpToDate-level professionalism
 
 import React, { useState } from "react";
+import ModernCaseDisplay from "./ModernCaseDisplay";
+import ConferencePanel from "./ConferencePanel";
+import { API_BASE } from "../config";
 import {
   User, Clock, Heart, Activity, Thermometer, Wind, Droplets,
   Stethoscope, TestTube, Brain, Target, Shield, BookOpen,
@@ -76,7 +79,7 @@ function ConferencePanelDisplay({ panelData }) {
       {discussionRounds.length > 0 && (
         <div className="space-y-4">
           <h5 className="font-semibold text-gray-900 text-lg">Multidisciplinary Discussion:</h5>
-          {discussionRounds.map((round, idx) => {
+          {discussionRounds.slice(0, 4).map((round, idx) => {
             const colorScheme = speakerColors[idx % speakerColors.length];
             const isDisagreement = round.stance?.toLowerCase().includes('disagree');
             const isAgreement = round.stance?.toLowerCase().includes('agree') && !isDisagreement;
@@ -452,12 +455,62 @@ function renderContent(value, level = 0) {
   return <span className="text-gray-800 leading-relaxed">{String(value)}</span>;
 }
 
+/**
+ * 🧭 Copilot Guide — Global Clinical Context & Dynamic Panels
+ *
+ * Goal: Make case management, diagnostics, and expert debate globally relevant,
+ * evidence-based, and adaptive to context.
+ *
+ * Instructions:
+ * 1) Generate practical, high-level reasoning across specialties (not single-topic).
+ *    - Include modality choices and rationale (e.g., CT vs MRI: sensitivity & timing;
+ *      LP indications; US vs X-ray for pneumothorax; MRI vs CT for spondylodiscitis).
+ *    - Explain when, why, and duration/sensitivity where relevant.
+ *
+ * 2) Ensure the expert conference panel is dynamic (not hardcoded).
+ *    - Members adapt to case type (e.g., Neurology -> Neurologist, Neuroradiologist, ICU, Emergency).
+ *    - Each discussion should show concise, multidisciplinary evidence-based reasoning.
+ *
+ * 3) Use evidence-based, global guidelines loaded dynamically (ESC / NICE / AHA / WHO / local).
+ *    - Do NOT include static citations or regional placeholders.
+ *
+ * 4) Keep outputs globally applicable — logic must generalize across regions and disease areas.
+ *
+ * Result: Professional, globally consistent case output with dynamic panels, modality
+ * reasoning, and guideline-driven explanations.
+ */
+
 // Main Professional Case Display Component
 export default function ProfessionalCaseDisplay({ caseData }) {
   if (!caseData) return null;
 
+  const [loadingGuidelines, setLoadingGuidelines] = useState(false);
+  const [localGuidelines, setLocalGuidelines] = useState(null);
+
   const pathophysiology = caseData.Pathophysiology || caseData.pathophysiology;
   const classification = pathophysiology?.classification;
+
+  // Fetch local/regional guidelines dynamically
+  const fetchLocalGuidelines = async () => {
+    setLoadingGuidelines(true);
+    try {
+      const region = caseData.meta?.region || 'auto';
+      const response = await fetch(`${API_BASE}/api/guidelines/local?region=${region}&topic=${encodeURIComponent(caseData.Topic)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLocalGuidelines(data.guidelines || []);
+      }
+    } catch (error) {
+      console.warn('Failed to fetch local guidelines:', error);
+      // Fallback to generic guidelines
+      setLocalGuidelines([
+        { society: 'ESC', title: 'European Society of Cardiology Guidelines', url: 'https://www.escardio.org/Guidelines' },
+        { society: 'NICE', title: 'UK National Institute for Health and Care Excellence', url: 'https://www.nice.org.uk/' },
+        { society: 'AHA', title: 'American Heart Association Guidelines', url: 'https://www.heart.org/guidelines' }
+      ]);
+    }
+    setLoadingGuidelines(false);
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-6">
@@ -672,7 +725,47 @@ export default function ProfessionalCaseDisplay({ caseData }) {
 
       {/* Management */}
       <SectionCard title="Management" icon={Shield} defaultOpen={true} highlight={true}>
-        {renderContent(caseData.Management_Full || caseData.Management)}
+        <div className="space-y-4">
+          {/* AI Trigger Button for Local Guidelines */}
+          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
+            <button
+              onClick={fetchLocalGuidelines}
+              disabled={loadingGuidelines}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2 transition-all"
+            >
+              <span>⚙️</span>
+              {loadingGuidelines ? 'Loading...' : 'Load Local Guidelines'}
+            </button>
+            <span className="text-sm text-blue-700">
+              Fetch region-specific guidelines (ESC / NNBV / NICE / AHA / WHO)
+            </span>
+          </div>
+
+          {/* Local Guidelines Display */}
+          {localGuidelines && localGuidelines.length > 0 && (
+            <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+              <h4 className="font-bold text-green-900 mb-3">📚 Regional Clinical Guidelines:</h4>
+              <ul className="space-y-2">
+                {localGuidelines.map((guideline, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <ExternalLink size={16} className="text-green-600" />
+                    <a
+                      href={guideline.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline font-semibold"
+                    >
+                      {guideline.society}: {guideline.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Management Content */}
+          {renderContent(caseData.Management_Full || caseData.Management)}
+        </div>
       </SectionCard>
 
       {/* Conference Panel Discussion (Dynamic Academic Debate) */}
@@ -686,6 +779,57 @@ export default function ProfessionalCaseDisplay({ caseData }) {
           <ConferencePanelDisplay 
             panelData={caseData.panel_discussion || caseData.Expert_Panel_and_Teaching} 
           />
+        </SectionCard>
+      )}
+
+      {/* Modern Conference Panel with enhanced UI */}
+      <ConferencePanel caseData={caseData} />
+
+      {/* Teaching Points (Always Visible After Management) */}
+      {caseData.Teaching && (
+        <SectionCard title="🎓 Teaching Points" icon={BookOpen} defaultOpen={true} highlight={true}>
+          <div className="space-y-4">
+            {caseData.Teaching.pearls && caseData.Teaching.pearls.length > 0 && (
+              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                <h4 className="font-bold text-blue-900 mb-2">💎 Clinical Pearls:</h4>
+                <ul className="list-disc ml-6 space-y-1 text-gray-800">
+                  {caseData.Teaching.pearls.map((pearl, idx) => (
+                    <li key={idx}>{pearl}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {caseData.Teaching.pitfalls && caseData.Teaching.pitfalls.length > 0 && (
+              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                <h4 className="font-bold text-red-900 mb-2">⚠️ Common Pitfalls:</h4>
+                <ul className="list-disc ml-6 space-y-1 text-gray-800">
+                  {caseData.Teaching.pitfalls.map((pitfall, idx) => (
+                    <li key={idx}>{pitfall}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {caseData.Teaching.reflection_questions && caseData.Teaching.reflection_questions.length > 0 && (
+              <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                <h4 className="font-bold text-purple-900 mb-2">🤔 Reflection Questions:</h4>
+                <ol className="list-decimal ml-6 space-y-1 text-gray-800">
+                  {caseData.Teaching.reflection_questions.map((q, idx) => (
+                    <li key={idx}>{q}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {caseData.Teaching.mnemonics && caseData.Teaching.mnemonics.length > 0 && (
+              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                <h4 className="font-bold text-green-900 mb-2">🧠 Mnemonics:</h4>
+                <ul className="list-disc ml-6 space-y-1 text-gray-800">
+                  {caseData.Teaching.mnemonics.map((mnemonic, idx) => (
+                    <li key={idx}><strong>{mnemonic.acronym}:</strong> {mnemonic.meaning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </SectionCard>
       )}
 

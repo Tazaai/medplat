@@ -5,6 +5,31 @@ import { API_BASE } from "../config";
 import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
+/**
+ * 🧭 Copilot Guide — Global Clinical Context & Dynamic Panels
+ *
+ * Goal: Make case management, diagnostics, and expert debate globally relevant,
+ * evidence-based, and adaptive to context.
+ *
+ * Instructions:
+ * 1) Generate practical, high-level reasoning across specialties (not single-topic).
+ *    - Include modality choices and rationale (e.g., CT vs MRI: sensitivity & timing;
+ *      LP indications; US vs X-ray for pneumothorax; MRI vs CT for spondylodiscitis).
+ *    - Explain when, why, and duration/sensitivity where relevant.
+ *
+ * 2) Ensure the expert conference panel is dynamic (not hardcoded).
+ *    - Members adapt to case type (e.g., Neurology -> Neurologist, Neuroradiologist, ICU, Emergency).
+ *    - Each discussion should show concise, multidisciplinary evidence-based reasoning.
+ *
+ * 3) Use evidence-based, global guidelines loaded dynamically (ESC / NICE / AHA / WHO / local).
+ *    - Do NOT include static citations or regional placeholders.
+ *
+ * 4) Keep outputs globally applicable — logic must generalize across regions and disease areas.
+ *
+ * Result: Professional, globally consistent case output with dynamic panels, modality
+ * reasoning, and guideline-driven explanations.
+ */
+
 export default function Level2CaseLogic({ caseData, gamify = true }) {
   const [reviewMode, setReviewMode] = useState(false);
   const [loading, setLoading] = useState(true);

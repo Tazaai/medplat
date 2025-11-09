@@ -76,7 +76,6 @@ export default function casesApi() {
           immediate: reviewedResult.management?.immediate || [],
           timing_windows: reviewedResult.management?.timing_windows || [],
           region_guidelines: reviewedResult.management?.region_guidelines || [],
-          region_aware_alternatives: reviewedResult.management?.region_aware_alternatives || [],
           escalation: reviewedResult.management?.escalation_if_wrong_dx || []
         },
         Pathophysiology: reviewedResult.pathophysiology || {},
@@ -95,6 +94,8 @@ export default function casesApi() {
           panelNote,
           reviewed_by_internal_panel: reviewedResult.meta?.reviewed_by_internal_panel || false,
           panel_review_timestamp: reviewedResult.meta?.panel_review_timestamp || null,
+          panel_roles: reviewedResult.meta?.panel_roles || [],
+          reference_validation: reviewedResult.meta?.reference_validation || null,
           quality_score: reviewedResult.meta?.quality_score || qualityScore,
           generator_version: reviewedResult.meta?.generator_version || 'unknown',
           quality_estimate: reviewedResult.meta?.quality_estimate

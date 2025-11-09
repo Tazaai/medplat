@@ -102,6 +102,16 @@ function isFabricated(text) {
  * Extract URLs from reference text
  */
 function extractUrls(text) {
+  // Handle non-string inputs (objects, arrays, null, undefined)
+  if (typeof text !== 'string') {
+    if (text && typeof text === 'object') {
+      // If it's an object with a 'text' or 'title' property, use that
+      text = text.text || text.title || text.url || JSON.stringify(text);
+    } else {
+      return [];
+    }
+  }
+  
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.match(urlRegex) || [];
 }
@@ -110,8 +120,18 @@ function extractUrls(text) {
  * Validate a single reference
  */
 export function validateReference(ref, region = null) {
+  // Handle non-string references
+  let refText = ref;
+  if (typeof ref !== 'string') {
+    if (ref && typeof ref === 'object') {
+      refText = ref.text || ref.title || ref.url || JSON.stringify(ref);
+    } else {
+      refText = String(ref || '');
+    }
+  }
+  
   const result = {
-    original: ref,
+    original: refText,
     valid: true,
     warnings: [],
     source: null,
@@ -119,14 +139,14 @@ export function validateReference(ref, region = null) {
   };
   
   // Check for fabricated patterns
-  if (isFabricated(ref)) {
+  if (isFabricated(refText)) {
     result.valid = false;
     result.warnings.push('Contains fabricated or placeholder text');
     return result;
   }
   
   // Extract and validate URLs
-  const urls = extractUrls(ref);
+  const urls = extractUrls(refText);
   if (urls.length === 0) {
     result.warnings.push('No URL provided - citation only');
     return result;

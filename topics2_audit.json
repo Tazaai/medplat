@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-11-09T16:51:14.339Z",
+  "total_documents": 1099,
+  "duplicates_found": 0,
+  "duplicates": [],
+  "changes_made": 1,
+  "report": [
+    {
+      "action": "category_merged",
+      "id": "sepsis_recognition_and_initial_management",
+      "from": "Infectious Disease",
+      "to": "Infectious Diseases"
+    }
+  ]
+}

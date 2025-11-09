@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
 import CaseDisplay from "./CaseDisplay";
 import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
+import ConferencePanel from "./ConferencePanel";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -317,6 +318,31 @@ export default function CaseView() {
     );
   };
 
+  /**
+   * 🧭 Copilot Guide — Global Clinical Context & Dynamic Panels
+   *
+   * Goal: Make case management, diagnostics, and expert debate globally relevant,
+   * evidence-based, and adaptive to context.
+   *
+   * Instructions:
+   * 1) Generate practical, high-level reasoning across specialties (not single-topic).
+   *  *    - Include modality choices and rationale (e.g., CT vs MRI: sensitivity & timing;
+   *  *      LP indications; US vs X-ray for pneumothorax; MRI vs CT for spondylodiscitis).
+   *  *    - Explain when, why, and duration/sensitivity where relevant.
+   *
+   * 2) Ensure the expert conference panel is dynamic (not hardcoded).
+   *  *    - Members adapt to case type (e.g., Neurology -> Neurologist, Neuroradiologist, ICU, Emergency).
+   *  *    - Each discussion should show concise, multidisciplinary evidence-based reasoning.
+   *
+   * 3) Use evidence-based, global guidelines loaded dynamically (ESC / NICE / AHA / WHO / local).
+   *  *    - Do NOT include static citations or regional placeholders.
+   *
+   * 4) Keep outputs globally applicable — logic must generalize across regions and disease areas.
+   *
+   * Result: Professional, globally consistent case output with dynamic panels, modality
+   * reasoning, and guideline-driven explanations.
+   */
+
   // ---------- Narrative Renderer ----------
   const renderBookCase = (c) => {
     if (!c) return null;
@@ -358,6 +384,10 @@ export default function CaseView() {
         {c.Provisional_Diagnosis?.Diagnosis && <p><b>Provisional Diagnosis:</b> {c.Provisional_Diagnosis.Diagnosis}</p>}
         <p><b>Final Diagnosis:</b> {c.Final_Diagnosis?.Diagnosis || "No confirmed final diagnosis."}</p>
         {c.Management && <div><h3>💊 Management</h3>{renderContent(c.Management)}</div>}
+        
+        {/* Conference Panel Enhancement */}
+        <ConferencePanel caseData={c} />
+        
         {renderPanel(c.Expert_Panel_and_Teaching)}
         {chartArray.length > 0 && (
           <div>
@@ -486,10 +516,10 @@ export default function CaseView() {
           <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
           <p className="mt-3 text-sm font-semibold text-blue-800">Generating professor-level case...</p>
           <p className="mt-1 text-xs text-blue-600">
-            Quality over speed — crafting high-quality, guideline-anchored case (15-30s)
+            ✨ Expert panel review in progress — high-quality cases may take 1-2 minutes
           </p>
           <p className="mt-1 text-xs text-gray-500 italic">
-            ✨ Internal expert validation (≥95% quality standard)
+            Quality over speed: guideline validation, reference verification, multi-expert consensus
           </p>
         </div>
       )}

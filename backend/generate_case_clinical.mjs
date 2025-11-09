@@ -94,17 +94,43 @@ CRITICAL: Include BOTH classification system AND molecular-to-clinical flow
 - Include confidence level or probability estimate (e.g., "85% probability given troponin + ST elevation")
 - Explain why top differential is most likely using Bayesian reasoning (pretest → posttest probability)
 
-**Management (Actionable & Time-Sensitive with Clinical Rationale First):**
+/**
+ * @copilot: guideline_management
+ * 
+ * Management Section — AI + Evidence-Based Guidelines (Dynamic)
+ * 
+ * Goal: Generate evidence-based, region-specific management WITHOUT hardcoded alternatives.
+ * Each action follows: Action | Dose/Route | Timing | Evidence & Guideline
+ * 
+ * Guideline Selection by Region:
+ * - Denmark (DK) → NNBV / Sundhedsstyrelsen + ESC
+ * - USA → AHA/ACC + ACEP
+ * - UK → NICE + Resuscitation Council UK
+ * - EU → ESC (European Society of Cardiology)
+ * - Global fallback → WHO + Cochrane
+ * 
+ * Evidence Level Format: Class I–III, Level A–C (ESC/AHA standard)
+ * 
+ * CRITICAL Requirements:
+ * - NO "region_aware_alternatives" field (removed)
+ * - Generate management using region-specific guidelines dynamically
+ * - Include DOI or official URL for each guideline
+ * - For STEMI/ACS: Always include PCI and antiplatelet therapy
+ * - Emphasize evidence level (Class I, Level A preferred)
+ */
+
+**Management (Evidence-Based with Dynamic Guidelines):**
 CRITICAL: Always explain WHY before WHEN and WHAT
-- For EVERY timing window: Start with pathophysiological rationale
-  - Example: "tPA for stroke: Ischemic penumbra remains salvageable for ~4.5h → tissue death accelerates after → hemorrhage risk increases with delay. Action: tPA within 4.5h of symptom onset."
-  - Example: "β-blockers in cardiogenic shock: Can worsen bradycardia and reduce cardiac output → use with extreme caution, prefer inotropes first. Action: Hold β-blockers until hemodynamically stable."
-- Structure: [Pathophysiology → Clinical consequence → Action + Timing + Dose]
+- For EVERY action: Start with pathophysiological rationale + guideline evidence
+  - Format: [Pathophysiology] → [Action | Dose/Route | Timing | Evidence Level | Guideline Source]
+  - Example: "Ischemic penumbra salvageable ~4.5h, tissue death accelerates after → tPA 0.9mg/kg IV (max 90mg) within 4.5h | Class I, Level A | ESC Stroke Guidelines 2023 (doi:10.1093/eurheartj/ehad123)"
+  - Example: "Dual antiplatelet prevents recurrent thrombosis → Aspirin 300mg PO STAT + Ticagrelor 180mg loading | Class I, Level A | ESC STEMI 2023 + ${region === 'Denmark' ? 'Sundhedsstyrelsen 2024' : region === 'USA' ? 'AHA/ACC 2023' : 'NICE 2024'}"
+- Structure: [Pathophysiology → Action | Dose/Route | Timing | Evidence (Class/Level) | Guideline + URL]
 - Include escalation pathways (what if first-line fails? what's next?)
 - Provide fallback options for low-resource settings (no ICU, limited imaging, generic drugs)
-- Specify drug doses, routes, frequencies, and duration (e.g., "Aspirin 300mg PO STAT, then 75mg OD")
-- Reference region-specific guidelines with year and recommendation class (${region})
+- Reference region-specific guidelines with year, recommendation class, and official URL/DOI
 - Include monitoring parameters (vitals frequency, lab recheck timing, danger signs)
+- Use local formulary when available (${region}): e.g., Denmark → NNBV/Medicinpriser.dk preferred agents
 
 **Evidence & Guidelines (Dynamic AI-Generated References):**
 
@@ -274,7 +300,7 @@ Demographics: Age-appropriate presentation
 8. **Final Diagnosis** – name + comprehensive rationale linking history/exam/labs
 9. **Pathophysiology** – classification system (Stanford/DeBakey/NYHA/etc.) + molecular mechanism → cellular → organ → clinical + hemodynamic/structural consequences
 10. **Etiology** – underlying cause (genetic, acquired, environmental, multifactorial)
-11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows, region-aware alternatives, doses
+11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows with evidence levels, region-specific guidelines with URLs/DOIs (NO hardcoded alternatives)
 12. **Disposition** – admit/discharge, unit (ICU/ward/home), follow-up plan, social needs assessment
 13. **Evidence** – hierarchical guidelines (local → regional → national → continental → international with URLs), test performance (sensitivity/specificity %), prognostic data
 14. **Teaching** – ≥3 pearls, ≥1 pitfall, ≥2 reflection questions, ≥2 learning objectives, mnemonics, broader principle
@@ -358,11 +384,20 @@ Return ONLY valid JSON matching this exact structure:
   },
   "etiology": {"underlying_cause": ""},
   "management": {
-    "immediate": [],
+    "immediate": [
+      {
+        "action": "Example: Aspirin 300mg PO STAT",
+        "dose_route": "300mg PO",
+        "timing": "Immediate (within 10 minutes)",
+        "evidence_level": "Class I, Level A",
+        "guideline": "ESC STEMI Guidelines 2023",
+        "url": "https://doi.org/10.1093/eurheartj/ehad123",
+        "rationale": "Inhibits platelet aggregation, reduces mortality by 23% in ACS"
+      }
+    ],
     "escalation_if_wrong_dx": [],
-    "region_guidelines": [{"society": "", "year": "", "applies_to": "", "note": ""}],
-    "timing_windows": [{"action": "", "window": "", "rationale": ""}],
-    "region_aware_alternatives": [{"medication": "", "alternative_in_${region}": "", "reason": ""}]
+    "region_guidelines": [{"society": "", "year": "", "applies_to": "", "note": "", "url": ""}],
+    "timing_windows": [{"action": "", "window": "", "rationale": "", "evidence_level": "", "guideline_source": ""}]
   },
   "disposition": {
     "admit_vs_discharge": "",

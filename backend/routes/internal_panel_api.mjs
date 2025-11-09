@@ -1,58 +1,39 @@
 import express from "express";
 import OpenAI from "openai";
+import { getPanelRoles, getRoleExpertise } from '../utils/panelRoles.mjs';
+import { validateReferences, getFallbackReferences } from '../utils/validateReferences.mjs';
 
 const router = express.Router();
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
  * Dynamic expert role selection based on topic/category
- * Always includes: Medical Student, Professor, Researcher (permanent members)
- * Plus 3-4 specialists relevant to the case
+ * Uses the enhanced panelRoles module for specialty-matched panel diversity
+ * Ensures ≥5 roles with universal experts (GP, Pharmacology, Ethics)
  */
-function selectExpertRoles(topic, category) {
-  const topicLower = (topic || "").toLowerCase();
-  const categoryLower = (category || "").toLowerCase();
-
-  // Permanent members
+function selectExpertRoles(topic, category, options = {}) {
+  // Use enhanced panel role selection from utility module
+  const enhancedRoles = getPanelRoles(topic, category, {
+    minRoles: 5,
+    maxRoles: 7,
+    includeGP: true,
+    includePharmacology: true,
+    includeEthics: options.includeEthics || false
+  });
+  
+  // Add permanent academic roles if not already included
   const permanentRoles = [
     "Medical Student (learning perspective)",
     "Professor (academic rigor and teaching)",
     "Researcher (evidence-based medicine)"
   ];
-
-  // Dynamic role selection based on topic/category
-  let dynamicRoles = [];
-
-  if (categoryLower.includes("cardio") || topicLower.includes("mi") || topicLower.includes("heart") || topicLower.includes("cardiac")) {
-    dynamicRoles = ["Cardiologist", "Emergency Physician", "Internist", "Cardiac Surgeon"];
-  } else if (categoryLower.includes("neuro") || topicLower.includes("stroke") || topicLower.includes("seizure")) {
-    dynamicRoles = ["Neurologist", "Neuroradiologist", "Internal Medicine Specialist", "Emergency Physician"];
-  } else if (categoryLower.includes("pulm") || categoryLower.includes("respir") || topicLower.includes("asthma") || topicLower.includes("copd")) {
-    dynamicRoles = ["Pulmonologist", "Critical Care Specialist", "Emergency Physician", "Thoracic Surgeon"];
-  } else if (categoryLower.includes("gastro") || topicLower.includes("gi bleed") || topicLower.includes("abdomen")) {
-    dynamicRoles = ["Gastroenterologist", "General Surgeon", "Emergency Physician", "Hepatologist"];
-  } else if (categoryLower.includes("renal") || categoryLower.includes("nephro") || topicLower.includes("kidney")) {
-    dynamicRoles = ["Nephrologist", "Internist", "Emergency Physician", "Urologist"];
-  } else if (categoryLower.includes("endo") || topicLower.includes("diabetes") || topicLower.includes("thyroid")) {
-    dynamicRoles = ["Endocrinologist", "Internist", "Emergency Physician", "Clinical Pharmacist"];
-  } else if (categoryLower.includes("infect") || topicLower.includes("sepsis") || topicLower.includes("pneumonia")) {
-    dynamicRoles = ["Infectious Disease Specialist", "Intensivist", "Emergency Physician", "Clinical Microbiologist"];
-  } else if (categoryLower.includes("hema") || categoryLower.includes("oncol") || topicLower.includes("anemia")) {
-    dynamicRoles = ["Hematologist", "Oncologist", "Internist", "Emergency Physician"];
-  } else if (categoryLower.includes("rheum") || topicLower.includes("arthritis") || topicLower.includes("lupus")) {
-    dynamicRoles = ["Rheumatologist", "Internist", "Emergency Physician", "Clinical Immunologist"];
-  } else if (categoryLower.includes("trauma") || categoryLower.includes("ortho") || topicLower.includes("fracture")) {
-    dynamicRoles = ["Trauma Surgeon", "Orthopedic Surgeon", "Emergency Physician", "Anesthesiologist"];
-  } else if (categoryLower.includes("toxicol") || topicLower.includes("overdose") || topicLower.includes("poisoning")) {
-    dynamicRoles = ["Toxicologist", "Clinical Pharmacist", "Emergency Physician", "Intensivist"];
-  } else if (categoryLower.includes("psych") || topicLower.includes("depression") || topicLower.includes("psychosis")) {
-    dynamicRoles = ["Psychiatrist", "Emergency Physician", "Clinical Psychologist", "Neurologist"];
-  } else {
-    // General/unknown category - balanced panel
-    dynamicRoles = ["General Practitioner", "Internist", "Emergency Physician", "Clinical Pharmacist"];
-  }
-
-  return [...permanentRoles, ...dynamicRoles];
+  
+  const allRoles = [...new Set([...permanentRoles, ...enhancedRoles])];
+  
+  // Log role diversity for quality monitoring
+  console.log(`📋 Panel assembled: ${allRoles.length} roles for ${category}/${topic}`);
+  
+  return allRoles.slice(0, 8); // Cap at 8 to avoid overwhelming context
 }
 
 /**
@@ -104,7 +85,12 @@ Silently review the draft case and IMPROVE it by:
 5. **Red Flags:** Add missing time-critical findings with specific actions
 6. **Timing Windows with Rationale:** ALWAYS explain pathophysiology → consequence → action
    - Example: "β-blockers can worsen bradycardia and reduce cardiac output → use with caution → hold until hemodynamically stable"
-7. **Differential Reasoning:** Ensure arguments for/against each diagnosis are evidence-based
+7. **Evidence-Based Management (NO hardcoded alternatives):** Generate region-specific management using local guidelines:
+   - Format: Action | Dose/Route | Timing | Evidence Level (Class I–III, Level A–C) | Guideline + URL
+   - Denmark → Sundhedsstyrelsen + NNBV + ESC | USA → AHA/ACC + ACEP | UK → NICE + BNF | EU → ESC
+   - For STEMI/ACS: Always include PCI and dual antiplatelet therapy with evidence levels
+   - Include DOI or official URL for each guideline reference
+8. **Differential Reasoning:** Ensure arguments for/against each diagnosis are evidence-based
 8. **Hemodynamic Profiling:** Validate warm/cold, wet/dry assessment is accurate
 9. **Disposition:** Ensure admit/discharge, unit, follow-up, social needs are region-appropriate
 10. **Teaching Quality:** Verify pearls are clinically useful, mnemonics are memorable
@@ -113,8 +99,9 @@ Silently review the draft case and IMPROVE it by:
 13. **Panel Discussion (Conference-Style):** Remove individual expert perspectives, create unified conference discussion with:
     - Specialist viewpoints with for/against arguments
     - Confidence scores and evidence citations
-    - Points of debate (1-2 areas of disagreement)
+    - **AT LEAST 3 points of debate/disagreement** (format: **Disagreement 1: [Topic]** - Role1: [Position] - Role2: [Counter])
     - Final consensus statement
+    - Each disagreement must cite specific guidelines or evidence
 14. **Academic Rigor:** Refine language to be concise, professional, globally guideline-aware
 
 **Draft Case:**
@@ -217,17 +204,45 @@ Same JSON format:
     }
 
     // Tag case as reviewed by internal panel
-    if (improvedCase.meta) {
-      improvedCase.meta.reviewed_by_internal_panel = true;
-      improvedCase.meta.panel_review_timestamp = new Date().toISOString();
-      improvedCase.meta.quality_score = qualityScore;
+    if (!improvedCase.meta) {
+      improvedCase.meta = {}; // Initialize if missing
+    }
+    
+    improvedCase.meta.reviewed_by_internal_panel = true;
+    improvedCase.meta.panel_review_timestamp = new Date().toISOString();
+    improvedCase.meta.quality_score = qualityScore;
+    improvedCase.meta.panel_roles = expertRoles; // Track panel diversity
+    
+    // Preserve Stage 1 generator metadata
+    if (caseData.meta?.generator_version) {
+      improvedCase.meta.generator_version = caseData.meta.generator_version;
+    }
+    if (caseData.meta?.quality_estimate !== undefined) {
+      improvedCase.meta.quality_estimate = caseData.meta.quality_estimate;
+    }
+
+    // ✅ Validate and fix references
+    if (improvedCase.evidence && Array.isArray(improvedCase.evidence.guidelines)) {
+      const refValidation = await validateReferences(
+        improvedCase.evidence.guidelines,
+        region || 'EU'
+      );
       
-      // Preserve Stage 1 generator metadata
-      if (caseData.meta?.generator_version) {
-        improvedCase.meta.generator_version = caseData.meta.generator_version;
-      }
-      if (caseData.meta?.quality_estimate !== undefined) {
-        improvedCase.meta.quality_estimate = caseData.meta.quality_estimate;
+      improvedCase.meta.reference_validation = {
+        total: refValidation.stats.total,
+        verified: refValidation.stats.verified,
+        fabricated: refValidation.stats.fabricated
+      };
+      
+      // Replace fabricated references with verified fallbacks
+      if (refValidation.stats.fabricated > 0) {
+        console.log(`⚠️  Detected ${refValidation.stats.fabricated} fabricated references, applying fallbacks`);
+        const fallbackRefs = getFallbackReferences(topic, region || 'EU');
+        improvedCase.evidence.guidelines = [
+          ...refValidation.valid.map(v => v.original),
+          ...fallbackRefs
+        ];
+        improvedCase.meta.reference_validation.fallback_applied = true;
       }
     }
 
