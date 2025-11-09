@@ -1,7 +1,6 @@
 // ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect, useRef } from "react";
 import Level2CaseLogic from "./Level2CaseLogic";
-import ExpertPanelReview from "./ExpertPanelReview";
 import CaseDisplay from "./CaseDisplay";
 import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
 import { Save, Copy, Share2, FileDown } from "lucide-react";
@@ -490,17 +489,6 @@ export default function CaseView() {
       {/* Case rendering */}
       {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
       {caseData && !gamify && <ProfessionalCaseDisplay caseData={caseData} />}
-
-      {/* Expert Panel Review Section */}
-      {caseData && !gamify && (
-        <div className="mt-6 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border-2 border-blue-200 shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-blue-900">🩺 External Expert Panel Review</h2>
-          <p className="text-sm text-blue-700 mb-4 italic">
-            Manual quality review - Copy case to ChatGPT for system improvement insights
-          </p>
-          <ExpertPanelReview caseData={caseData} />
-        </div>
-      )}
 
       {/* Actions */}
       {caseData && (

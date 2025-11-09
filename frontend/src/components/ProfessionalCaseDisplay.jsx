@@ -8,71 +8,136 @@ import {
   AlertTriangle, CheckCircle2, TrendingUp, Award, ExternalLink
 } from "lucide-react";
 
-// Conference Panel Discussion Component (Medical Academic Debate)
+// Conference Panel Discussion Component (Moderator-Led Academic Debate)
 function ConferencePanelDisplay({ panelData }) {
-  if (!panelData || (!panelData.specialist_viewpoints && !panelData.conference_format)) return null;
+  if (!panelData) return null;
 
-  const viewpoints = panelData.specialist_viewpoints || [];
+  const moderatorIntro = panelData.moderator_intro || "";
+  const discussionRounds = panelData.discussion_rounds || [];
   const debates = panelData.points_of_debate || [];
-  const consensus = panelData.consensus || "";
+  const moderatorSummary = panelData.moderator_summary || "";
+  const consensus = panelData.panel_consensus || panelData.consensus || "";
+
+  // Color palette for different speakers (alternating for visual variety)
+  const speakerColors = [
+    { bg: 'bg-gradient-to-br from-blue-50 to-indigo-50', border: 'border-blue-400', text: 'text-blue-900' },
+    { bg: 'bg-gradient-to-br from-purple-50 to-pink-50', border: 'border-purple-400', text: 'text-purple-900' },
+    { bg: 'bg-gradient-to-br from-green-50 to-emerald-50', border: 'border-green-400', text: 'text-green-900' },
+    { bg: 'bg-gradient-to-br from-orange-50 to-amber-50', border: 'border-orange-400', text: 'text-orange-900' },
+    { bg: 'bg-gradient-to-br from-teal-50 to-cyan-50', border: 'border-teal-400', text: 'text-teal-900' },
+  ];
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex items-center gap-2 mb-4">
         <Activity className="w-6 h-6 text-indigo-600" />
-        <h4 className="text-xl font-bold text-indigo-900">🎓 Medical Conference Panel Discussion</h4>
+        <h4 className="text-xl font-bold text-indigo-900">🎓 Conference Review Panel (Academic Debate)</h4>
       </div>
 
-      {/* Specialist Viewpoints */}
-      {viewpoints.length > 0 && (
-        <div className="space-y-3">
-          <h5 className="font-semibold text-gray-900">Expert Viewpoints:</h5>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {viewpoints.map((view, idx) => (
-              <div key={idx} className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-300 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-indigo-900">{view.specialty}</span>
-                  {view.confidence && (
-                    <span className="text-xs px-3 py-1 bg-indigo-600 text-white rounded-full font-semibold">
-                      {view.confidence}
-                    </span>
-                  )}
-                </div>
-                <p className="text-gray-800 mb-2 leading-relaxed">{view.argument}</p>
-                {view.evidence_cited && (
-                  <p className="text-sm text-indigo-700 italic border-l-2 border-indigo-400 pl-3 mt-2">
-                    📚 Evidence: {view.evidence_cited}
-                  </p>
-                )}
-              </div>
-            ))}
+      {/* Moderator Introduction */}
+      {moderatorIntro && (
+        <div className="p-5 bg-gradient-to-r from-gray-100 to-slate-100 border-l-4 border-slate-600 rounded-xl shadow-md">
+          <div className="flex items-center gap-3 mb-2">
+            <User className="w-5 h-5 text-slate-700" />
+            <h5 className="text-lg font-bold text-slate-900">Moderator:</h5>
           </div>
+          <p className="text-gray-800 leading-relaxed italic">{moderatorIntro}</p>
         </div>
       )}
 
-      {/* Points of Debate */}
+      {/* Discussion Rounds (Chat-Style Alternating Bubbles) */}
+      {discussionRounds.length > 0 && (
+        <div className="space-y-4">
+          <h5 className="font-semibold text-gray-900 text-lg">Discussion:</h5>
+          {discussionRounds.map((round, idx) => {
+            const colorScheme = speakerColors[idx % speakerColors.length];
+            const isDisagreement = round.stance?.toLowerCase().includes('disagree');
+            const isAgreement = round.stance?.toLowerCase().includes('agree') && !isDisagreement;
+
+            return (
+              <div key={idx} className={`p-4 ${colorScheme.bg} border-2 ${colorScheme.border} rounded-xl shadow-md hover:shadow-lg transition-all`}>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className={`w-10 h-10 rounded-full ${colorScheme.border.replace('border-', 'bg-')} flex items-center justify-center text-white font-bold`}>
+                      {(round.speaker || round.specialty || '?')[0]}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-lg font-bold ${colorScheme.text}`}>
+                        {round.speaker || round.specialty}
+                      </span>
+                      {round.stance && (
+                        <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                          isDisagreement ? 'bg-red-600 text-white' : 
+                          isAgreement ? 'bg-green-600 text-white' : 
+                          'bg-amber-600 text-white'
+                        }`}>
+                          {round.stance}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="text-gray-800 mb-3 leading-relaxed">{round.argument}</p>
+                    
+                    {round.counter_to && (
+                      <p className="text-sm text-red-700 italic border-l-2 border-red-400 pl-3 mb-2">
+                        ↩️ Response to: {round.counter_to}
+                      </p>
+                    )}
+                    
+                    {round.evidence_cited && (
+                      <p className="text-sm text-indigo-700 italic border-l-2 border-indigo-400 pl-3 mt-2">
+                        📚 Evidence: {round.evidence_cited}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Points of Debate (Explicit Clinical Controversies) */}
       {debates.length > 0 && (
         <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-600 rounded-xl shadow-md">
-          <h5 className="text-lg font-bold text-amber-900 mb-3">⚖️ Points of Debate:</h5>
+          <h5 className="text-lg font-bold text-amber-900 mb-3">⚖️ Key Points of Debate:</h5>
           {debates.map((debate, idx) => (
             <div key={idx} className="mb-4 last:mb-0 bg-white rounded-lg p-4">
               <p className="font-bold text-amber-900 mb-2">{debate.issue}</p>
               <div className="ml-4 space-y-2">
                 <p className="text-gray-800 border-l-2 border-green-400 pl-3">
-                  <span className="font-semibold text-green-700">Position A:</span> {debate.viewpoint_a}
+                  <span className="font-semibold text-green-700">Position A:</span> {debate.position_a || debate.viewpoint_a}
                 </p>
                 <p className="text-gray-800 border-l-2 border-red-400 pl-3">
-                  <span className="font-semibold text-red-700">Position B:</span> {debate.viewpoint_b}
+                  <span className="font-semibold text-red-700">Position B:</span> {debate.position_b || debate.viewpoint_b}
                 </p>
+                {debate.clinical_impact && (
+                  <p className="text-sm text-gray-700 italic mt-2 border-t pt-2">
+                    🎯 Clinical Impact: {debate.clinical_impact}
+                  </p>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Panel Consensus */}
+      {/* Moderator Summary (Synthesis of Debate) */}
+      {moderatorSummary && (
+        <div className="p-5 bg-gradient-to-r from-slate-100 to-gray-100 border-l-4 border-slate-600 rounded-xl shadow-md">
+          <div className="flex items-center gap-3 mb-2">
+            <User className="w-5 h-5 text-slate-700" />
+            <h5 className="text-lg font-bold text-slate-900">Moderator Summary:</h5>
+          </div>
+          <p className="text-gray-800 leading-relaxed">{moderatorSummary}</p>
+        </div>
+      )}
+
+      {/* Panel Consensus (Final Unified Recommendation) */}
       {consensus && (
-        <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl shadow-lg">
+        <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl shadow-lg">
           <div className="flex items-center gap-3 mb-3">
             <CheckCircle2 className="w-7 h-7 text-green-600" />
             <h5 className="text-xl font-bold text-green-900">Panel Consensus:</h5>

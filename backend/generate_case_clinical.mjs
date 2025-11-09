@@ -136,17 +136,19 @@ Ensure at least ONE guideline from EACH tier when available for ${region}
 - 1 mnemonic with clinical application context (when to use it, what it helps remember)
 - Connection to broader medical principles (e.g., shock physiology, acid-base, homeostasis)
 
-**Expert Panel Discussion (Conference-Style Debate - MANDATORY):**
-Create a structured academic discussion between specialists:
-- Format: Conference Panel Discussion (NOT individual perspectives list)
-- Include 3-5 expert viewpoints with:
-  - Specialty identification (e.g., "Cardiologist perspective", "Emergency physician perspective")
-  - Structured for/against arguments with evidence citations
-  - Confidence scores (e.g., "85% confident given troponin + ST elevation")
-  - Reference to specific guidelines or studies
-- Highlight 1-2 points of debate or disagreement (builds critical thinking)
-- Conclude with CONSENSUS statement synthesizing the expert input
-- Exclude individual "Expert Panel Perspectives" sections — integrate into unified discussion
+**Conference Review Panel (Moderator-Led Academic Debate - MANDATORY):**
+Simulate a realistic hospital conference debate with true dialogic structure:
+- **Moderator introduction:** Brief patient summary and framing question for debate
+- **Discussion rounds (3-5 speakers):** Alternating specialist contributions with explicit:
+  - Speaker role (Cardiologist, Neurologist, Emergency Physician, etc.)
+  - Stance on key clinical question (agree/disagree/partial agreement)
+  - Argument with evidence citation (specific guideline + year)
+  - At least ONE clear disagreement or rebuttal between speakers (e.g., "I disagree with the Cardiologist because...")
+  - Counter-arguments addressing prior speakers' points
+- **Points of debate:** Explicit listing of 1-2 contentious clinical decisions with Position A vs Position B
+- **Moderator summary:** Synthesis of agreement/disagreement, integrating differing opinions
+- **Panel consensus:** Final unified clinical recommendation referencing regional/national guidelines
+- REALISM: Avoid parallel monologues — create actual back-and-forth debate with natural medical disagreement
 
 **Language & Tone:**
 - Professional but readable for mixed levels (students to specialists)
@@ -312,12 +314,13 @@ Return ONLY valid JSON matching this exact structure:
     "broader_principle": ""
   },
   "panel_discussion": {
-    "conference_format": true,
-    "specialist_viewpoints": [
-      {"specialty": "", "argument": "", "evidence_cited": "", "confidence": ""}
+    "moderator_intro": "",
+    "discussion_rounds": [
+      {"speaker": "", "specialty": "", "stance": "", "argument": "", "evidence_cited": "", "counter_to": ""}
     ],
-    "points_of_debate": [{"issue": "", "viewpoint_a": "", "viewpoint_b": ""}],
-    "consensus": ""
+    "points_of_debate": [{"issue": "", "position_a": "", "position_b": "", "clinical_impact": ""}],
+    "moderator_summary": "",
+    "panel_consensus": ""
   }
 }`;
 
@@ -340,8 +343,24 @@ Return ONLY valid JSON matching this exact structure:
     if (extracted) {
       // Add generator metadata programmatically
       if (!extracted.meta) extracted.meta = {};
-      extracted.meta.generator_version = 'professor_v2';
+      extracted.meta.generator_version = 'professor_v3';
       extracted.meta.quality_estimate = 0.95;
+      
+      // Validate panel discussion structure (≥3 discussion rounds required)
+      if (extracted.panel_discussion) {
+        const rounds = extracted.panel_discussion.discussion_rounds || [];
+        if (rounds.length < 3) {
+          console.warn(`⚠️ Panel discussion has only ${rounds.length} rounds, minimum 3 required`);
+          extracted.meta.quality_estimate = 0.85; // Lower quality estimate
+        }
+        if (!extracted.panel_discussion.moderator_summary) {
+          console.warn('⚠️ Panel discussion missing moderator_summary');
+        }
+        if (!extracted.panel_discussion.panel_consensus) {
+          console.warn('⚠️ Panel discussion missing panel_consensus');
+        }
+      }
+      
       return extracted;
     }
 
