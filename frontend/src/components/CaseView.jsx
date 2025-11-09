@@ -205,7 +205,15 @@ export default function CaseView() {
       });
       if (!res.ok) throw new Error(res.statusText || 'Case generation failed');
       const data = await res.json();
-      const normalizedCase = normalizeCaseData(data?.case || {});
+      console.log("✅ Case generation response:", data);
+      
+      if (!data || !data.case) {
+        console.error("❌ No case data in response:", data);
+        throw new Error("Backend returned empty case data");
+      }
+      
+      const normalizedCase = normalizeCaseData(data.case);
+      console.log("✅ Normalized case:", normalizedCase);
       setCaseData(normalizedCase);
       
       // Internal panel review happens automatically on backend (invisible to user)
