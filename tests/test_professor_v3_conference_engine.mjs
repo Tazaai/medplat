@@ -341,7 +341,8 @@ async function main() {
 
   // Exit with appropriate code
   // Accept ≥80% pass rate (allows for LLM output variability)
-  const passRate = (results.passed / results.total) * 100;
+  const totalTests = results.passed + results.failed;
+  const passRate = totalTests > 0 ? (results.passed / totalTests) * 100 : 0;
   const threshold = 80;
   
   if (passRate >= threshold) {
