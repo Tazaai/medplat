@@ -13,8 +13,156 @@ import {
   Shield,
   BookOpen,
   Calendar,
-  Target
+  Target,
+  ExternalLink,
+  Building2,
+  MapPin,
+  Globe2
 } from "lucide-react";
+
+// Tier badge component with icons and colors
+function TierBadge({ tier }) {
+  const tiers = {
+    local: { emoji: "🏥", label: "Local/Hospital", color: "bg-gray-100 text-gray-800 border-gray-300" },
+    regional: { emoji: "📍", label: "Regional", color: "bg-blue-100 text-blue-800 border-blue-300" },
+    national: { emoji: "🏛️", label: "National", color: "bg-green-100 text-green-800 border-green-300" },
+    continental: { emoji: "🌍", label: "Continental", color: "bg-purple-100 text-purple-800 border-purple-300" },
+    international: { emoji: "🌐", label: "International", color: "bg-orange-100 text-orange-800 border-orange-300" }
+  };
+
+  const tierInfo = tiers[tier?.toLowerCase()] || tiers.international;
+
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${tierInfo.color}`}>
+      <span>{tierInfo.emoji}</span>
+      <span>{tierInfo.label}</span>
+    </span>
+  );
+}
+
+// Enhanced guidelines display with tier hierarchy
+function GuidelinesSection({ guidelines }) {
+  if (!guidelines || guidelines.length === 0) return null;
+
+  const sortedGuidelines = [...guidelines].sort((a, b) => {
+    const tierOrder = { local: 1, regional: 2, national: 3, continental: 4, international: 5 };
+    return (tierOrder[a.tier?.toLowerCase()] || 5) - (tierOrder[b.tier?.toLowerCase()] || 5);
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-3">
+        <Shield className="w-5 h-5 text-blue-600" />
+        <h4 className="font-semibold text-gray-900">📋 Clinical Guidelines (Hierarchical)</h4>
+      </div>
+      {sortedGuidelines.map((guideline, idx) => (
+        <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-start gap-2 mb-2">
+            <TierBadge tier={guideline.tier} />
+            <div className="flex-1">
+              <div className="font-semibold text-gray-900">
+                {guideline.society} {guideline.year && `(${guideline.year})`}
+              </div>
+              <div className="text-sm text-gray-700 mt-1">{guideline.title}</div>
+              {guideline.recommendation && (
+                <div className="text-xs text-gray-600 mt-1 italic">
+                  Recommendation: {guideline.recommendation}
+                </div>
+              )}
+            </div>
+          </div>
+          {guideline.url_or_doi && (
+            <a
+              href={guideline.url_or_doi.startsWith('http') ? guideline.url_or_doi : `https://doi.org/${guideline.url_or_doi}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline mt-2"
+            >
+              <ExternalLink className="w-3 h-3" />
+              <span>View guideline</span>
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Enhanced conference-style panel discussion display
+function ConferencePanelDisplay({ panelData }) {
+  if (!panelData || (!panelData.specialist_viewpoints && !panelData.conference_format)) return null;
+
+  const viewpoints = panelData.specialist_viewpoints || [];
+  const debates = panelData.points_of_debate || [];
+  const consensus = panelData.consensus || "";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Activity className="w-5 h-5 text-indigo-600" />
+        <h4 className="font-semibold text-gray-900">🎓 Medical Conference Panel Discussion</h4>
+      </div>
+
+      {/* Specialist Viewpoints */}
+      {viewpoints.length > 0 && (
+        <div className="space-y-3">
+          <h5 className="font-medium text-gray-800 text-sm">Expert Viewpoints:</h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {viewpoints.map((view, idx) => (
+              <div key={idx} className="p-3 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-indigo-900">{view.specialty}</span>
+                  {view.confidence && (
+                    <span className="text-xs px-2 py-1 bg-indigo-200 text-indigo-800 rounded-full font-medium">
+                      {view.confidence} confident
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-800 mb-2">{view.argument}</p>
+                {view.evidence_cited && (
+                  <p className="text-xs text-indigo-700 italic">
+                    📚 Evidence: {view.evidence_cited}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Points of Debate */}
+      {debates.length > 0 && (
+        <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded">
+          <h5 className="font-semibold text-amber-900 mb-2">⚖️ Points of Debate:</h5>
+          {debates.map((debate, idx) => (
+            <div key={idx} className="mb-3 last:mb-0">
+              <p className="font-medium text-amber-900">{debate.issue}</p>
+              <div className="ml-4 mt-2 space-y-1 text-sm">
+                <p className="text-amber-800">
+                  <span className="font-medium">Viewpoint A:</span> {debate.viewpoint_a}
+                </p>
+                <p className="text-amber-800">
+                  <span className="font-medium">Viewpoint B:</span> {debate.viewpoint_b}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Consensus */}
+      {consensus && (
+        <div className="p-4 bg-green-50 border-l-4 border-green-600 rounded">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <h5 className="font-semibold text-green-900">Panel Consensus:</h5>
+          </div>
+          <p className="text-gray-800">{consensus}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CollapsibleSection({ title, icon: Icon, children, defaultOpen = false, highlight = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -557,15 +705,23 @@ export default function CaseDisplay({ caseData }) {
 
       {/* Evidence */}
       {caseData.Evidence_and_References && Object.keys(caseData.Evidence_and_References).length > 0 && (
-        <CollapsibleSection title="Evidence & References">
-          {renderContent(caseData.Evidence_and_References)}
+        <CollapsibleSection title="Evidence & References" icon={Shield} defaultOpen={true}>
+          {/* Guidelines with tier badges */}
+          {caseData.Evidence_and_References.guidelines && (
+            <GuidelinesSection guidelines={caseData.Evidence_and_References.guidelines} />
+          )}
+          
+          {/* Other evidence content */}
+          <div className="mt-4">
+            {renderContent(caseData.Evidence_and_References)}
+          </div>
         </CollapsibleSection>
       )}
 
-      {/* Expert Panel Notes */}
+      {/* Expert Panel Notes - Conference Style */}
       {caseData.Expert_Panel_and_Teaching && Object.keys(caseData.Expert_Panel_and_Teaching).length > 0 && (
-        <CollapsibleSection title="Expert Panel Perspectives">
-          {renderContent(caseData.Expert_Panel_and_Teaching)}
+        <CollapsibleSection title="Expert Panel Discussion" icon={Activity} highlight={true} defaultOpen={true}>
+          <ConferencePanelDisplay panelData={caseData.Expert_Panel_and_Teaching} />
         </CollapsibleSection>
       )}
 
