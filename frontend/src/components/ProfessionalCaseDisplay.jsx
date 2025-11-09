@@ -8,6 +8,83 @@ import {
   AlertTriangle, CheckCircle2, TrendingUp, Award, ExternalLink
 } from "lucide-react";
 
+// Conference Panel Discussion Component (Medical Academic Debate)
+function ConferencePanelDisplay({ panelData }) {
+  if (!panelData || (!panelData.specialist_viewpoints && !panelData.conference_format)) return null;
+
+  const viewpoints = panelData.specialist_viewpoints || [];
+  const debates = panelData.points_of_debate || [];
+  const consensus = panelData.consensus || "";
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-center gap-2 mb-3">
+        <Activity className="w-6 h-6 text-indigo-600" />
+        <h4 className="text-xl font-bold text-indigo-900">🎓 Medical Conference Panel Discussion</h4>
+      </div>
+
+      {/* Specialist Viewpoints */}
+      {viewpoints.length > 0 && (
+        <div className="space-y-3">
+          <h5 className="font-semibold text-gray-900">Expert Viewpoints:</h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {viewpoints.map((view, idx) => (
+              <div key={idx} className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-300 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-bold text-indigo-900">{view.specialty}</span>
+                  {view.confidence && (
+                    <span className="text-xs px-3 py-1 bg-indigo-600 text-white rounded-full font-semibold">
+                      {view.confidence}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-800 mb-2 leading-relaxed">{view.argument}</p>
+                {view.evidence_cited && (
+                  <p className="text-sm text-indigo-700 italic border-l-2 border-indigo-400 pl-3 mt-2">
+                    📚 Evidence: {view.evidence_cited}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Points of Debate */}
+      {debates.length > 0 && (
+        <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-600 rounded-xl shadow-md">
+          <h5 className="text-lg font-bold text-amber-900 mb-3">⚖️ Points of Debate:</h5>
+          {debates.map((debate, idx) => (
+            <div key={idx} className="mb-4 last:mb-0 bg-white rounded-lg p-4">
+              <p className="font-bold text-amber-900 mb-2">{debate.issue}</p>
+              <div className="ml-4 space-y-2">
+                <p className="text-gray-800 border-l-2 border-green-400 pl-3">
+                  <span className="font-semibold text-green-700">Position A:</span> {debate.viewpoint_a}
+                </p>
+                <p className="text-gray-800 border-l-2 border-red-400 pl-3">
+                  <span className="font-semibold text-red-700">Position B:</span> {debate.viewpoint_b}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Panel Consensus */}
+      {consensus && (
+        <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl shadow-lg">
+          <div className="flex items-center gap-3 mb-3">
+            <CheckCircle2 className="w-7 h-7 text-green-600" />
+            <h5 className="text-xl font-bold text-green-900">Panel Consensus:</h5>
+          </div>
+          <p className="text-lg text-gray-900 leading-relaxed font-medium">{consensus}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // Classification Badge Component (Stanford Type A/B, NYHA, Killip, TOAST, etc.)
 function ClassificationBadge({ classification }) {
   if (!classification) return null;
@@ -496,6 +573,20 @@ export default function ProfessionalCaseDisplay({ caseData }) {
       <SectionCard title="Management" icon={Shield} defaultOpen={true} highlight={true}>
         {renderContent(caseData.Management_Full || caseData.Management)}
       </SectionCard>
+
+      {/* Conference Panel Discussion (Dynamic Academic Debate) */}
+      {(caseData.panel_discussion || caseData.Expert_Panel_and_Teaching) && (
+        <SectionCard 
+          title="Conference Review Panel" 
+          icon={Activity} 
+          defaultOpen={true}
+          highlight={true}
+        >
+          <ConferencePanelDisplay 
+            panelData={caseData.panel_discussion || caseData.Expert_Panel_and_Teaching} 
+          />
+        </SectionCard>
+      )}
 
       {/* Evidence & References */}
       {caseData.Evidence_and_References && (
