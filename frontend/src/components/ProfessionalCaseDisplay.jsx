@@ -136,10 +136,10 @@ function ConferencePanelDisplay({ panelData }) {
       )}
 
       {/* Points of Debate (Explicit Clinical Controversies) */}
-      {debates.length > 0 && (
+      {pointsOfDebate.length > 0 && (
         <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-600 rounded-xl shadow-md">
           <h5 className="text-lg font-bold text-amber-900 mb-3">⚖️ Key Points of Debate:</h5>
-          {debates.map((debate, idx) => (
+          {pointsOfDebate.map((debate, idx) => (
             <div key={idx} className="mb-4 last:mb-0 bg-white rounded-lg p-4">
               <p className="font-bold text-amber-900 mb-2">{debate.issue}</p>
               <div className="ml-4 space-y-2">
