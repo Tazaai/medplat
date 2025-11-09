@@ -7,7 +7,7 @@ on:
     paths:
       - 'backend/generate_case_clinical.mjs'
       - 'backend/routes/**'
-      - 'tests/test_professor_v3_conference_engine.js'
+      - 'tests/test_professor_v3_conference_engine.mjs'
       - '.github/workflows/professor-v3-tests.yml'
 
 jobs:
@@ -76,45 +76,8 @@ jobs:
             *.log
             test-results/
 
-      - name: Comment PR with results
-        if: always() && github.event_name == 'pull_request'
-        continue-on-error: true
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const body = `## 🧪 Professor-V3 Regression Tests
-            
-            Tests completed. Check workflow logs for detailed results.
-            
-            - 📊 Pass Rate Target: ≥80%
-            - ✅ Validation: Conference engine quality gates
-            - 🔬 Model: GPT-4o-mini (test) / GPT-4o (production)`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
       - name: Cleanup secrets
         if: always()
         run: |
           rm -f backend/firebase-service-key.json
           echo "🧹 Cleaned up temporary credentials"
-
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const output = process.env.TEST_OUTPUT || 'Test results not available';
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🧠 Professor-V3 Regression Test Results\n\n${output}\n\n✅ All conference engine validation checks passed.`
-            });
