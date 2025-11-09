@@ -17,7 +17,7 @@
  *   npm run validate:topics2 -- --cleanup
  */
 
-import { initializeApp } from "firebase-admin/app";
+import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
@@ -25,16 +25,14 @@ import { resolve } from "path";
 // Initialize Firebase
 const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT || 
                            process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-                           './firebase-service-key.json';
+                           './firebase_key.json';
 
 try {
   const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
   initializeApp({
-    credential: {
-      getAccessToken: () => Promise.resolve({ access_token: 'mock', expires_in: 3600 }),
-      getCertificate: () => serviceAccount
-    }
+    credential: cert(serviceAccount)
   });
+  console.log('✅ Firebase initialized with service account');
 } catch (error) {
   console.error('❌ Failed to initialize Firebase:', error.message);
   process.exit(1);
