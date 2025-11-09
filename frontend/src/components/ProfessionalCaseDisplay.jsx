@@ -12,11 +12,23 @@ import {
 function ConferencePanelDisplay({ panelData }) {
   if (!panelData) return null;
 
-  const moderatorIntro = panelData.moderator_intro || "";
-  const discussionRounds = panelData.discussion_rounds || [];
-  const debates = panelData.points_of_debate || [];
-  const moderatorSummary = panelData.moderator_summary || "";
-  const consensus = panelData.panel_consensus || panelData.consensus || "";
+  // Extract conference panel structure (professor_v3_dynamic with specialty-based roles)
+  const moderatorIntro = panelData?.moderator_intro || '';
+  const discussionRounds = panelData?.discussion_rounds || [];
+  const pointsOfDebate = panelData?.points_of_debate || [];
+  const moderatorSummary = panelData?.moderator_summary || '';
+  const panelConsensus = panelData?.panel_consensus || '';
+  
+  // Detect cross-specialty tension (≥2 disagreements for educational value)
+  const disagreementCount = discussionRounds.filter(r => 
+    r.stance?.toLowerCase().includes('disagree') || 
+    r.counter_to || 
+    r.argument?.toLowerCase().includes('disagree') ||
+    r.argument?.toLowerCase().includes('however')
+  ).length;
+  
+  const hasCrossSpecialtyTension = disagreementCount >= 2;
+  const uniqueSpecialties = new Set(discussionRounds.map(r => r.specialty || r.speaker)).size;
 
   // Color palette for different speakers (alternating for visual variety)
   const speakerColors = [
@@ -34,6 +46,21 @@ function ConferencePanelDisplay({ panelData }) {
         <h4 className="text-xl font-bold text-indigo-900">🎓 Conference Review Panel (Academic Debate)</h4>
       </div>
 
+      {/* Quality Indicators (Cross-Specialty Tension Badge) */}
+      {hasCrossSpecialtyTension && (
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 rounded-xl p-4 shadow-md">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">⚔️</span>
+            <div>
+              <h6 className="font-bold text-red-900 text-lg">Cross-Specialty Debate Detected</h6>
+              <p className="text-sm text-red-800">
+                {disagreementCount} active disagreements across {uniqueSpecialties} specialties — educational depth validated
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Moderator Introduction */}
       {moderatorIntro && (
         <div className="p-5 bg-gradient-to-r from-gray-100 to-slate-100 border-l-4 border-slate-600 rounded-xl shadow-md">
@@ -45,31 +72,35 @@ function ConferencePanelDisplay({ panelData }) {
         </div>
       )}
 
-      {/* Discussion Rounds (Chat-Style Alternating Bubbles) */}
+      {/* Discussion Rounds (Role-Based Speech Bubbles with Cross-Specialty Tension) */}
       {discussionRounds.length > 0 && (
         <div className="space-y-4">
-          <h5 className="font-semibold text-gray-900 text-lg">Discussion:</h5>
+          <h5 className="font-semibold text-gray-900 text-lg">Multidisciplinary Discussion:</h5>
           {discussionRounds.map((round, idx) => {
             const colorScheme = speakerColors[idx % speakerColors.length];
             const isDisagreement = round.stance?.toLowerCase().includes('disagree');
             const isAgreement = round.stance?.toLowerCase().includes('agree') && !isDisagreement;
+            const hasRebuttal = round.counter_to || round.argument?.toLowerCase().includes('disagree') || round.argument?.toLowerCase().includes('however');
+            
+            // Extract role (use specialty field, or parse from speaker)
+            const role = round.specialty || round.speaker || 'Specialist';
 
             return (
-              <div key={idx} className={`p-4 ${colorScheme.bg} border-2 ${colorScheme.border} rounded-xl shadow-md hover:shadow-lg transition-all`}>
+              <div key={idx} className={`p-4 ${colorScheme.bg} border-2 ${colorScheme.border} rounded-xl shadow-md hover:shadow-lg transition-all ${hasRebuttal ? 'border-l-4 border-l-red-500' : ''}`}>
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <div className={`w-10 h-10 rounded-full ${colorScheme.border.replace('border-', 'bg-')} flex items-center justify-center text-white font-bold`}>
-                      {(round.speaker || round.specialty || '?')[0]}
+                    <div className={`w-12 h-12 rounded-full ${colorScheme.border.replace('border-', 'bg-')} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
+                      {role[0]}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                       <span className={`text-lg font-bold ${colorScheme.text}`}>
-                        {round.speaker || round.specialty}
+                        {role}
                       </span>
                       {round.stance && (
                         <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                          isDisagreement ? 'bg-red-600 text-white' : 
+                          isDisagreement ? 'bg-red-600 text-white animate-pulse-subtle' : 
                           isAgreement ? 'bg-green-600 text-white' : 
                           'bg-amber-600 text-white'
                         }`}>
@@ -78,16 +109,21 @@ function ConferencePanelDisplay({ panelData }) {
                       )}
                     </div>
                     
-                    <p className="text-gray-800 mb-3 leading-relaxed">{round.argument}</p>
+                    {/* Highlight disagreement phrases */}
+                    <p className={`text-gray-800 mb-3 leading-relaxed ${isDisagreement ? 'font-medium' : ''}`}>
+                      {round.argument}
+                    </p>
                     
+                    {/* Counter-argument indicator with red emphasis */}
                     {round.counter_to && (
-                      <p className="text-sm text-red-700 italic border-l-2 border-red-400 pl-3 mb-2">
-                        ↩️ Response to: {round.counter_to}
+                      <p className="text-sm text-red-800 font-semibold italic border-l-4 border-red-500 pl-3 mb-2 bg-red-50 py-2 rounded-r">
+                        ↩️ Responds to: {round.counter_to}
                       </p>
                     )}
                     
+                    {/* Evidence citation with regional context */}
                     {round.evidence_cited && (
-                      <p className="text-sm text-indigo-700 italic border-l-2 border-indigo-400 pl-3 mt-2">
+                      <p className="text-sm text-indigo-700 italic border-l-2 border-indigo-400 pl-3 mt-2 bg-indigo-50 py-1.5 rounded-r">
                         📚 Evidence: {round.evidence_cited}
                       </p>
                     )}

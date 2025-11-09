@@ -136,18 +136,59 @@ Ensure at least ONE guideline from EACH tier when available for ${region}
 - 1 mnemonic with clinical application context (when to use it, what it helps remember)
 - Connection to broader medical principles (e.g., shock physiology, acid-base, homeostasis)
 
-**Conference Review Panel (Moderator-Led Academic Debate - MANDATORY):**
-Simulate a realistic hospital conference debate with true dialogic structure:
-- **Moderator introduction:** Brief patient summary and framing question for debate
-- **Discussion rounds (3-5 speakers):** Alternating specialist contributions with explicit:
-  - Speaker role (Cardiologist, Neurologist, Emergency Physician, etc.)
-  - Stance on key clinical question (agree/disagree/partial agreement)
-  - Argument with evidence citation (specific guideline + year)
-  - At least ONE clear disagreement or rebuttal between speakers (e.g., "I disagree with the Cardiologist because...")
-  - Counter-arguments addressing prior speakers' points
-- **Points of debate:** Explicit listing of 1-2 contentious clinical decisions with Position A vs Position B
-- **Moderator summary:** Synthesis of agreement/disagreement, integrating differing opinions
-- **Panel consensus:** Final unified clinical recommendation referencing regional/national guidelines
+**Conference Review Panel (Multidisciplinary Dynamic Debate - MANDATORY):**
+Simulate an authentic hospital conference with specialty-based roles and cross-disciplinary tension:
+
+**Identity Model:**
+- NO generic names (Dr. Smith/Johnson/Lee)
+- Use **specialty-specific roles** that match the case context:
+  * Emergency/Acute: Emergency Physician, Intensivist, Trauma Surgeon
+  * Chronic/Complex: Geriatrician, Internist, Hospitalist, Clinical Pharmacist
+  * Imaging/Diagnostics: Radiologist, Pathologist, Lab Medicine Specialist
+  * Specialty-specific: Cardiologist, Neurologist, Nephrologist, Gastroenterologist, etc.
+- Select 3-5 roles relevant to the clinical scenario (e.g., UTI + confusion → Emergency Physician + Geriatrician + Clinical Pharmacist)
+
+**Dialogue Structure (Mandatory 3 Rounds):**
+1. **Moderator Introduction:** 
+   - Patient summary (age, key findings)
+   - Framing question for debate (e.g., "Should we obtain CT angiography now or defer?")
+
+2. **Discussion Rounds (3-5 participants):**
+   - Each speaker identified by **role only** (not name)
+   - Explicit stance: "Agree", "Disagree", "Partial agreement"
+   - Argument with **why/when/how** reasoning (not just "what")
+   - **At least 2 participants must disagree** with clear rebuttal language:
+     * "I disagree with the Emergency Physician because..."
+     * "The Radiologist raises a valid concern, but..."
+     * "I partially agree, however..."
+   - Regional-anchored citations (local → national → international):
+     * First citation must be local/regional (e.g., "Copenhagen University Hospital 2021", "Danish Stroke Society 2023")
+     * Then continental (ESC, AHA, NICE)
+     * Then international (WHO)
+
+3. **Moderator Summary:**
+   - Synthesize agreement AND disagreement
+   - Note differing clinical thresholds or risk tolerances
+   - Bridge to unified recommendation
+
+4. **Panel Consensus:**
+   - Multi-sentence actionable plan
+   - Link back to management steps (timing, monitoring, escalation criteria)
+   - Reference specific local/national guidelines used
+   - Include "if-then" logic (e.g., "If confusion persists after 24h, repeat CT")
+
+**Emotional Realism & Clinical Nuance:**
+- Vary tone: urgency for acute cases, deliberation for complex chronic
+- Include uncertainty markers ("likely", "probably", "may need to")
+- Show differing thresholds (conservative vs aggressive)
+- Cross-specialty perspectives (e.g., Radiologist: "imaging first", Geriatrician: "functional assessment first")
+
+**Prohibited Patterns:**
+- Generic doctor names detached from specialty
+- Uniform agreement without tension
+- Vague consensus ("monitor closely" without specifics)
+- Missing local guideline citations
+- Single-round commentary (must be multi-round exchange)
 - REALISM: Avoid parallel monologues — create actual back-and-forth debate with natural medical disagreement
 
 **Language & Tone:**
@@ -347,17 +388,57 @@ Return ONLY valid JSON matching this exact structure:
       extracted.meta.quality_estimate = 0.95;
       
       // Validate panel discussion structure (≥3 discussion rounds required)
-      if (extracted.panel_discussion) {
-        const rounds = extracted.panel_discussion.discussion_rounds || [];
+      if (extracted.panel_discussion || extracted.Expert_Panel_and_Teaching) {
+        const panel = extracted.panel_discussion || extracted.Expert_Panel_and_Teaching;
+        const rounds = panel.discussion_rounds || [];
+        
+        // Minimum rounds check
         if (rounds.length < 3) {
           console.warn(`⚠️ Panel discussion has only ${rounds.length} rounds, minimum 3 required`);
-          extracted.meta.quality_estimate = 0.85; // Lower quality estimate
+          extracted.meta.quality_estimate = 0.85;
         }
-        if (!extracted.panel_discussion.moderator_summary) {
+        
+        // Cross-specialty tension check (at least 2 disagreements required)
+        const disagreements = rounds.filter(r => 
+          r.stance?.toLowerCase().includes('disagree') || 
+          r.counter_to || 
+          r.argument?.toLowerCase().includes('disagree') ||
+          r.argument?.toLowerCase().includes('however')
+        );
+        
+        if (disagreements.length < 2) {
+          console.warn(`⚠️ Panel discussion lacks cross-specialty tension (only ${disagreements.length} disagreements, need ≥2)`);
+          extracted.meta.quality_estimate = Math.min(extracted.meta.quality_estimate, 0.88);
+          extracted.meta.debate_balance = 'low';
+        } else {
+          extracted.meta.debate_balance = 'good';
+        }
+        
+        // Moderator summary check
+        if (!panel.moderator_summary) {
           console.warn('⚠️ Panel discussion missing moderator_summary');
+          extracted.meta.quality_estimate = Math.min(extracted.meta.quality_estimate, 0.90);
         }
-        if (!extracted.panel_discussion.panel_consensus) {
+        
+        // Actionable consensus check
+        if (!panel.panel_consensus && !panel.consensus) {
           console.warn('⚠️ Panel discussion missing panel_consensus');
+          extracted.meta.quality_estimate = Math.min(extracted.meta.quality_estimate, 0.90);
+        } else {
+          const consensus = panel.panel_consensus || panel.consensus;
+          if (consensus.length < 100) {
+            console.warn('⚠️ Panel consensus too brief (should be multi-sentence actionable plan)');
+            extracted.meta.consensus_clarity = 'low';
+          } else {
+            extracted.meta.consensus_clarity = 'good';
+          }
+        }
+        
+        // Specialty diversity check
+        const specialties = new Set(rounds.map(r => r.specialty || r.speaker || '').filter(Boolean));
+        if (specialties.size < 3) {
+          console.warn(`⚠️ Panel lacks specialty diversity (only ${specialties.size} different roles)`);
+          extracted.meta.quality_estimate = Math.min(extracted.meta.quality_estimate, 0.92);
         }
       }
       
