@@ -75,23 +75,38 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 - Include confidence level or probability estimate (e.g., "85% probability given troponin + ST elevation")
 - Explain why top differential is most likely using Bayesian reasoning (pretest → posttest probability)
 
-**Management (Actionable & Time-Sensitive):**
-- Highlight critical timing windows with rationale (e.g., "tPA within 4.5h of stroke onset — after this, hemorrhage risk outweighs benefit")
+**Management (Actionable & Time-Sensitive with Clinical Rationale First):**
+CRITICAL: Always explain WHY before WHEN and WHAT
+- For EVERY timing window: Start with pathophysiological rationale
+  - Example: "tPA for stroke: Ischemic penumbra remains salvageable for ~4.5h → tissue death accelerates after → hemorrhage risk increases with delay. Action: tPA within 4.5h of symptom onset."
+  - Example: "β-blockers in cardiogenic shock: Can worsen bradycardia and reduce cardiac output → use with extreme caution, prefer inotropes first. Action: Hold β-blockers until hemodynamically stable."
+- Structure: [Pathophysiology → Clinical consequence → Action + Timing + Dose]
 - Include escalation pathways (what if first-line fails? what's next?)
 - Provide fallback options for low-resource settings (no ICU, limited imaging, generic drugs)
 - Specify drug doses, routes, frequencies, and duration (e.g., "Aspirin 300mg PO STAT, then 75mg OD")
 - Reference region-specific guidelines with year and recommendation class (${region})
 - Include monitoring parameters (vitals frequency, lab recheck timing, danger signs)
 
-**Evidence (Comparative & Statistical):**
-- Auto-generate comparative test data dynamically for the specific condition:
-  - Test performance: sensitivity/specificity % for key diagnostics (e.g., "Troponin I: 89% sens, 95% spec for AMI at 6h")
-  - Comparative modality effectiveness (e.g., "CT 95% sens vs MRI 99% sens for ICH, but CT faster")
-- Include ONE global guideline (WHO/ESC/AHA/NICE/GINA) with year and title
-- Include ONE region-specific statistic or prevalence data (auto-match to ${region})
-- Provide prognostic data (mortality %, 5-year survival, functional outcome scores)
+**Evidence & Guidelines (Hierarchical Priority by Region):**
+ALWAYS prioritize guidelines by user's detected region in this order:
+1️⃣ **Regional/Hospital** (if available): Local protocols with specific implementation notes
+2️⃣ **National**: Country-specific guidelines (e.g., Danish NNBV, NHS UK, AHA USA, CCS Canada)
+3️⃣ **Continental**: Regional consensus (EU, North America, Asia-Pacific)
+4️⃣ **International**: WHO, ESC, AHA (global consensus)
 
-**Teaching & Learning (MANDATORY for EVERY case):**
+For EACH guideline cited:
+- Format: [Society Name Year] Title - URL or DOI
+- Example: "[ESC 2021] ESC Guidelines for acute coronary syndrome - https://doi.org/10.1093/eurheartj/ehaa575"
+- If no URL available: Use format "Society Name (Year): Title, Recommendation Class I-A"
+
+Auto-generate comparative test data dynamically:
+- Test performance: sensitivity/specificity % for key diagnostics (e.g., "Troponin I: 89% sens, 95% spec for AMI at 6h")
+- Comparative modality effectiveness (e.g., "CT 95% sens vs MRI 99% sens for ICH, but CT faster")
+- Include prognostic data (mortality %, 5-year survival, functional outcome scores)
+
+Ensure at least ONE guideline from EACH tier when available for ${region}
+
+**Teaching & Learning (MANDATORY Conference-Style Debate):**
 - ≥2 diagnostic pearls (specific clinical insights, not generic advice)
 - ≥1 common pitfall or missed diagnosis with clinical consequence
 - ≥2 reflection questions:
@@ -100,6 +115,18 @@ This quality standard applies GLOBALLY across ALL specialties: Cardiology, Neuro
 - ≥2 learning objectives (what the learner should master from this case)
 - 1 mnemonic with clinical application context (when to use it, what it helps remember)
 - Connection to broader medical principles (e.g., shock physiology, acid-base, homeostasis)
+
+**Expert Panel Discussion (Conference-Style Debate - MANDATORY):**
+Create a structured academic discussion between specialists:
+- Format: Conference Panel Discussion (NOT individual perspectives list)
+- Include 3-5 expert viewpoints with:
+  - Specialty identification (e.g., "Cardiologist perspective", "Emergency physician perspective")
+  - Structured for/against arguments with evidence citations
+  - Confidence scores (e.g., "85% confident given troponin + ST elevation")
+  - Reference to specific guidelines or studies
+- Highlight 1-2 points of debate or disagreement (builds critical thinking)
+- Conclude with CONSENSUS statement synthesizing the expert input
+- Exclude individual "Expert Panel Perspectives" sections — integrate into unified discussion
 
 **Language & Tone:**
 - Professional but readable for mixed levels (students to specialists)
@@ -155,9 +182,9 @@ Demographics: Age-appropriate presentation
 10. **Etiology** – underlying cause (genetic, acquired, environmental, multifactorial)
 11. **Management** – immediate (first hour), escalation (if wrong dx), timing windows, region-aware alternatives, doses
 12. **Disposition** – admit/discharge, unit (ICU/ward/home), follow-up plan, social needs assessment
-13. **Evidence** – test performance (sensitivity/specificity %), guidelines (society + year), prognostic data
-14. **Teaching** – 3+ pearls, 1 pitfall, 1 reflection question, 1 mnemonic, broader principle
-15. **Panel Notes** – internal medicine, surgery, emergency medicine perspectives (draft quality)
+13. **Evidence** – hierarchical guidelines (regional → national → international with URLs), test performance (sensitivity/specificity %), prognostic data
+14. **Teaching** – ≥3 pearls, ≥1 pitfall, ≥2 reflection questions, ≥2 learning objectives, mnemonics, broader principle
+15. **Panel Discussion** – Conference-style academic debate with specialist viewpoints, for/against arguments, confidence scores, evidence citations, consensus
 
 📊 QUALITY TARGETS (Self-check before returning):
 - Completeness: 100% (all 15 sections filled)
@@ -247,19 +274,23 @@ Return ONLY valid JSON matching this exact structure:
     "incidence": "",
     "key_tests": [{"test": "", "sensitivity": "", "specificity": "", "notes": ""}],
     "prognosis": "",
-    "guidelines": [{"society": "", "year": "", "title": "", "recommendation": ""}]
+    "guidelines": [{"tier": "regional|national|continental|international", "society": "", "year": "", "title": "", "url_or_doi": "", "recommendation": ""}]
   },
   "teaching": {
     "pearls": ["", "", ""],
     "pitfall": "",
     "reflection_questions": ["", ""],
     "learning_objectives": ["", ""],
-    "mnemonics": [{"acronym": "", "meaning": "", "clinical_use": ""}]
+    "mnemonics": [{"acronym": "", "meaning": "", "clinical_use": ""}],
+    "broader_principle": ""
   },
-  "panel_notes": {
-    "internal_medicine": "",
-    "surgery": "",
-    "emergency_medicine": ""
+  "panel_discussion": {
+    "conference_format": true,
+    "specialist_viewpoints": [
+      {"specialty": "", "argument": "", "evidence_cited": "", "confidence": ""}
+    ],
+    "points_of_debate": [{"issue": "", "viewpoint_a": "", "viewpoint_b": ""}],
+    "consensus": ""
   }
 }`;
 
