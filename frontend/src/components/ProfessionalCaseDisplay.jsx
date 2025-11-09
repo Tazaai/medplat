@@ -172,13 +172,13 @@ function ConferencePanelDisplay({ panelData }) {
       )}
 
       {/* Panel Consensus (Final Unified Recommendation) */}
-      {consensus && (
+      {panelConsensus && (
         <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl shadow-lg">
           <div className="flex items-center gap-3 mb-3">
             <CheckCircle2 className="w-7 h-7 text-green-600" />
             <h5 className="text-xl font-bold text-green-900">Panel Consensus:</h5>
           </div>
-          <p className="text-lg text-gray-900 leading-relaxed font-medium">{consensus}</p>
+          <p className="text-lg text-gray-900 leading-relaxed font-medium">{panelConsensus}</p>
         </div>
       )}
     </div>
