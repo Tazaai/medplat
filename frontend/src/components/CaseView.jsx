@@ -217,8 +217,8 @@ export default function CaseView() {
       console.log("✅ Normalized case:", normalizedCase);
       setCaseData(normalizedCase);
       
-      // Internal panel review happens automatically on backend (invisible to user)
-      // External panel review is MANUAL ONLY (copy/paste to ChatGPT for system improvements)
+      // ✅ Internal panel review happens automatically during case generation (invisible to user)
+      // ✅ External 18-member panel review happens automatically for gamified MCQs (async background)
         
     } catch (err) {
       console.error("❌ Error generating case:", err);
