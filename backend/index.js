@@ -10,6 +10,7 @@ import topicsRouter from './routes/topics_api.mjs';
 import panelRouter from './routes/panel_api.mjs';
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
+import externalPanelApi from './routes/external_panel_api.mjs';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -46,6 +47,10 @@ console.log('✅ Mounted /api/expert-panel (static import)');
 // Mount internal panel API (invisible auto-review before user sees case)
 app.use('/api/internal-panel', internalPanelApi);
 console.log('✅ Mounted /api/internal-panel (static import)');
+
+// Mount external panel API (MCQ quality review for gamification improvement)
+app.use('/api/external-panel', externalPanelApi);
+console.log('✅ Mounted /api/external-panel (static import)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set
