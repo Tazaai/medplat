@@ -99,10 +99,11 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
+			import('./routes/gamify_direct_api.mjs'),
 			import('./routes/comment_api.mjs'),
 			import('./routes/location_api.mjs'),
 			import('./routes/cases_api.mjs'),
@@ -115,6 +116,7 @@ async function mountRoutes() {
 		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
+	try { console.log('MODULE: gamifyDirectMod keys=', Object.keys(gamifyDirectMod || {}), 'defaultType=', typeof (gamifyDirectMod && gamifyDirectMod.default)); } catch (e) {}
 	try { console.log('MODULE: commentMod keys=', Object.keys(commentMod || {}), 'defaultType=', typeof (commentMod && commentMod.default)); } catch (e) {}
 	try { console.log('MODULE: locationMod keys=', Object.keys(locationMod || {}), 'defaultType=', typeof (locationMod && locationMod.default)); } catch (e) {}
 	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
@@ -124,6 +126,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: guidelinesMod keys=', Object.keys(guidelinesMod || {}), 'defaultType=', typeof (guidelinesMod && guidelinesMod.default)); } catch (e) {}
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
+	const gamifyDirectRouter = normalizeRouter(gamifyDirectMod);
 	const commentRouter = normalizeRouter(commentMod);
 	const locationRouter = normalizeRouter(locationMod);
 	const casesRouter = normalizeRouter(casesMod);
@@ -161,6 +164,15 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/gamify_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (gamifyDirectRouter) {
+				app.use('/api/gamify-direct', gamifyDirectRouter);
+				console.log('✅ Mounted /api/gamify-direct -> ./routes/gamify_direct_api.mjs');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/gamify_direct_api.mjs:', e && e.stack ? e.stack : e);
 		}
 
 		try {

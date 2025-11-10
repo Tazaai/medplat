@@ -118,7 +118,7 @@ export default function CaseView() {
   const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
-  const [gamify, setGamify] = useState(false);
+  const [gamify, setGamify] = useState(true); // Default to gamification mode (faster, cheaper)
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -192,36 +192,82 @@ export default function CaseView() {
 
     setLoading(true);
     setCaseData(null);
+    
     try {
-      const res = await fetch(`${API_BASE}/api/cases`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic: chosenTopic,
-          language: getLanguage(),
-          region: getEffectiveRegion(),
-          level: "intermediate",
-          model,
-        }),
-      });
-      if (!res.ok) throw new Error(res.statusText || 'Case generation failed');
-      const data = await res.json();
-      console.log("✅ Case generation response:", data);
-      
-      if (!data || !data.case) {
-        console.error("❌ No case data in response:", data);
-        throw new Error("Backend returned empty case data");
+      // 🎯 OPTIMIZATION: If gamify mode, use direct MCQ generation (faster, cheaper - 1 API call instead of 2)
+      if (gamify) {
+        console.log("🎮 Direct gamification mode - generating MCQs directly");
+        const res = await fetch(`${API_BASE}/api/gamify-direct`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic: chosenTopic,
+            language: getLanguage(),
+            region: getEffectiveRegion(),
+            level: "intermediate",
+            model,
+          }),
+        });
+        if (!res.ok) throw new Error(res.statusText || 'Quiz generation failed');
+        const data = await res.json();
+        console.log("✅ Direct gamification response:", data);
+        
+        if (!data || !data.ok || !data.mcqs) {
+          console.error("❌ No MCQ data in response:", data);
+          throw new Error("Backend returned empty quiz data");
+        }
+        
+        // Create minimal case structure to hold the MCQs
+        const gamificationCase = {
+          meta: {
+            topic: chosenTopic,
+            language: getLanguage(),
+            region: getEffectiveRegion(),
+            level: "intermediate",
+            model,
+            generation_type: 'direct_gamification',
+          },
+          mcqs: data.mcqs,
+          // Minimal case structure for compatibility
+          presentation: `Interactive Quiz: ${chosenTopic}`,
+          diagnosis: chosenTopic,
+        };
+        
+        console.log("✅ Gamification case created:", gamificationCase);
+        setCaseData(gamificationCase);
+      } else {
+        // 📋 Normal case generation (without gamification)
+        console.log("📋 Normal case mode - generating full case");
+        const res = await fetch(`${API_BASE}/api/cases`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic: chosenTopic,
+            language: getLanguage(),
+            region: getEffectiveRegion(),
+            level: "intermediate",
+            model,
+          }),
+        });
+        if (!res.ok) throw new Error(res.statusText || 'Case generation failed');
+        const data = await res.json();
+        console.log("✅ Case generation response:", data);
+        
+        if (!data || !data.case) {
+          console.error("❌ No case data in response:", data);
+          throw new Error("Backend returned empty case data");
+        }
+        
+        const normalizedCase = normalizeCaseData(data.case);
+        console.log("✅ Normalized case:", normalizedCase);
+        setCaseData(normalizedCase);
       }
-      
-      const normalizedCase = normalizeCaseData(data.case);
-      console.log("✅ Normalized case:", normalizedCase);
-      setCaseData(normalizedCase);
       
       // ✅ Internal panel review happens automatically during case generation (invisible to user)
         
     } catch (err) {
-      console.error("❌ Error generating case:", err);
-      alert(`Failed to generate case: ${err.message}`);
+      console.error("❌ Error generating content:", err);
+      alert(`Failed to generate ${gamify ? 'quiz' : 'case'}: ${err.message}`);
     }
     setLoading(false);
   };
@@ -505,7 +551,7 @@ export default function CaseView() {
         </label>
 
         <button type="button" onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
-          {loading ? "Generating..." : "Generate Case"}
+          {loading ? (gamify ? "Generating Quiz..." : "Generating Case...") : (gamify ? "Generate Quiz" : "Generate Case")}
         </button>
       </div>
 
@@ -513,12 +559,20 @@ export default function CaseView() {
       {loading && (
         <div className="flex flex-col items-center justify-center mt-10 text-gray-600">
           <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-          <p className="mt-3 text-sm font-semibold text-blue-800">Generating professor-level case...</p>
+          <p className="mt-3 text-sm font-semibold text-blue-800">
+            {gamify ? "🎮 Generating 12 interactive quiz questions..." : "📋 Generating professor-level case..."}
+          </p>
           <p className="mt-1 text-xs text-blue-600">
-            ✨ Expert panel review in progress — high-quality cases may take 1-2 minutes
+            {gamify 
+              ? "✨ Expert-crafted clinical reasoning questions with guideline citations"
+              : "✨ Expert panel review in progress — high-quality cases may take 1-2 minutes"
+            }
           </p>
           <p className="mt-1 text-xs text-gray-500 italic">
-            Quality over speed: guideline validation, reference verification, multi-expert consensus
+            {gamify
+              ? "Faster generation: direct quiz mode optimized for speed"
+              : "Quality over speed: guideline validation, reference verification, multi-expert consensus"
+            }
           </p>
         </div>
       )}
