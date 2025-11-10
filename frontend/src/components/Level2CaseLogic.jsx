@@ -265,10 +265,7 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
             <li key={i}>
               <button
                 className="w-full text-left px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onClick={() => {
-                  const isCorrect = c === q.correct;
-                  answerQuestion(q.id, c, isCorrect ? 3 : 0);
-                }}
+                onClick={() => answerQuestion(i)}
               >
                 <span className="font-medium">{c}</span>
               </button>
