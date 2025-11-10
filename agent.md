@@ -72,10 +72,10 @@ Secrets configured: 5 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 394ms
+up to date in 405ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 73166,
+  pid: 95077,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -84,6 +84,7 @@ STARTUP ROUTES: {
     'evidence_api.mjs',
     'expert_panel_api.mjs',
     'external_panel_api.mjs',
+    'external_panel_api_OLD_per_case.mjs',
     'external_panel_api_enhanced.mjs',
     'external_panel_api_v1_simple.mjs',
     'gamify_api.mjs',

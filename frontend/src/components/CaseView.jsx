@@ -218,7 +218,6 @@ export default function CaseView() {
       setCaseData(normalizedCase);
       
       // ✅ Internal panel review happens automatically during case generation (invisible to user)
-      // ✅ External 18-member panel review happens automatically for gamified MCQs (async background)
         
     } catch (err) {
       console.error("❌ Error generating case:", err);

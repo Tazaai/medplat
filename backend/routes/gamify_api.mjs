@@ -235,10 +235,6 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
         count: mcqs.length,
       });
 
-      // 📝 NOTE: External panel is for MANUAL development testing only (never auto-runs)
-      // Agent runs test scripts that call /api/external-panel/system-review explicitly
-      // Users and frontend NEVER trigger external panel - it's purely for dev governance
-
     } catch (error) {
       console.error('❌ Gamify API error:', error);
       res.status(500).json({
