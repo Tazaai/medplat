@@ -72,10 +72,10 @@ Secrets configured: 5 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 664ms
+up to date in 394ms
 🚀 Starting backend on port 8080 (background)...
 STARTUP ROUTES: {
-  pid: 17627,
+  pid: 73166,
   dir: '/workspaces/medplat/backend/routes',
   files: [
     'cases_api.mjs',
@@ -84,6 +84,8 @@ STARTUP ROUTES: {
     'evidence_api.mjs',
     'expert_panel_api.mjs',
     'external_panel_api.mjs',
+    'external_panel_api_enhanced.mjs',
+    'external_panel_api_v1_simple.mjs',
     'gamify_api.mjs',
     'guidelines_api.mjs',
     'internal_panel_api.mjs',
@@ -119,6 +121,7 @@ MODULE: guidelinesMod keys= [ 'default' ] defaultType= function
 ✅ Mounted /api/panel-discussion -> ./routes/panel_discussion_api.mjs
 ✅ Mounted /api/guidelines -> ./routes/guidelines_api.mjs
 🚀 MedPlat backend listening on 0.0.0.0:8080
+🔥 Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 🌐 Testing health endpoint...
 ✅ Health OK
 📡 Testing /api/topics...

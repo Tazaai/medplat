@@ -235,39 +235,9 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
         count: mcqs.length,
       });
 
-      // 🎓 EXTERNAL PANEL REVIEW (async background - doesn't block user response)
-      // This runs AFTER user gets their MCQs for quality assurance and training data
-      setImmediate(async () => {
-        try {
-          console.log(`🔍 Starting external panel review for ${mcqs.length} MCQs (background)`);
-          
-          const reviewResponse = await fetch(`http://localhost:${process.env.PORT || 8080}/api/external-panel/review-mcqs`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              caseContext: caseData,
-              mcqs,
-              topic: caseData.meta?.topic || caseData.Final_Diagnosis?.Diagnosis || 'Unknown',
-              level: 'intermediate'
-            })
-          });
-
-          if (reviewResponse.ok) {
-            const reviewData = await reviewResponse.json();
-            console.log(`✅ External panel review complete: Avg difficulty=${reviewData.meta?.average_difficulty}, Avg quality=${reviewData.meta?.average_distractor_quality}`);
-            
-            // TODO: Store review data in Firestore (mcq_reviews collection)
-            // This builds training data for future MCQ quality improvements
-            // For now, just log it
-            console.log(`📊 External panel suggestions:`, reviewData.reviews?.slice(0, 2).map(r => r.suggestions));
-          } else {
-            console.warn(`⚠️ External panel review returned ${reviewResponse.status}`);
-          }
-        } catch (reviewError) {
-          // Don't fail the main request if external review fails
-          console.warn('⚠️ External panel review error (non-blocking):', reviewError.message);
-        }
-      });
+      // 📝 NOTE: External panel is for MANUAL development testing only (never auto-runs)
+      // Agent runs test scripts that call /api/external-panel/system-review explicitly
+      // Users and frontend NEVER trigger external panel - it's purely for dev governance
 
     } catch (error) {
       console.error('❌ Gamify API error:', error);
