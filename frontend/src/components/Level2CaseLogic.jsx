@@ -99,18 +99,38 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
   }, [score, questions.length]);
 
   // Encouragement messages (scaled for 12 questions, 36 max points)
-  // Formative feedback - positive and growth-oriented
+  // Formative feedback - positive and growth-oriented with specific study guidance
   useEffect(() => {
     if (!reviewMode) return;
     const maxScore = questions.length * 3; // 12 questions × 3 points = 36
     const percentage = (score / maxScore) * 100;
+    const topicHint = caseData?.meta?.topic || "core clinical topics";
     
-    if (percentage < 25) setEncouragement("📚 Early Learner — Focus on reviewing core concepts and differential diagnosis patterns. Keep building!");
-    else if (percentage < 50) setEncouragement("🎓 Developing Knowledge — You're recognizing key features. Next step: integrate diagnostic reasoning!");
-    else if (percentage < 75) setEncouragement("🩺 Strong Clinical Reasoning — Solid foundation. Work on complex management and guideline nuances!");
-    else if (percentage < 90) setEncouragement("👨‍⚕️ Specialist-Level Thinking — Excellent integration of clinical data and evidence!");
-    else setEncouragement("🏆 Expert-Level Mastery — Outstanding clinical reasoning and evidence-based decision making!");
-  }, [reviewMode, score, questions.length]);
+    // Analyze weak areas based on question types answered incorrectly
+    const incorrectTypes = questions
+      .filter(q => answers[q.id] && answers[q.id] !== q.correct)
+      .map(q => q.type || q.reasoning_type)
+      .filter(Boolean);
+    
+    let studyGuidance = "";
+    if (incorrectTypes.includes("data_interpretation")) studyGuidance += "vital sign/lab interpretation, ";
+    if (incorrectTypes.includes("differential_diagnosis")) studyGuidance += "differential diagnosis reasoning, ";
+    if (incorrectTypes.includes("management")) studyGuidance += "evidence-based management decisions, ";
+    if (incorrectTypes.includes("complications")) studyGuidance += "complications and pathophysiology, ";
+    if (studyGuidance) studyGuidance = `📖 Focus areas: ${studyGuidance.slice(0, -2)}`;
+    
+    if (percentage < 25) {
+      setEncouragement(`🌱 Building Foundation — You're developing clinical reasoning skills. ${studyGuidance || `Review core concepts in ${topicHint} and practice differential diagnosis.`} Keep growing!`);
+    } else if (percentage < 50) {
+      setEncouragement(`🎓 Developing Competence — You're recognizing key features. ${studyGuidance || `Next step: integrate diagnostic criteria and guideline recommendations for ${topicHint}.`}`);
+    } else if (percentage < 75) {
+      setEncouragement(`🩺 Strong Clinical Reasoning — Solid foundation! ${studyGuidance || `Work on complex management scenarios and risk stratification tools.`}`);
+    } else if (percentage < 90) {
+      setEncouragement(`👨‍⚕️ Specialist-Level Thinking — Excellent integration of clinical data and evidence! ${studyGuidance || `Fine-tune guideline nuances and resource-limited adaptations.`}`);
+    } else {
+      setEncouragement(`🏆 Expert-Level Mastery — Outstanding clinical reasoning and evidence-based decision making! ${studyGuidance || `You demonstrate comprehensive understanding of ${topicHint}.`}`);
+    }
+  }, [reviewMode, score, questions, answers, caseData]);
 
   // Save score to Firebase when quiz is complete
   useEffect(() => {
@@ -161,11 +181,50 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
   // In review mode: show all 12 questions with color-coded results and delayed explanations
   if (reviewMode) {
     const maxScore = questions.length * 3;
+    
+    // Extract unique guideline references from questions
+    const guidelineRefs = [...new Set(
+      questions
+        .map(q => q.guideline_reference)
+        .filter(Boolean)
+    )];
+    
     return (
       <div className="p-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">Review Mode — All 12 Questions</h2>
-          <div className="text-lg font-semibold">Score: {score} / {maxScore} ({Math.round((score/maxScore)*100)}%)</div>
+        {/* Header with score and guideline badges */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Review Mode — All 12 Questions</h2>
+            <div className="text-lg font-semibold">Score: {score} / {maxScore} ({Math.round((score/maxScore)*100)}%)</div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-500 ${
+                (score/maxScore) >= 0.9 ? 'bg-green-600' :
+                (score/maxScore) >= 0.75 ? 'bg-blue-600' :
+                (score/maxScore) >= 0.5 ? 'bg-yellow-500' :
+                'bg-orange-500'
+              }`}
+              style={{ width: `${Math.round((score/maxScore)*100)}%` }}
+            />
+          </div>
+          
+          {/* Guideline badges */}
+          {guidelineRefs.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-semibold text-gray-700">Evidence-based on:</span>
+              {guidelineRefs.map((ref, i) => (
+                <span 
+                  key={i} 
+                  className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold rounded-full shadow-sm"
+                >
+                  📚 {ref}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         
         {questions.map((q, idx) => {
@@ -261,16 +320,34 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">Question {currentIndex + 1} of {questions.length}</p>
-        <p className="text-sm font-semibold text-gray-700">Current Score: {score}</p>
-      </div>
-      
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-blue-500 transition-all duration-300"
-          style={{width: `${((currentIndex) / questions.length) * 100}%`}}
-        />
+      {/* Progress header with visual indicator */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm text-gray-500">Question {currentIndex + 1} of {questions.length}</p>
+          <p className="text-sm font-semibold text-gray-700">Current Score: {score}</p>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+          />
+        </div>
+        
+        {/* Question type badge */}
+        {q.type && (
+          <div className="flex gap-2">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
+              {q.type.replace(/_/g, ' ').toUpperCase()}
+            </span>
+            {q.guideline_reference && (
+              <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded">
+                📚 {q.guideline_reference}
+              </span>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md">

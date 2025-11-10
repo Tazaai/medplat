@@ -39,24 +39,35 @@ Generate exactly 12 multiple-choice questions (MCQs) with these STRICT RULES:
 **QUESTION TYPES (Required Distribution):**
 - Questions 1-3: DATA INTERPRETATION - New patient scenarios requiring vital sign/lab/imaging interpretation
   * Example: "A 62-year-old man presents with chest pain. BP R arm 180/100, L arm 130/80. HR 110. What is the most likely diagnosis?"
+  * MUST include: Risk scoring systems (e.g., CHA₂DS₂-VASc, HEART, WELLS, CURB-65) when relevant to ${topic}
   
 - Questions 4-6: DIFFERENTIAL DIAGNOSIS - Clinical reasoning with similar presentations
   * Example: "Which finding best distinguishes aortic dissection from acute MI in a patient with chest pain?"
   * MUST include: Comparative diagnostic reasoning (vs myocarditis, vs pericarditis, vs PE, etc.)
+  * MUST include: Multi-step scenarios when relevant (e.g., AF with HFpEF vs HFrEF, diabetes with CKD vs without)
   
 - Questions 7-9: MANAGEMENT DECISIONS - Next-step/treatment choice scenarios  
   * Example: "A patient with suspected Type A dissection is hypotensive. What is the MOST APPROPRIATE immediate action?"
-  * MUST include: Resource-limited setting variant (1 question): "In a community hospital without advanced imaging, which finding best supports diagnosis?"
+  * MUST include: Resource-limited setting variant (1-2 questions): "In a community hospital without advanced imaging, which finding best supports diagnosis?"
+  * MUST include: Drug interactions, renal dosing, or contraindications when relevant
+  * MUST include: Strategic decisions (e.g., rhythm vs rate control in AF, insulin vs GLP-1 in T2DM)
   
 - Questions 10-12: COMPLICATIONS & PATHOPHYSIOLOGY - Apply knowledge to predict outcomes
   * Example: "In Stanford Type A dissection, which complication results from coronary ostia involvement?"
+  * MUST include: Imaging pitfalls or interpretation challenges (e.g., atrial thrombus vs artifact on echo, pneumothorax on upright vs supine CXR)
 
 **ADVANCED CLINICAL REASONING (REQUIREMENTS):**
-1. **Applied Diagnostic Reasoning**: Include imaging/test comparison (e.g., "CT vs MRI sensitivity", "ECG vs echo diagnostic yield")
-2. **Guideline Integration**: Reference specific guidelines in explanations (ESC 2023, AHA/ACC 2022, NICE, WHO)
+1. **Applied Diagnostic Reasoning**: Include imaging/test comparison (e.g., "CT vs MRI sensitivity", "ECG vs echo diagnostic yield", "D-dimer vs CTPA")
+2. **Guideline Integration**: Reference SPECIFIC recommendations with CLASS/LEVEL in explanations
+   * Format: "ESC 2023 Guideline §4.2.1 (Class I, Level A): ..."
+   * Format: "AHA/ACC 2022 recommendation 3.4 (Class IIa, Level B-R): ..."
+   * Include DOI when citing studies: "NEJM 2021 doi:10.1056/..."
 3. **Global Context**: Include 1-2 resource-limited scenarios (diagnosis without MRI/advanced imaging, low-resource drug alternatives)
 4. **Reasoning Diversity**: Mix single-best-answer with prioritization ("Which test has HIGHEST diagnostic yield?", "MOST APPROPRIATE next step")
+   * Include ECG/imaging interpretation questions (describe findings, ask for diagnosis)
+   * Include multi-step scenarios requiring sequential reasoning
 5. **Evidence-Based Distractors**: Each wrong answer must represent a plausible but guideline-inconsistent choice
+6. **Risk Stratification**: When relevant, test ability to apply scoring systems (CHA₂DS₂-VASc, HAS-BLED, TIMI, GRACE, etc.)
 
 **REGIONAL ADAPTATION (${region}):**
 ${region === 'global' ? '- Include international guidelines (WHO, global protocols)' : ''}
@@ -76,11 +87,15 @@ ${language !== 'en' ? `- Use culturally appropriate clinical examples for ${lang
 - Provide 4 answer choices (A, B, C, D)
 - Distractors must require clinical reasoning to eliminate (not obviously wrong)
 - Expert explanation MUST include:
-  * WHY correct answer applies
-  * WHY each distractor is wrong
-  * Guideline citation (e.g., "ESC 2023 recommends...", "AHA/ACC Class I indication")
-  * Pathophysiology connection when relevant
-- Avoid harsh feedback language (NO "this is basic knowledge" or "below Medical Student level")
+  * WHY correct answer applies (with pathophysiology when relevant)
+  * WHY each distractor is wrong (brief, specific reason per distractor)
+  * Guideline citation with SPECIFIC recommendation number and class/level
+    - Example: "ESC 2023 AF Guidelines §9.1.2 (Class I, Level A) recommends NOACs over warfarin in eligible patients"
+    - Example: "AHA/ACC 2022 Heart Failure Guidelines rec. 4.2.1 (Class IIa, Level B-NR) suggests SGLT2i in HFpEF"
+  * DOI citation for landmark trials when applicable: "AFFIRM trial (NEJM 2002, doi:10.1056/NEJMoa021328)"
+  * Clinical pearl or teaching point for learner development
+- Use CONSTRUCTIVE language for feedback (avoid "this is basic" or "below standard")
+  * Instead: "Review rhythm control indications in symptomatic AF" or "Consider anticoagulation risk stratification tools"
 
 **OUTPUT FORMAT (strict JSON):**
 Return a JSON array of exactly 12 objects:

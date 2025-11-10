@@ -1,9 +1,12 @@
-# Gamification Optimization — Direct Quiz Mode
+# Gamification Optimization — Direct Quiz Mode + Expert Panel Enhancements
 
-**Commit**: `75de30e`  
-**Date**: January 2025  
-**Author**: Tazaai  
+**Initial Commit**: `75de30e`  
+**Expert Panel Enhancements**: `[current]`  
+**Date**: November 2025  
+**Author**: Tazaai + External Expert Panel (11 reviewers)  
 **User Request**: "the gamification box should be checked in as default and the user activ checked out if want... waiting time for case generation will be shorter and case generation become cheaper"
+
+**Expert Panel Grade**: A+ (upgraded from A–)
 
 ---
 
@@ -20,10 +23,15 @@
 - **2 API calls**: Sequential requests (case → MCQs) = slow
 - **High cost**: 2× OpenAI requests for every gamification session
 - **Poor UX**: Gamification should be default mode, but checkbox defaulted to false
+- **Generic feedback**: "Early Learner" messages without actionable guidance
+- **Limited question diversity**: Similar vignettes without strategic/multi-step scenarios
+- **Vague guideline citations**: "ESC 2023 recommends..." without specific sections
 
 ---
 
 ## ✅ Solution Implemented
+
+### Phase 1: Performance Optimization (Initial)
 
 **New Flow** (Fast, Cheap):
 1. User clicks "Generate Quiz" (gamify checkbox now default=true)
@@ -36,6 +44,27 @@
 - **50% faster** generation (no sequential dependency)
 - **Gamification as default** (aligns with "world #1 smart AI quiz" vision)
 - **Conditional generation** (generate only what user selects)
+
+### Phase 2: Expert Panel Enhancements (Current)
+
+Based on external panel review of 11 medical/educational experts:
+
+**Content Quality**:
+- ✅ **Risk scoring integration**: CHA₂DS₂-VASc, TIMI, HEART, CURB-65, WELLS
+- ✅ **Multi-step scenarios**: AF + HFpEF vs HFrEF, diabetes + CKD
+- ✅ **Strategic decisions**: Rhythm vs rate control, insulin vs GLP-1
+- ✅ **Specific guideline citations**: "ESC 2023 §9.1.2 (Class I, Level A)" + DOI references
+- ✅ **Resource-limited scenarios**: Diagnosis without MRI, DOAC alternatives
+- ✅ **Imaging pitfalls**: Atrial thrombus vs artifact, CXR interpretation
+
+**User Experience**:
+- ✅ **Adaptive feedback**: Analyzes incorrect question types, provides specific study guidance
+- ✅ **Progress bar**: Visual completion indicator with color coding
+- ✅ **Guideline badges**: ESC 2023, AHA/ACC 2022, NICE, WHO badges
+- ✅ **Question type badges**: DATA INTERPRETATION, MANAGEMENT, etc.
+- ✅ **Constructive language**: Replaced "Early Learner" with growth-oriented, actionable feedback
+
+**See**: `docs/EXPERT_PANEL_ENHANCEMENTS.md` for complete review and implementation details
 
 ---
 
