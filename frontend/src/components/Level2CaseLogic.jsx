@@ -49,14 +49,20 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
   // Fetch MCQs for this case (or use pre-generated MCQs from direct gamification)
   useEffect(() => {
     async function fetchMCQs() {
+      console.log("🔍 Level2CaseLogic: fetchMCQs called, checking caseData.mcqs...");
+      console.log("🔍 caseData:", caseData);
+      console.log("🔍 caseData.mcqs exists?", !!caseData?.mcqs);
+      console.log("🔍 caseData.mcqs is array?", Array.isArray(caseData?.mcqs));
+      
       // If MCQs already exist in caseData (direct gamification), use them directly
       if (caseData?.mcqs && Array.isArray(caseData.mcqs)) {
-        console.log("✅ Using pre-generated MCQs from direct gamification");
+        console.log("✅ Using pre-generated MCQs from direct gamification, count:", caseData.mcqs.length);
         setQuestions(caseData.mcqs);
         setLoading(false);
         return;
       }
       
+      console.log("⚠️ No pre-generated MCQs found, fetching from /api/gamify...");
       // Otherwise, fetch MCQs via /api/gamify (traditional flow)
       setLoading(true);
       try {

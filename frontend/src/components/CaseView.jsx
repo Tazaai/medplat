@@ -190,6 +190,7 @@ export default function CaseView() {
     const chosenTopic = customTopic.trim() || topic;
     if (!chosenTopic) return alert("Please select or enter a topic");
 
+    console.log(`🔍 DEBUG: generateCase called with gamify=${gamify}`);
     setLoading(true);
     setCaseData(null);
     
