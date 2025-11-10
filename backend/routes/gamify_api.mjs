@@ -37,22 +37,24 @@ Generate exactly 12 multiple-choice questions (MCQs) with these STRICT RULES:
   
 - Questions 4-6: DIFFERENTIAL DIAGNOSIS - Clinical reasoning with similar presentations
   * Example: "Which finding best distinguishes aortic dissection from acute MI in a patient with chest pain?"
+  * MUST include: Comparative diagnostic reasoning (vs myocarditis, vs pericarditis, vs PE, etc.)
   * DO NOT ask: "What was the final diagnosis in this case?"
   
-- Questions 7-9: MANAGEMENT DECISIONS - Next-step/treatment choice scenarios
+- Questions 7-9: MANAGEMENT DECISIONS - Next-step/treatment choice scenarios  
   * Example: "A patient with suspected Type A dissection is hypotensive. What is the MOST APPROPRIATE immediate action?"
+  * MUST include: Resource-limited setting variant (1 question): "In a community hospital without advanced imaging, which finding best supports diagnosis?"
   * DO NOT ask: "What medication was given to the patient?"
   
 - Questions 10-12: COMPLICATIONS & PATHOPHYSIOLOGY - Apply knowledge to predict outcomes
   * Example: "In Stanford Type A dissection, which complication results from coronary ostia involvement?"
   * DO NOT ask: "What is the pathophysiology described in the case?"
 
-**CLINICAL REASONING REQUIREMENTS:**
-1. **New Patient Vignettes**: Each question presents a DIFFERENT patient (not the case patient)
-2. **Data Integration**: Require students to synthesize multiple findings (vitals + labs + imaging)
-3. **Differential Thinking**: Force comparison between similar conditions
-4. **Management Decisions**: Test treatment choices based on clinical presentation
-5. **Plausible Distractors**: Wrong answers must be reasonable alternatives (not obviously wrong)
+**ADVANCED CLINICAL REASONING (NEW REQUIREMENTS):**
+1. **Applied Diagnostic Reasoning**: Include imaging/test comparison (e.g., "CT vs MRI sensitivity", "ECG vs echo diagnostic yield")
+2. **Guideline Integration**: Reference specific guidelines in explanations (ESC 2023, AHA/ACC 2022, NICE, WHO)
+3. **Global Context**: Include 1-2 resource-limited scenarios (diagnosis without MRI/advanced imaging, low-resource drug alternatives)
+4. **Reasoning Diversity**: Mix single-best-answer with prioritization ("Which test has HIGHEST diagnostic yield?", "MOST APPROPRIATE next step")
+5. **Evidence-Based Distractors**: Each wrong answer must represent a plausible but guideline-inconsistent choice
 
 **FORBIDDEN (Reading Comprehension Patterns):**
 ❌ "What was the patient's chief complaint?" → This is CTRL+F testing
@@ -64,8 +66,12 @@ Generate exactly 12 multiple-choice questions (MCQs) with these STRICT RULES:
 - Each question = mini-vignette with NEW clinical scenario
 - Provide 4 answer choices (A, B, C, D)
 - Distractors must require clinical reasoning to eliminate (not obviously wrong)
-- Expert explanation should teach WHY correct answer applies AND why distractors don't
-- Include mechanism/pathophysiology in explanations (connect to case topic)
+- Expert explanation MUST include:
+  * WHY correct answer applies
+  * WHY each distractor is wrong
+  * Guideline citation (e.g., "ESC 2023 recommends...", "AHA/ACC Class I indication")
+  * Pathophysiology connection when relevant
+- Avoid harsh feedback language (NO "this is basic knowledge" or "below Medical Student level")
 
 **OUTPUT FORMAT (strict JSON):**
 Return a JSON array of exactly 12 objects:
@@ -81,10 +87,11 @@ Return a JSON array of exactly 12 objects:
         "D: Acute pericarditis"
       ],
       "correct": "B: Aortic dissection",
-      "explanation": "Differential BP (>20mmHg between arms) + widened mediastinum + tearing pain = classic Type A dissection. AMI would not cause BP differential. PE presents with dyspnea/tachypnea. Pericarditis has positional pain.",
+      "explanation": "Differential BP (>20mmHg between arms) + widened mediastinum + tearing pain = classic Type A dissection (ESC 2023 diagnostic criteria). AMI would not cause BP differential. PE presents with dyspnea/tachypnea. Pericarditis has positional pain. Guideline: ESC Guidelines on Aortic Diseases 2023.",
       "step": 1,
       "type": "data_interpretation",
-      "reasoning_type": "differential_diagnosis"
+      "reasoning_type": "differential_diagnosis",
+      "guideline_reference": "ESC 2023"
     },
     ...
   ]

@@ -84,16 +84,17 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
   }, [score, questions.length]);
 
   // Encouragement messages (scaled for 12 questions, 36 max points)
+  // Formative feedback - positive and growth-oriented
   useEffect(() => {
     if (!reviewMode) return;
     const maxScore = questions.length * 3; // 12 questions × 3 points = 36
     const percentage = (score / maxScore) * 100;
     
-    if (percentage < 25) setEncouragement("📚 Keep practicing — you're below Medical Student level.");
-    else if (percentage < 50) setEncouragement("🎓 Good job — Medical Student level!");
-    else if (percentage < 75) setEncouragement("🩺 Strong reasoning — Doctor level!");
-    else if (percentage < 90) setEncouragement("👨‍⚕️ Excellent — Specialist level!");
-    else setEncouragement("🏆 Outstanding — Expert panel level!");
+    if (percentage < 25) setEncouragement("📚 Early Learner — Focus on reviewing core concepts and differential diagnosis patterns. Keep building!");
+    else if (percentage < 50) setEncouragement("🎓 Developing Knowledge — You're recognizing key features. Next step: integrate diagnostic reasoning!");
+    else if (percentage < 75) setEncouragement("🩺 Strong Clinical Reasoning — Solid foundation. Work on complex management and guideline nuances!");
+    else if (percentage < 90) setEncouragement("👨‍⚕️ Specialist-Level Thinking — Excellent integration of clinical data and evidence!");
+    else setEncouragement("🏆 Expert-Level Mastery — Outstanding clinical reasoning and evidence-based decision making!");
   }, [reviewMode, score, questions.length]);
 
   // Save score to Firebase when quiz is complete
