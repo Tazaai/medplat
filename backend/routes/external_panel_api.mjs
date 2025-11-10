@@ -4,9 +4,14 @@
 // Note: This is SEPARATE from internal panel (which reviews cases during generation)
 
 import express from 'express';
-import { callOpenAI } from '../openaiClient.js';
+import OpenAI from 'openai';
 
 const router = express.Router();
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-local-dev',
+});
 
 /**
  * POST /api/external-panel/review-mcqs
@@ -89,11 +94,13 @@ Return JSON array with this structure:
 
     // Call OpenAI for external panel review
     const startTime = Date.now();
-    const reviewResult = await callOpenAI(
-      externalPanelPrompt,
-      'gpt-4o-mini', // Use mini for cost efficiency
-      0.3 // Low temperature for consistent scoring
-    );
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: externalPanelPrompt }],
+      temperature: 0.3, // Low temperature for consistent scoring
+      max_tokens: 4000,
+    });
+    const reviewResult = completion.choices[0]?.message?.content || '[]';
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
     console.log(`✅ External panel review completed in ${duration}s`);

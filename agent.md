@@ -16,12 +16,12 @@
 ✅ .github/workflows/
 
 ## 🔐 Validating environment variables (GitHub Secrets expected)...
-❌ Missing OPENAI_API_KEY
-❌ Missing GCP_PROJECT
-❌ Missing GCP_SA_KEY
-❌ Missing FIREBASE_SERVICE_KEY
-❌ Missing VITE_API_BASE
-🚨 5 required secrets missing. Configure them in GitHub → Settings → Secrets → Actions.
+✅ OPENAI_API_KEY present
+✅ GCP_PROJECT present
+✅ GCP_SA_KEY present
+✅ FIREBASE_SERVICE_KEY present
+✅ VITE_API_BASE present
+🎉 All required secrets configured!
 ✅ .env.local is gitignored
 
 ## 🧱 Backend diagnostics...
@@ -54,14 +54,14 @@
 
 ## ⚙️ GitHub Actions workflow...
 ✅ deploy.yml found
-✅ Artifact Registry configured
+⚠️ Artifact Registry missing
 
 =====================================================
 📊 SUMMARY
 =====================================================
 Backend: OK
 Frontend: OK
-Secrets configured: 0 / 5
+Secrets configured: 5 / 5
 =====================================================
 
 ## 🧪 Local backend smoke tests (optional)
@@ -72,17 +72,66 @@ Secrets configured: 0 / 5
 🔍 Checking syntax...
 🔧 Installing deps (if missing)...
 
-up to date in 358ms
+up to date in 664ms
 🚀 Starting backend on port 8080 (background)...
-file:///workspaces/medplat/backend/node_modules/openai/index.mjs:48
-            throw new Errors.OpenAIError("The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).");
-                  ^
-
-OpenAIError: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
-    at new OpenAI (file:///workspaces/medplat/backend/node_modules/openai/index.mjs:48:19)
-    at file:///workspaces/medplat/backend/routes/expert_panel_api.mjs:4:16
-    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
-
-Node.js v22.17.0
+STARTUP ROUTES: {
+  pid: 17627,
+  dir: '/workspaces/medplat/backend/routes',
+  files: [
+    'cases_api.mjs',
+    'comment_api.mjs',
+    'dialog_api.mjs',
+    'evidence_api.mjs',
+    'expert_panel_api.mjs',
+    'external_panel_api.mjs',
+    'gamify_api.mjs',
+    'guidelines_api.mjs',
+    'internal_panel_api.mjs',
+    'location_api.mjs',
+    'panel_api.mjs',
+    'panel_discussion_api.mjs',
+    'quickref_api.mjs',
+    'topics_api.mjs'
+  ]
+}
+✅ Mounted /api/topics (static import)
+✅ Mounted /api/panel (static import)
+✅ Mounted /api/expert-panel (static import)
+✅ Mounted /api/internal-panel (static import)
+✅ Mounted /api/external-panel (static import)
+MODULE: dialogMod keys= [ 'default' ] defaultType= function
+MODULE: gamifyMod keys= [ 'default' ] defaultType= function
+MODULE: commentMod keys= [ 'default' ] defaultType= function
+MODULE: locationMod keys= [ 'default' ] defaultType= function
+MODULE: casesMod keys= [ 'default' ] defaultType= function
+MODULE: quickrefMod keys= [ 'default' ] defaultType= function
+MODULE: evidenceMod keys= [ 'default' ] defaultType= function
+MODULE: panelDiscussionMod keys= [ 'default' ] defaultType= function
+MODULE: guidelinesMod keys= [ 'default' ] defaultType= function
+🔥 Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+✅ Mounted /api/location -> ./routes/location_api.mjs
+✅ Mounted /api/dialog -> ./routes/dialog_api.mjs
+✅ Mounted /api/gamify -> ./routes/gamify_api.mjs
+✅ Mounted /api/comment -> ./routes/comment_api.mjs
+✅ Mounted /api/cases -> ./routes/cases_api.mjs
+✅ Mounted /api/quickref -> ./routes/quickref_api.mjs
+✅ Mounted /api/evidence -> ./routes/evidence_api.mjs
+✅ Mounted /api/panel-discussion -> ./routes/panel_discussion_api.mjs
+✅ Mounted /api/guidelines -> ./routes/guidelines_api.mjs
+🚀 MedPlat backend listening on 0.0.0.0:8080
+🌐 Testing health endpoint...
+✅ Health OK
+📡 Testing /api/topics...
+🔥 Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+✅ Topics OK
+🧠 Testing /api/dialog...
+✅ Dialog OK
+🔥 Testing /api/gamify...
+⚠️ Gamify endpoint issue
+�� Cleaning up...
+✅ Local backend tests complete
+✅ Local backend smoke tests passed
+✅ READY FOR DEPLOYMENT — All major checks passed and local backend smoke tests passed.
+\nNext steps:
+- Include agent.md in your PR description for reviewer traceability.
+- Run './scripts/run_local_checks.sh' locally before merging (it runs this script + extended checks).
