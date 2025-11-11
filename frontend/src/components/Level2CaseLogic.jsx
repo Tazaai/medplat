@@ -6,28 +6,32 @@ import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 /**
- * 🧭 Copilot Guide — Global Clinical Context & Dynamic Panels
- *
- * Goal: Make case management, diagnostics, and expert debate globally relevant,
- * evidence-based, and adaptive to context.
- *
- * Instructions:
- * 1) Generate practical, high-level reasoning across specialties (not single-topic).
- *    - Include modality choices and rationale (e.g., CT vs MRI: sensitivity & timing;
- *      LP indications; US vs X-ray for pneumothorax; MRI vs CT for spondylodiscitis).
- *    - Explain when, why, and duration/sensitivity where relevant.
- *
- * 2) Ensure the expert conference panel is dynamic (not hardcoded).
- *    - Members adapt to case type (e.g., Neurology -> Neurologist, Neuroradiologist, ICU, Emergency).
- *    - Each discussion should show concise, multidisciplinary evidence-based reasoning.
- *
- * 3) Use evidence-based, global guidelines loaded dynamically (ESC / NICE / AHA / WHO / local).
- *    - Do NOT include static citations or regional placeholders.
- *
- * 4) Keep outputs globally applicable — logic must generalize across regions and disease areas.
- *
- * Result: Professional, globally consistent case output with dynamic panels, modality
- * reasoning, and guideline-driven explanations.
+ * 🧭 @copilot: Adaptive Quiz UI with Tier-Based Feedback
+ * 
+ * See: docs/COPILOT_GUIDE.md for complete implementation guide
+ * 
+ * Current Implementation (Phase 2 - Expert Panel UI Enhancements):
+ * ✅ Progress bar (0% → 100% visual feedback)
+ * ✅ Guideline badges (ESC 2023, AHA/ACC 2022, NICE)
+ * ✅ Adaptive feedback based on performance (<50% → detailed study tips)
+ * ✅ Topic-specific weak area analysis (rhythm control, anticoagulation scoring)
+ * 
+ * Dynamic Features:
+ * - Extract topic from caseData.meta.topic (NOT hardcoded)
+ * - Analyze incorrect question types to generate targeted study recommendations
+ * - Scale explanation depth based on quiz score
+ * 
+ * Next Phase (Tier-Based Scoring):
+ * - Replace percentage display with tier system:
+ *   🟢 Learner (<50%), 🔵 Skilled (50-79%), 🟣 Expert (80%+)
+ * - Add streak tracking (consecutive correct answers)
+ * - Implement motivational micro-feedback after each question
+ * - Add achievement badges (First Perfect Score, 10-Day Streak, etc.)
+ * 
+ * Target Experience:
+ * - Duolingo-style engagement (non-threatening, motivational)
+ * - UpToDate-style evidence (collapsible guideline cards with DOI links)
+ * - Adaptive difficulty (questions get harder/easier based on performance)
  */
 
 export default function Level2CaseLogic({ caseData, gamify = true }) {

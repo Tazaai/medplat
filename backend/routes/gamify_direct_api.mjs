@@ -1,5 +1,39 @@
 // ~/medplat/backend/routes/gamify_direct_api.mjs
 // DIRECT GAMIFICATION: Generate MCQs without full case generation (faster, cheaper)
+/**
+ * 🧭 @copilot: Expert Panel MCQ Generation
+ * 
+ * See: docs/COPILOT_GUIDE.md for dynamic guideline implementation
+ * 
+ * Current Implementation (Phase 2 - Expert Panel A+ Features):
+ * ✅ Risk scoring integration (CHA₂DS₂-VASc, TIMI, CURB-65, GRACE, WELLS)
+ * ✅ DOI citations in explanations (ESC 2023 §4.2.1, AHA/ACC 2022 3.4)
+ * ✅ Multi-step clinical scenarios (AF + HFpEF vs HFrEF, diabetes + CKD)
+ * ✅ Resource-limited scenarios (no MRI, warfarin bridging, renal dosing)
+ * ✅ Imaging pitfall questions (thrombus vs artifact, pneumothorax detection)
+ * ✅ Adaptive feedback based on learner performance
+ * 
+ * Dynamic Template Variables:
+ * - ${topic}: Never hardcoded, injected from request
+ * - ${region}: Adapts to user location (Denmark → ESC, USA → AHA/ACC)
+ * - ${language}: Supports en, da, es, ar, ur, fa, de
+ * 
+ * Next Phase (Dynamic Guidelines):
+ * - Add hierarchical guideline cascade (local → national → regional → international)
+ * - Implement guideline registry lookup per region
+ * - Return guideline sources with DOI/URL in response metadata
+ * 
+ * Example Response Format:
+ * {
+ *   ok: true,
+ *   mcqs: [...],
+ *   guidelines: {
+ *     local: [{society: 'Sundhedsstyrelsen', year: 2023, doi: '...'}],
+ *     regional: [{society: 'ESC', year: 2023, doi: '10.1093/...'}],
+ *     international: [{society: 'WHO', year: 2022, url: '...'}]
+ *   }
+ * }
+ */
 import express from 'express';
 import OpenAI from 'openai';
 

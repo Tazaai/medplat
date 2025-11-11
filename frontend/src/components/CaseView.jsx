@@ -365,28 +365,38 @@ export default function CaseView() {
   };
 
   /**
-   * 🧭 Copilot Guide — Global Clinical Context & Dynamic Panels
-   *
-   * Goal: Make case management, diagnostics, and expert debate globally relevant,
-   * evidence-based, and adaptive to context.
-   *
-   * Instructions:
-   * 1) Generate practical, high-level reasoning across specialties (not single-topic).
-   *  *    - Include modality choices and rationale (e.g., CT vs MRI: sensitivity & timing;
-   *  *      LP indications; US vs X-ray for pneumothorax; MRI vs CT for spondylodiscitis).
-   *  *    - Explain when, why, and duration/sensitivity where relevant.
-   *
-   * 2) Ensure the expert conference panel is dynamic (not hardcoded).
-   *  *    - Members adapt to case type (e.g., Neurology -> Neurologist, Neuroradiologist, ICU, Emergency).
-   *  *    - Each discussion should show concise, multidisciplinary evidence-based reasoning.
-   *
-   * 3) Use evidence-based, global guidelines loaded dynamically (ESC / NICE / AHA / WHO / local).
-   *  *    - Do NOT include static citations or regional placeholders.
-   *
-   * 4) Keep outputs globally applicable — logic must generalize across regions and disease areas.
-   *
-   * Result: Professional, globally consistent case output with dynamic panels, modality
-   * reasoning, and guideline-driven explanations.
+   * 🧭 @copilot: Dynamic Guidelines & Education Framework
+   * 
+   * See: docs/COPILOT_GUIDE.md for complete implementation guide
+   * 
+   * Core Principles:
+   * 1) Dynamic guideline cascade: local → national → regional → international
+   * 2) User-adaptive content: Medical students → USMLE → Doctors (all levels)
+   * 3) Tier-based feedback: 🟢 Learner, 🔵 Skilled, 🟣 Expert (no numeric scores)
+   * 4) Template-driven, NO hardcoding: Use ${topic}, ${region}, ${language}
+   * 
+   * Current Status (Phase 2 Complete):
+   * ✅ Expert panel MCQ generation with risk scoring (CHA₂DS₂-VASc, TIMI, CURB-65)
+   * ✅ DOI citations (ESC 2023, AHA/ACC 2022)
+   * ✅ Adaptive feedback based on performance
+   * ✅ Progress bars and guideline badges
+   * ✅ Multi-step scenarios and imaging pitfalls
+   * 
+   * Next Phase (Dynamic Guidelines):
+   * - Implement hierarchical guideline registry (backend/routes/guidelines_api.mjs)
+   * - Add GuidelinePanel component with collapsible cards
+   * - Integrate tier-based scoring display (replace percentage with emoji tiers)
+   * - Add streak tracking and motivational micro-feedback
+   * 
+   * Implementation Pattern:
+   * - Backend: Fetch guidelines based on user region → return cascade array
+   * - Frontend: Display "Load Guidelines" button → show local/national/regional/global sources
+   * - Validation: Ensure all citations exist in registry, no fabricated references
+   * 
+   * Target Experience:
+   * - Duolingo engagement (streaks, achievements, motivational bursts)
+   * - UpToDate credibility (collapsible evidence cards, direct DOI links)
+   * - Global inclusivity (Danish student sees Sundhedsstyrelsen, US doctor sees AHA/ACC)
    */
 
   // ---------- Narrative Renderer ----------
