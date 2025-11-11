@@ -55,8 +55,16 @@ Run through 10-point checklist in `COPILOT_IMPLEMENTATION_GUIDE.md`
 
 ### Step 4: Deploy
 ```bash
-bash deploy_expert_panel.sh
+./deploy_expert_panel.sh
 ```
+
+This automated script handles:
+1. ✅ Git push to origin/main
+2. ✅ Backend Docker build (GCR)
+3. ✅ Backend Cloud Run deployment (with Secret Manager integration)
+4. ✅ Frontend build (npm ci + npm run build)
+5. ✅ Frontend Docker build (GCR)
+6. ✅ Frontend Cloud Run deployment (with VITE_API_BASE env)
 
 ### Step 5: Verify
 ```bash

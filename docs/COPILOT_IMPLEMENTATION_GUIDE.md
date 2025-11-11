@@ -482,8 +482,16 @@ Medical Student, Doctor, Professors, Radiologists, Pharmacist, USMLE Expert, AI/
 
 **Deploy Script:**
 ```bash
-bash deploy_expert_panel.sh
+./deploy_expert_panel.sh
 ```
+
+This script handles the complete 6-step deployment:
+1. Push commits to GitHub
+2. Build backend Docker image (GCR)
+3. Deploy backend to Cloud Run
+4. Build frontend (npm run build)
+5. Build frontend Docker image (GCR)
+6. Deploy frontend to Cloud Run
 
 **CI/CD Integration:**
 See `.github/workflows/deploy.yml` for automated deployment pipeline.
