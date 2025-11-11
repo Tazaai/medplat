@@ -1,9 +1,14 @@
-# 🧭 @copilot: Phase 3 – Global Adaptive Learning + Guideline Cascade (Refined from Clinical Review)
+# 🧭 @copilot: Global Dynamic Development – Phase 3 Integration & Adaptive Reasoning Upgrade
 
 ## 🎯 Objective
-Transform **MedPlat** into a **globally adaptive, guideline-driven, gamified tutor** that maintains the academic quality demonstrated in expert-reviewed cases (Cardiac Syncope baseline), while extending interactivity, personalization, and dynamic guideline sourcing across all specialties.
+Implement the full **Phase 3 MedPlat adaptive learning architecture** — combining:
+- Dynamic 4-tier guideline cascade  
+- Duolingo-style gamification  
+- Adaptive feedback loop with weak-area tracking  
+- Multi-persona reasoning depth (Medical Student → Specialist)  
+- Continuous, research-linked differential reasoning
 
-**Core Mission**: You are implementing **dynamic, region-aware guideline retrieval** and **tiered educational delivery** for a broad medical audience — from medical students to practicing physicians — ensuring NO hardcoding and 100% global scalability.
+**Core Mission**: Transform MedPlat into the world's most dynamic, evidence-based, and engaging medical learning ecosystem that scales globally while maintaining the academic quality demonstrated in expert-reviewed cases (Cardiac Syncope A+ baseline).
 
 ---
 
@@ -43,31 +48,31 @@ Each user should experience:
 
 ---
 
-## ⚙️ Dynamic Guideline Hierarchy (4-Tier Cascade)
+## 🌍 1️⃣ Dynamic Guideline Cascade
+Implement in backend (`guidelines_api.mjs`) and frontend (`GuidelinePanel.jsx`).
 
-**Critical**: Implement full 4-tier guideline retrieval logic with automatic fallback:
+Priority order:
+1. **Local / Institutional** (Sundhedsstyrelsen, NNBV)  
+2. **National** (AHA/ACC US, NICE UK)  
+3. **Regional / Continental** (ESC Europe, ESMO Oncology, EASL Hepatology)  
+4. **International / Global** (WHO, CDC, NIH)
 
-1️⃣ **Local / Institutional** → (e.g. `Sundhedsstyrelsen`, `NNBV.dk`, hospital protocols)  
-2️⃣ **National** → (e.g. Danish, UK NHS, US AHA/ACC)  
-3️⃣ **Regional / Continental** → (e.g. ESC, ESMO, EASL, NICE Europe)  
-4️⃣ **International / Global** → (e.g. WHO, CDC, NIH, ISICEM)
-
-**Cascade Logic**:
-- Always start local → climb upward only if unavailable
-- Each citation must include structured metadata:
-
+Output JSON:
 ```json
 {
   "tier": "local|national|regional|international",
-  "society": "ESC",
-  "year": 2023,
-  "title": "Atrial Fibrillation Management Guidelines",
-  "url_or_doi": "doi:10.1093/eurheartj/ehad194",
-  "recommendation": "Anticoagulation for CHA₂DS₂-VASc ≥2",
-  "class": "I",
-  "level": "A"
+  "society": "",
+  "year": "",
+  "title": "",
+  "doi_or_url": "",
+  "recommendation": "",
+  "class": "",
+  "level": ""
 }
 ```
+
+Frontend: show collapsible guideline cards (Tailwind + shadcn/ui), ordered local→global with colored badges:
+🟢 Local 🔵 National 🟣 Regional ⚪ Global.
 
 **Storage**: Use Firestore collection `guideline_registry` with structure:
 ```javascript
@@ -75,19 +80,13 @@ Each user should experience:
   region: "Denmark",
   topic: "Atrial Fibrillation",
   tiers: {
-    local: [{society, year, title, url_or_doi, recommendation}],
+    local: [{society, year, title, doi_or_url, recommendation}],
     national: [...],
     regional: [...],
     international: [...]
   }
 }
 ```
-
-**Rendering**: Collapsible cards (Tailwind + shadcn/ui) ordered local→global with visual hierarchy:
-- 📌 Local (green badge)
-- 🇩🇰 National (blue badge)
-- 🇪🇺 Regional (purple badge)
-- 🌍 International (gray badge)
 
 Backend example:
 ```js
@@ -129,46 +128,39 @@ router.post('/api/guidelines/fetch', async (req, res) => {
 
 ## 🎮 Gamified Learning Loop (Duolingo-Style Engagement)
 
-**Replace static scoring with tier-based mastery + engagement metrics**:
+## 🎮 2️⃣ Gamified Learning Loop
 
-| Tier | Score Range | Label   | Emoji | Color  |
-|------|-------------|---------|-------|--------|
-| 🟢   | < 50%       | Learner | 🟢    | green  |
-| 🔵   | 50–79%      | Skilled | 🔵    | blue   |
-| 🟣   | ≥ 80%       | Expert  | 🟣    | purple |
+Replace static score with **tiered mastery + engagement**:
 
-**Gamification Features to Add**:
+| Tier | Range     | Label   |
+| ---- | --------- | ------- |
+| 🟢   | < 50 %    | Learner |
+| 🔵   | 50 – 79 % | Skilled |
+| 🟣   | ≥ 80 %    | Expert  |
 
-1. **XP & Streak System**:
-   ```javascript
-   // Firestore: users/{uid}/progress
-   {
-     xp: 1250,
-     streak: 7,
-     dailyGoal: 1,
-     totalQuizzes: 23,
-     expertCount: 5
-   }
-   ```
+Add:
 
-2. **Daily Goal Tracker**:
-   - "Complete 1 quiz/day" → +50 XP bonus
-   - Visual streak flame icon (🔥) with number
-   - Motivational prompt: "7-day streak! You're on fire! 🔥"
+* XP (+10 per correct, +5 attempt)
+* Streak 🔥 tracker + daily goal
+* Achievements 🏅 (Perfect Score / 10-Day Streak / Specialty Expert)
+* "Challenge Mode" → unlocked after 2 Expert completions
+* Motivational prompts ("💪 Great progress — ready for Expert Mode?")
 
-3. **Challenge Mode Unlocks**:
-   - Unlock "Expert Challenge" after 2 Expert-tier completions in same specialty
-   - Expert Challenge = harder questions, no hints, time pressure
-   - Reward: 3x XP multiplier
+**Firestore Structure**:
+```javascript
+// users/{uid}/progress
+{
+  xp: 1250,
+  streak: 7,
+  dailyGoal: 1,
+  totalQuizzes: 23,
+  expertCount: 5,
+  achievements: ['first_perfect', '10_day_streak']
+}
+```
 
-4. **Achievement Badges**:
-   - First Perfect Score (12/12)
-   - 10-Day Streak
-   - Specialty Expert (5 Expert quizzes in same area)
-   - Global Scholar (quizzes in 3+ languages)
-
-5. **Motivational Micro-Feedback**:
-   - After each question: "✅ Correct! +10 XP" (brief, non-intrusive)
+**Behavior**:
+- After each question: "✅ Correct! +10 XP" (brief, non-intrusive)
    - After quiz: "💪 Great progress — ready for Expert Mode?"
    - Encouraging tone: "You improved diagnostic speed by 12%" (vs "You're slow")
 
@@ -205,21 +197,24 @@ const getTierDisplay = (score) => {
 // Firestore: users/{uid}/weak_areas
 {
   "Atrial Fibrillation": {
+## 🧠 3️⃣ Adaptive Feedback & Personalization
+
+Backend (`gamify_api.mjs`) and Firestore:
+
+```javascript
+users/{uid}/weak_areas: {
+  "Atrial Fibrillation": {
     "rhythm_control": { missed: 3, total: 5 },
-    "anticoagulation_scoring": { missed: 2, total: 4 },
-    "rate_control": { missed: 0, total: 3 }
-  },
-  "Cardiac Syncope": {
-    "risk_stratification": { missed: 2, total: 3 },
-    "ecg_interpretation": { missed: 1, total: 2 }
+    "anticoagulation_scoring": { missed: 2, total: 4 }
   }
 }
 ```
 
-**Adaptive Next-Quiz Generation**:
-1. After quiz completion, analyze weak domains
-2. Generate follow-up quiz weighted 60% toward missed concepts, 40% new material
-3. Example: If user missed rhythm control questions in AF quiz → next quiz emphasizes rhythm vs rate control scenarios
+Behavior:
+
+* 60 % remedial (weak areas) + 40 % new material
+* "Focus Cards" → brief evidence tips with DOIs (e.g. ESC §4.2.1 Class I Level A)
+* Tone = constructive ("Keep building — review anticoag criteria")
 
 **Focus Cards** (UpToDate-Style Evidence):
 ```jsx
@@ -238,22 +233,17 @@ const getTierDisplay = (score) => {
 </div>
 ```
 
-**Constructive Feedback Tone**:
-- ❌ Bad: "You failed. Score: 42%"
-- ✅ Good: "Great effort! Focus on rhythm control strategies to reach Skilled tier (50%+)"
-- Always include actionable study recommendations with specific guideline references
-
 ---
 
-## 🩺 Educational Personas (Dynamic Tone Adaptation)
+## 🩺 4️⃣ Educational Personas
 
-Apply adaptive tone & depth automatically based on user profile:
+Auto-adjust explanation style & difficulty:
 
-| Persona               | Focus                                   | Explanation Style                    |
-|-----------------------|-----------------------------------------|--------------------------------------|
-| **Medical Student**   | Simplified diagnostic reasoning         | Foundational concepts, step-by-step  |
-| **USMLE Candidate**   | Exam-style decision logic               | Board-style reasoning, time-efficient|
-| **Practicing Doctor** | Management reasoning + risk/benefit     | Evidence-based, guideline-focused    |
+| Persona           | Focus                  | Style                                    |
+| ----------------- | ---------------------- | ---------------------------------------- |
+| Medical Student   | Foundational reasoning | Step-by-step, simplified                 |
+| USMLE Candidate   | Exam logic             | Differential priority + timed reasoning  |
+| Practicing Doctor | Clinical decision      | Evidence-based + risk/benefit discussion |
 
 **Implementation**:
 ```javascript
@@ -275,21 +265,13 @@ const systemPrompt = `
 
 ---
 
-## 💻 Interface Upgrades
+## 💻 5️⃣ Interface Upgrades
 
-**Progress Bar Enhancements**:
-- Animated multi-color progress bar (tier-matched: green → blue → purple as score improves)
-- Visual milestone markers at 50% and 80% thresholds
-- Smooth CSS transitions between colors
-
-**Continue Learning Button**:
-```jsx
-<button onClick={loadAdaptiveQuiz} className="btn-primary">
-  🎯 Continue Learning: {nextTopicSuggestion}
-</button>
-```
-- Loads adaptive next quiz based on weak areas
-- Shows topic suggestion: "Continue Learning: AF Rhythm Control"
+* Multi-color animated progress bar (tier-linked)
+* "Continue Learning" → loads adaptive next quiz
+* "Press AI Key" → fetch local guidelines instantly
+* Evidence Cards → UpToDate-style collapsible boxes with DOIs
+* Gamification panel → XP, streak, achievements, weak-areas summary
 
 **Evidence Cards** (UpToDate-Style):
 ```jsx
@@ -314,6 +296,22 @@ const systemPrompt = `
 - Press `G` → fetch region-specific local guidelines
 - Press `N` → next question
 - Press `R` → review mode toggle
+
+---
+
+## 🔬 6️⃣ Clinical Reasoning Upgrade (Continuous Differential Engine)
+
+Apply across all specialties.
+Each case must simulate **real-time reasoning**, e.g.:
+
+* *Meningitis vs Delirium → LP or CT first (sensitivity, specificity)*
+* *SAH vs Migraine → CT angio vs CT non-contrast vs LP*
+* *Pacemaker vs Isoprenaline → indications & contraindications*
+* *IBD treatment failure → Step 1, 2, 3 choices + pregnancy modifications*
+* *Posterior Cerebral Infarct vs Other stroke patterns*
+* *Infection without focus → Spondylodiscitis CT vs MRI; Cauda Equina CT vs MRI*
+
+Add optional "📘 Click for more info" boxes with latest citations (ESC, AHA, NNBV, WHO).
 
 ---
 
@@ -479,77 +477,29 @@ export const validateReferences = async (caseData) => {
 ## 🧪 Validation Tasks (Success Criteria)
 
 Before marking Phase 3 complete, verify:
+## 🧩 7️⃣ Validation Checklist (10 Points)
 
-- [ ] **Guideline Cascade**: Starts local, includes all 4 tiers (local/national/regional/international)
-- [ ] **Tier Labels**: Raw scores replaced with 🟢🔵🟣 emoji tiers
-- [ ] **XP/Streak**: Persists in Firestore, displays correctly in UI
-- [ ] **Multilingual**: Output verified in da/en/es/ar
-- [ ] **Performance**: Latency ≤ Phase 2 standards (~50s), API calls ≤ 1 per quiz
-- [ ] **Dynamic System**: NO hardcoding, works for all 3000+ topics globally
-- [ ] **Adaptive Quiz**: Next quiz weights toward user's weak areas
-- [ ] **Focus Cards**: Show after wrong answers with guideline links
-- [ ] **Keyboard Shortcuts**: `G` for guidelines, `N` for next, `R` for review
-- [ ] **Challenge Mode**: Unlocks after 2 Expert completions
-
----
-
-## 🧠 Key Principle (Critical for All Implementations)
-
-> **Build once — scale globally.**  
-> All guideline retrieval, reasoning validation, and teaching output must be **dynamic, hierarchical, and globally inclusive** — scaling smoothly from a Danish student's local view (Sundhedsstyrelsen) to an international physician's reference standard (WHO, AHA/ACC).
-
-**Absolutely NO hardcoding**:
-- ❌ Do NOT write: `if (topic === 'Atrial Fibrillation') { riskScore = 'CHA₂DS₂-VASc' }`
-- ✅ Do write: `const riskScores = RISK_SCORE_REGISTRY[topic]` (from Firestore/config)
-
-**Template-driven architecture**:
-- Use `${topic}`, `${region}`, `${language}` variables in all prompts
-- Fetch guidelines from `guideline_registry` collection dynamically
-- Apply risk scores based on topic context, not topic name hardcoding
-
-**Global applicability test**:
-- If you change code for Atrial Fibrillation, it must also work for Cardiac Syncope, Pneumonia, Dengue, etc.
-- If you add Danish guidelines, the system must support US, UK, WHO guidelines equally
-- If you implement a feature, it must work in English, Danish, Spanish, Arabic without code changes
-
-**From Copenhagen to California**:  
-Every medical learner sees relevant local guidelines first, with automatic fallback to regional/international sources. The same codebase serves a Danish student (sees Sundhedsstyrelsen) and a US doctor (sees AHA/ACC) — zero duplication.
+* ✅ Guideline cascade (4 tiers, dynamic)
+* ✅ Tier labels (emoji system)
+* ✅ XP/streak persistence (Firestore)
+* ✅ Adaptive next-quiz generator
+* ✅ Educational persona switching
+* ✅ Evidence cards with DOIs
+* ✅ Keyboard shortcuts (G/N/R)
+* ✅ Challenge Mode unlock
+* ✅ Latency ≤ Phase 2 (~50 s, 1 API call)
+* ✅ No hardcoding (3000 + topics)
 
 ---
 
 ## ✅ Success Criteria
 
-Copilot should consider Phase 3 implementation complete when:
-## ✅ Success Criteria
+* Maintain **Cardiac Syncope A+ baseline** (evidence citations, realistic distractors, structured reasoning).
+* Achieve **Phase 3 goals**: interactive, adaptive, globally dynamic, cost-efficient.
+* Learners experience Duolingo-style motivation + UpToDate-level credibility.
+* Users feel "can't-stop-learning" engagement — curiosity driven, AI-supported, professionally accurate.
 
-Copilot should consider Phase 3 implementation complete when:
-
-- ✅ Each case displays guideline data in proper 4-tier hierarchical order (local → national → regional → international)
-- ✅ Educational feedback adapts to user level (Medical Student vs USMLE vs Doctor) and language dynamically
-- ✅ Scoring is tier-based (🟢🔵🟣 emoji tiers), non-revealing until completion, motivational in tone
-- ✅ Backend `guideline_registry` dynamically updates per region from Firestore
-- ✅ Frontend experience balances **Duolingo engagement** (XP, streaks, achievements) with **UpToDate academic credibility** (collapsible evidence cards, DOI links)
-- ✅ **NO HARDCODING**: All topic-specific logic uses template variables, works for 3000+ topics globally
-- ✅ Adaptive quiz generation weights toward user's weak areas (60% remedial, 40% new)
-- ✅ Performance maintains Phase 2 standards (≤ 50s generation, 1 API call per quiz, 50% cost reduction)
-- ✅ System validated across 10+ diverse topics (AF, Syncope, Pneumonia, Dengue, etc.) and 3+ languages (en, da, es)
-- ✅ Challenge Mode unlocks and awards 3x XP correctly
-
-**Quality Baseline**: Maintain Cardiac Syncope expert review quality (evidence citations, step-wise reasoning, realistic distractors) across ALL topics and specialties.
-
----
-
-## 📊 Expected Impact (Phase 3 vs Phase 2)
-
-| Metric | Phase 2 (Current) | Phase 3 (Target) |
-|--------|-------------------|------------------|
-| **Cost** | $0.06/quiz | $0.06/quiz (maintained) |
-| **Speed** | ~50 seconds | ~50 seconds (maintained) |
-| **Quality** | Grade A+ | Grade A+ (maintained) |
-| **Engagement** | Passive quiz | Active (XP +250%, streaks) |
-| **Guideline Relevance** | Generic ESC/AHA | Local-first cascade |
-| **Personalization** | None | Adaptive next-quiz |
-| **Retention** | 45% completion | 65%+ completion (target) |
+> Build once, scale globally — MedPlat becomes the world's most dynamic, evidence-based, and engaging medical learning ecosystem.
 
 **User Experience Transformation**:
 - Phase 2: "Complete quiz → See score → Done"
