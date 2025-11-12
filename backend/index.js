@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -117,6 +117,7 @@ async function mountRoutes() {
 			import('./routes/adaptive_feedback_api.mjs'), // Phase 3: Adaptive feedback
 			import('./routes/telemetry_api.mjs'), // Phase 4 M1: Telemetry
 			import('./routes/mentor_api.mjs'), // Phase 4 M2: AI Mentor
+			import('./routes/curriculum_api.mjs'), // Phase 4 M3: Curriculum Builder
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -133,6 +134,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: adaptiveFeedbackMod keys=', Object.keys(adaptiveFeedbackMod || {}), 'defaultType=', typeof (adaptiveFeedbackMod && adaptiveFeedbackMod.default)); } catch (e) {}
 	try { console.log('MODULE: telemetryMod keys=', Object.keys(telemetryMod || {}), 'defaultType=', typeof (telemetryMod && telemetryMod.default)); } catch (e) {}
 	try { console.log('MODULE: mentorMod keys=', Object.keys(mentorMod || {}), 'defaultType=', typeof (mentorMod && mentorMod.default)); } catch (e) {}
+	try { console.log('MODULE: curriculumMod keys=', Object.keys(curriculumMod || {}), 'defaultType=', typeof (curriculumMod && curriculumMod.default)); } catch (e) {}
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const gamifyDirectRouter = normalizeRouter(gamifyDirectMod);
@@ -146,12 +148,14 @@ async function mountRoutes() {
 	const adaptiveFeedbackRouter = normalizeRouter(adaptiveFeedbackMod); // Phase 3
 	const telemetryRouter = normalizeRouter(telemetryMod); // Phase 4 M1
 	const mentorRouter = normalizeRouter(mentorMod); // Phase 4 M2
+	const curriculumRouter = normalizeRouter(curriculumMod); // Phase 4 M3
 
 	// Debug logging for Phase 3 + Phase 4 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
 	console.log('DEBUG: adaptiveFeedbackRouter=', adaptiveFeedbackRouter, 'type=', typeof adaptiveFeedbackRouter);
 	console.log('DEBUG: telemetryRouter=', telemetryRouter, 'type=', typeof telemetryRouter);
 	console.log('DEBUG: mentorRouter=', mentorRouter, 'type=', typeof mentorRouter);
+	console.log('DEBUG: curriculumRouter=', curriculumRouter, 'type=', typeof curriculumRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -272,6 +276,15 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/mentor_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (curriculumRouter) {
+				app.use('/api/curriculum', curriculumRouter);
+				console.log('✅ Mounted /api/curriculum -> ./routes/curriculum_api.mjs (Phase 4 M3)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/curriculum_api.mjs:', e && e.stack ? e.stack : e);
 		}
 	} catch (err) {
 		console.error('Route import failed:', err && err.stack ? err.stack : err);

@@ -139,6 +139,38 @@ export async function generateWeeklyReport(uid) {
       console.warn('⚠️ Could not fetch mentor sessions:', error.message);
     }
 
+    // Fetch curriculum progress from last 7 days
+    let curriculumProgress = null;
+    try {
+      const curriculumSnapshot = await db
+        .collection('users')
+        .doc(uid)
+        .collection('curriculum')
+        .where('status', '==', 'active')
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get();
+      
+      if (!curriculumSnapshot.empty) {
+        const curriculumDoc = curriculumSnapshot.docs[0];
+        const curriculumData = curriculumDoc.data();
+        curriculumProgress = {
+          examType: curriculumData.examType,
+          progress: curriculumData.progress || 0,
+          completedModules: curriculumData.completedModules?.length || 0,
+          totalModules: curriculumData.modules?.length || curriculumData.totalWeeks || 0,
+          targetWeeks: curriculumData.targetWeeks,
+          daysRemaining: Math.max(0, Math.ceil(
+            (new Date(curriculumData.createdAt).getTime() + 
+             curriculumData.targetWeeks * 7 * 24 * 60 * 60 * 1000 - 
+             Date.now()) / (24 * 60 * 60 * 1000)
+          ))
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not fetch curriculum progress:', error.message);
+    }
+
     const report = {
       uid,
       weekStart: sevenDaysAgo.toISOString(),
@@ -151,6 +183,7 @@ export async function generateWeeklyReport(uid) {
         sessionsCount: mentorSessionCount,
         topicsDiscussed: Array.from(mentorTopics),
       },
+      curriculumProgress,
       generatedAt: new Date().toISOString(),
     };
 

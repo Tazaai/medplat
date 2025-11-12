@@ -5,6 +5,7 @@ import CaseDisplay from "./CaseDisplay";
 import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
 import ConferencePanel from "./ConferencePanel";
 import MentorTab from "./MentorTab"; // Phase 4 M2: AI Mentor
+import CurriculumTab from "./CurriculumTab"; // Phase 4 M3: Curriculum Builder
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -470,7 +471,7 @@ export default function CaseView() {
     <div className="p-4 space-y-4">
       <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
 
-      {/* Phase 4 M2: Tab Navigation */}
+      {/* Phase 4: Tab Navigation */}
       <div className="flex gap-2 border-b border-gray-300 mb-4">
         <button
           onClick={() => setActiveTab("case")}
@@ -492,11 +493,26 @@ export default function CaseView() {
         >
           🧠 AI Mentor
         </button>
+        <button
+          onClick={() => setActiveTab("curriculum")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "curriculum"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📚 Curriculum
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
       {activeTab === "mentor" && (
         <MentorTab uid={userUid} currentTopic={topic || "General"} />
+      )}
+
+      {/* Show Curriculum Tab when active */}
+      {activeTab === "curriculum" && (
+        <CurriculumTab uid={userUid} currentTopic={topic || "General"} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}
