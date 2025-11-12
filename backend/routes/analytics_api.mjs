@@ -19,9 +19,10 @@
 import { Router } from 'express';
 import { db } from '../firebaseClient.js';
 import { logTelemetry } from '../telemetry/telemetry_logger.mjs';
-import { FieldValue } from 'firebase-admin/firestore';
+import admin from 'firebase-admin';
 
 const router = Router();
+const FieldValue = admin.firestore.FieldValue;
 
 // ========================================
 // HELPER: Check Admin Role
