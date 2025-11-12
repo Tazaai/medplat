@@ -18,7 +18,7 @@
 
 import { Router } from 'express';
 import { db } from '../firebaseClient.js';
-import { logTelemetry } from '../telemetry/telemetry_logger.mjs';
+import { logEngagementEvent } from '../telemetry/telemetry_logger.mjs';
 import admin from 'firebase-admin';
 
 const router = Router();
@@ -346,7 +346,7 @@ router.get('/overview', async (req, res) => {
     };
     
     // Log telemetry
-    await logTelemetry({
+    await logEngagementEvent({
       uid,
       event_type: 'analytics_overview',
       endpoint: '/api/analytics/overview',
@@ -496,7 +496,7 @@ router.get('/performance', async (req, res) => {
     };
     
     // Log telemetry
-    await logTelemetry({
+    await logEngagementEvent({
       uid,
       event_type: 'analytics_performance',
       endpoint: '/api/analytics/performance',
@@ -572,7 +572,7 @@ router.post('/abtest', async (req, res) => {
     await experimentRef.set(experiment);
     
     // Log telemetry
-    await logTelemetry({
+    await logEngagementEvent({
       uid,
       event_type: 'abtest_created',
       endpoint: '/api/analytics/abtest',
@@ -696,7 +696,7 @@ router.get('/abtest/:id', async (req, res) => {
     };
     
     // Log telemetry
-    await logTelemetry({
+    await logEngagementEvent({
       uid,
       event_type: 'abtest_viewed',
       endpoint: `/api/analytics/abtest/${id}`,

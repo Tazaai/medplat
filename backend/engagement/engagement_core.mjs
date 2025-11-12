@@ -13,7 +13,7 @@
 
 import { db } from '../firebaseClient.js';
 import admin from 'firebase-admin';
-import { logTelemetry } from '../telemetry/telemetry_logger.mjs';
+import { logEngagementEvent } from '../telemetry/telemetry_logger.mjs';
 
 /**
  * Register telemetry event and trigger engagement flows
@@ -200,7 +200,7 @@ export async function generateWeeklyReport(uid) {
     console.log(`📈 Weekly report generated for uid=${uid}: ${report.averageScore}% avg, ${report.totalSessions} sessions, ${mentorSessionCount} mentor sessions`);
 
     // Log analytics event
-    await logTelemetry({
+    await logEngagementEvent({
       uid,
       event_type: 'weekly_report_generated',
       endpoint: 'engagement_core.generateWeeklyReport',
@@ -252,7 +252,7 @@ export async function updateLeaderboard(topic, uid, score) {
       console.log(`🏆 Leaderboard updated: ${topic} - uid=${uid} scored ${score}%`);
       
       // Log analytics event
-      await logTelemetry({
+      await logEngagementEvent({
         uid,
         event_type: 'leaderboard_update',
         endpoint: 'engagement_core.updateLeaderboard',
