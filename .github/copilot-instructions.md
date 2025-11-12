@@ -1,6 +1,10 @@
 ## Copilot / AI Agent Instructions — MedPlat (concise)
 
+**Version:** v3.0.0 | **Status:** ✅ Production | **Last Updated:** 2025-11-12
+
 Purpose: Short, actionable guidance for automated agents and reviewers working on MedPlat.
+
+**📖 Full Documentation:** See `docs/COPILOT_MASTER_GUIDE.md` for comprehensive governance, Phase 4 roadmap, and External Development Panel protocols.
 
 ### Topics Protection — Copilot Prompt
 
