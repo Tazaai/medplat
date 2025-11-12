@@ -13,6 +13,7 @@
 
 import { db } from '../firebaseClient.js';
 import admin from 'firebase-admin';
+import { logTelemetry } from '../telemetry/telemetry_logger.mjs';
 
 /**
  * Register telemetry event and trigger engagement flows
@@ -198,6 +199,20 @@ export async function generateWeeklyReport(uid) {
 
     console.log(`📈 Weekly report generated for uid=${uid}: ${report.averageScore}% avg, ${report.totalSessions} sessions, ${mentorSessionCount} mentor sessions`);
 
+    // Log analytics event
+    await logTelemetry({
+      uid,
+      event_type: 'weekly_report_generated',
+      endpoint: 'engagement_core.generateWeeklyReport',
+      metadata: {
+        total_sessions: report.totalSessions,
+        average_score: report.averageScore,
+        topics_studied: report.topicsStudied.length,
+        mentor_sessions: mentorSessionCount,
+        curriculum_modules_completed: curriculumProgress?.modulesCompleted || 0
+      }
+    }).catch(err => console.warn('⚠️ Analytics logging failed:', err.message));
+
     return report;
   } catch (error) {
     console.error('❌ generateWeeklyReport error:', error.message);
@@ -235,6 +250,19 @@ export async function updateLeaderboard(topic, uid, score) {
       }, { merge: true });
 
       console.log(`🏆 Leaderboard updated: ${topic} - uid=${uid} scored ${score}%`);
+      
+      // Log analytics event
+      await logTelemetry({
+        uid,
+        event_type: 'leaderboard_update',
+        endpoint: 'engagement_core.updateLeaderboard',
+        metadata: {
+          topic,
+          score,
+          previous_best: currentBest,
+          improvement: score - currentBest
+        }
+      }).catch(err => console.warn('⚠️ Analytics logging failed:', err.message));
     }
   } catch (error) {
     console.error('❌ updateLeaderboard error:', error.message);

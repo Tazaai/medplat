@@ -6,6 +6,7 @@ import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
 import ConferencePanel from "./ConferencePanel";
 import MentorTab from "./MentorTab"; // Phase 4 M2: AI Mentor
 import CurriculumTab from "./CurriculumTab"; // Phase 4 M3: Curriculum Builder
+import AnalyticsDashboard from "./AnalyticsDashboard"; // Phase 4 M4: Analytics & Optimization
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -130,8 +131,8 @@ export default function CaseView() {
 
   const caseRef = useRef(null);
 
-  // Phase 4 M2: AI Mentor tab state
-  const [activeTab, setActiveTab] = useState("case"); // "case" or "mentor"
+  // Phase 4 M2/M3/M4: Multi-tab state (case | mentor | curriculum | analytics)
+  const [activeTab, setActiveTab] = useState("case");
   const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
 
   // 🌍 detect location
@@ -503,6 +504,16 @@ export default function CaseView() {
         >
           📚 Curriculum
         </button>
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "analytics"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📊 Analytics
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -513,6 +524,11 @@ export default function CaseView() {
       {/* Show Curriculum Tab when active */}
       {activeTab === "curriculum" && (
         <CurriculumTab uid={userUid} currentTopic={topic || "General"} />
+      )}
+
+      {/* Show Analytics Dashboard when active (admin-only) */}
+      {activeTab === "analytics" && (
+        <AnalyticsDashboard user={{ uid: userUid }} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}
