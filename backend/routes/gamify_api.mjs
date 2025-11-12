@@ -2,6 +2,7 @@
 import express from 'express';
 import OpenAI from 'openai';
 import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
+import { registerTelemetry } from '../engagement/engagement_core.mjs';
 
 export default function gamifyApi() {
   const router = express.Router();
@@ -138,15 +139,27 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
       
       // Log telemetry (non-blocking)
       const usage = response?.usage || {};
+      const uid = req.body.uid || 'anonymous';
+      const topic = caseData.meta?.topic || caseData.Final_Diagnosis?.Diagnosis || 'Unknown';
+      
       logOpenAICall({
-        uid: req.body.uid || 'anonymous',
+        uid,
         model,
         inputTokens: usage.prompt_tokens || 0,
         outputTokens: usage.completion_tokens || 0,
         latencyMs,
         endpoint: '/api/gamify',
-        topic: caseData.meta?.topic || caseData.Final_Diagnosis?.Diagnosis || 'Unknown',
+        topic,
       }).catch(err => console.error('⚠️ Telemetry log failed:', err.message));
+      
+      // Register engagement event (non-blocking)
+      registerTelemetry({
+        uid,
+        topic,
+        model,
+        latency: latencyMs,
+        timestamp: new Date().toISOString(),
+      }).catch(err => console.error('⚠️ Engagement registration failed:', err.message));
       
       // Robust JSON extraction with multiple fallback strategies
       let parsed = null;
