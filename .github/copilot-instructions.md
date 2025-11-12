@@ -106,6 +106,10 @@ Any PR that does not follow this mandatory process will be returned for remediat
 **Development Guide**: See `docs/COPILOT_PHASE4_GUIDE.md` for milestone-specific instructions  
 **Governance**: `docs/COPILOT_MASTER_GUIDE.md` — External Panel protocols & AI behavior rules
 
+> 🧠 **Contextual Reference**: `docs/EXTERNAL_PANEL_GUIDE_FOR_COPILOT.md`  
+> This guide informs Copilot of MedPlat's global review expectations, educational philosophy, and quality standards.  
+> **It must NOT be included in production or runtime logic** — it exists only to guide development reasoning and architectural decisions.
+
 ---
 
 ## 🎯 Architecture Quick Reference
