@@ -84,9 +84,12 @@ function normalizeRouter(mod) {
 	try {
 		const info = { hasModule: !!mod, keys: mod ? Object.keys(mod) : [], hasDefault: !!(mod && mod.default) };
 		let router = mod && (mod.default || mod);
+		// Basic validation: express routers have a 'stack' array
+		// Check this BEFORE calling as function, since Express routers are also functions
+		if (router && Array.isArray(router.stack)) return router;
 		// if module exported a factory, call it to obtain the router
 		if (typeof router === 'function') router = router();
-		// Basic validation: express routers have a 'stack' array
+		// Check again after calling factory
 		if (router && Array.isArray(router.stack)) return router;
 		console.warn('normalizeRouter: unexpected module shape', info, 'routerType', typeof router);
 		return null;
