@@ -113,3 +113,7 @@ export function initFirebase() {
     return { initialized: false, firestore: makeNoopFirestore() };
   }
 }
+
+// Export a db instance for convenience (Phase 3)
+const { firestore } = initFirebase();
+export const db = firestore;
