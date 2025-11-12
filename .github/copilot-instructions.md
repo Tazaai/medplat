@@ -100,6 +100,14 @@ Any PR that does not follow this mandatory process will be returned for remediat
 
 **MedPlat** is an AI-driven medical case simulator and gamified learning platform for clinicians and students. It generates realistic cases, adaptive MCQs, and expert-panel reasoning using GPT-4o/mini.
 
+## 🚀 **Active Development — Phase 4**
+
+**Current Branch**: `feature/phase4-ai-mentor` (base: `v3.0.0`)  
+**Development Guide**: See `docs/COPILOT_PHASE4_GUIDE.md` for milestone-specific instructions  
+**Governance**: `docs/COPILOT_MASTER_GUIDE.md` — External Panel protocols & AI behavior rules
+
+---
+
 ## 🎯 Architecture Quick Reference
 
 **Backend** (Node 18 + Express)
