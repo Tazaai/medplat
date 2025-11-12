@@ -1,6 +1,7 @@
 // ~/medplat/backend/routes/gamify_api.mjs
 import express from 'express';
 import OpenAI from 'openai';
+import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 
 export default function gamifyApi() {
   const router = express.Router();
@@ -119,8 +120,11 @@ Requirements:
 DO NOT ask about facts from the case above. Create NEW scenarios testing clinical application.`;
 
       // Call OpenAI with optimized settings
+      const startTime = Date.now();
+      const model = process.env.GAMIFY_MODEL || 'gpt-4o-mini';
+      
       const response = await client.chat.completions.create({
-        model: process.env.GAMIFY_MODEL || 'gpt-4o-mini',
+        model,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
@@ -129,7 +133,20 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
         max_tokens: 3000, // Increased for detailed clinical reasoning explanations
       });
 
+      const latencyMs = Date.now() - startTime;
       const rawText = response?.choices?.[0]?.message?.content || '';
+      
+      // Log telemetry (non-blocking)
+      const usage = response?.usage || {};
+      logOpenAICall({
+        uid: req.body.uid || 'anonymous',
+        model,
+        inputTokens: usage.prompt_tokens || 0,
+        outputTokens: usage.completion_tokens || 0,
+        latencyMs,
+        endpoint: '/api/gamify',
+        topic: caseData.meta?.topic || caseData.Final_Diagnosis?.Diagnosis || 'Unknown',
+      }).catch(err => console.error('⚠️ Telemetry log failed:', err.message));
       
       // Robust JSON extraction with multiple fallback strategies
       let parsed = null;
