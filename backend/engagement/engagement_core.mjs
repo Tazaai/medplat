@@ -117,6 +117,28 @@ export async function generateWeeklyReport(uid) {
       }
     });
 
+    // Fetch mentor sessions from last 7 days
+    let mentorSessionCount = 0;
+    const mentorTopics = new Set();
+    try {
+      const mentorSnapshot = await db
+        .collection('users')
+        .doc(uid)
+        .collection('mentor_sessions')
+        .where('timestamp', '>=', sevenDaysAgo.toISOString())
+        .get();
+      
+      mentorSessionCount = mentorSnapshot.size;
+      mentorSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.topic) {
+          mentorTopics.add(data.topic);
+        }
+      });
+    } catch (error) {
+      console.warn('⚠️ Could not fetch mentor sessions:', error.message);
+    }
+
     const report = {
       uid,
       weekStart: sevenDaysAgo.toISOString(),
@@ -125,6 +147,10 @@ export async function generateWeeklyReport(uid) {
       averageScore: scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0,
       topicsStudied: Array.from(topicsSet),
       totalTimeSeconds: totalTime,
+      mentorSummary: {
+        sessionsCount: mentorSessionCount,
+        topicsDiscussed: Array.from(mentorTopics),
+      },
       generatedAt: new Date().toISOString(),
     };
 
@@ -137,7 +163,7 @@ export async function generateWeeklyReport(uid) {
       .doc(weekId)
       .set(report, { merge: true });
 
-    console.log(`📈 Weekly report generated for uid=${uid}: ${report.averageScore}% avg, ${report.totalSessions} sessions`);
+    console.log(`📈 Weekly report generated for uid=${uid}: ${report.averageScore}% avg, ${report.totalSessions} sessions, ${mentorSessionCount} mentor sessions`);
 
     return report;
   } catch (error) {

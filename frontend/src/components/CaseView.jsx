@@ -4,6 +4,7 @@ import Level2CaseLogic from "./Level2CaseLogic";
 import CaseDisplay from "./CaseDisplay";
 import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
 import ConferencePanel from "./ConferencePanel";
+import MentorTab from "./MentorTab"; // Phase 4 M2: AI Mentor
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -127,6 +128,10 @@ export default function CaseView() {
   const [customRegion, setCustomRegion] = useState("");
 
   const caseRef = useRef(null);
+
+  // Phase 4 M2: AI Mentor tab state
+  const [activeTab, setActiveTab] = useState("case"); // "case" or "mentor"
+  const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
 
   // 🌍 detect location
   useEffect(() => {
@@ -465,8 +470,40 @@ export default function CaseView() {
     <div className="p-4 space-y-4">
       <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
 
-      {/* Controls */}
-      <div className="flex flex-wrap gap-2 items-center">
+      {/* Phase 4 M2: Tab Navigation */}
+      <div className="flex gap-2 border-b border-gray-300 mb-4">
+        <button
+          onClick={() => setActiveTab("case")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "case"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📋 Case Generator
+        </button>
+        <button
+          onClick={() => setActiveTab("mentor")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "mentor"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🧠 AI Mentor
+        </button>
+      </div>
+
+      {/* Show Mentor Tab when active */}
+      {activeTab === "mentor" && (
+        <MentorTab uid={userUid} currentTopic={topic || "General"} />
+      )}
+
+      {/* Case Generator Content (show only when case tab is active) */}
+      {activeTab === "case" && (
+        <>
+          {/* Controls */}
+          <div className="flex flex-wrap gap-2 items-center">
         {/* Custom search banner */}
         {customTopic.trim() && (
           <div className="w-full bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-2">
@@ -608,6 +645,8 @@ export default function CaseView() {
             <Share2 size={16} /> Share
           </button>
         </div>
+      )}
+        </>
       )}
     </div>
   );
