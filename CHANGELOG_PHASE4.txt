@@ -1,0 +1,14 @@
+2c8cac6 fix(analytics): use logEngagementEvent instead of logTelemetry
+648946e fix(analytics): correct FieldValue import from firebase-admin
+2ce6b23 feat(analytics): implement admin analytics dashboard and performance monitoring
+5d17a58 feat(curriculum): implement adaptive Curriculum Builder with USMLE/MRCP/FRCA/DK paths
+af36756 feat(mentor): implement AI Mentor Mode with personalized tutoring and weak-area remediation
+b95e7f4 feat(engagement): register telemetry core and link weekly reports, certifications, and leaderboard flows
+8b19c3a feat(telemetry): implement backend telemetry foundation with Firestore logging and stats API
+fb68f16 Phase 4 Milestone 1: Firestore guideline seeding – validated 10/10
+5739180 Unify Copilot operational guide for Phase 4
+24f8dd8 Add External Panel contextual guide for Copilot
+0380844 Add Phase 4 initialization summary
+32c2318 Add Phase 4 Quick Reference guide
+2894b0e Add Phase 4 Copilot development guide
+ecc4f67 Initialize Phase 4: AI Mentor Mode + Curriculum Builder

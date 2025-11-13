@@ -1,4 +1,5 @@
 import express from 'express';
+import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 
 export default function dialogApi() {
   const router = express.Router();

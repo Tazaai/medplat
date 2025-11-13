@@ -1,11 +1,19 @@
-// backend/routes/guidelines_api.mjs
-// Phase 3: Dynamic 4-tier guideline cascade API
-import express from 'express';
+#!/usr/bin/env node
+/**
+ * Firestore Guidelines Seeding Script
+ * Phase 4 Milestone 1: Migrate GUIDELINE_REGISTRY to Firestore
+ * 
+ * Usage: node backend/setup/seed_guidelines.js
+ * 
+ * This script:
+ * - Migrates static GUIDELINE_REGISTRY to Firestore collection `guideline_registry`
+ * - Uses idempotent logic (skips if already seeded)
+ * - Maintains same structure as Phase 3 static registry
+ */
+
 import { db } from '../firebaseClient.js';
 
-const router = express.Router();
-
-// Static guideline registry (fallback when Firestore is unavailable)
+// Static guideline registry (same as in guidelines_api.mjs)
 const GUIDELINE_REGISTRY = {
   Denmark: {
     'Atrial Fibrillation': {
@@ -112,57 +120,68 @@ const GUIDELINE_REGISTRY = {
   }
 };
 
-// POST /api/guidelines/fetch
-router.post('/fetch', async (req, res) => {
-  const { topic, region } = req.body;
-
-  if (!topic) {
-    return res.status(400).json({ ok: false, error: 'Topic is required' });
-  }
-
+async function seedGuidelines() {
   try {
-    // Try Firestore first (Phase 4: dynamic guidelines)
-    if (db) {
-      try {
-        const regionKey = region || 'global';
-        const docId = `${regionKey}_${topic}`.replace(/\s+/g, '_').toLowerCase();
-        const docRef = db.collection('guideline_registry').doc(docId);
-        const doc = await docRef.get();
+    console.log('🌱 Starting Firestore guidelines seeding...');
+    console.log('📦 Collection: guideline_registry');
+    console.log('');
 
+    if (!db) {
+      console.error('❌ Firestore not initialized. Check firebaseClient.js configuration.');
+      process.exit(1);
+    }
+
+    const collection = db.collection('guideline_registry');
+    let seededCount = 0;
+    let skippedCount = 0;
+
+    // Iterate through regions
+    for (const [region, topics] of Object.entries(GUIDELINE_REGISTRY)) {
+      console.log(`\n📍 Region: ${region}`);
+      
+      // Iterate through topics in this region
+      for (const [topic, guidelines] of Object.entries(topics)) {
+        const docId = `${region}_${topic}`.replace(/\s+/g, '_').toLowerCase();
+        
+        // Check if document already exists (idempotent)
+        const docRef = collection.doc(docId);
+        const doc = await docRef.get();
+        
         if (doc.exists) {
-          const data = doc.data();
-          // Return guidelines field from Firestore document
-          return res.json({ ok: true, guidelines: data.guidelines });
+          console.log(`   ⏭️  Skipped: ${topic} (already exists)`);
+          skippedCount++;
+          continue;
         }
-      } catch (firestoreErr) {
-        console.warn('Firestore unavailable, using static registry:', firestoreErr.message);
+        
+        // Create document with guideline data
+        await docRef.set({
+          region,
+          topic,
+          guidelines,
+          seededAt: new Date().toISOString(),
+          version: '4.0.0-alpha'
+        });
+        
+        console.log(`   ✅ Seeded: ${topic}`);
+        seededCount++;
       }
     }
 
-    // Fallback to static registry
-    const regionKey = region || 'global';
-    const guidelines = GUIDELINE_REGISTRY[regionKey]?.[topic] || GUIDELINE_REGISTRY.global[topic] || {
-      local: [],
-      national: [],
-      regional: [],
-      international: []
-    };
-
-    res.json({ ok: true, guidelines });
-  } catch (err) {
-    console.error('Guideline fetch error:', err);
+    console.log('');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('✅ Firestore Guidelines Seeding Complete');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📊 Seeded: ${seededCount} documents`);
+    console.log(`⏭️  Skipped: ${skippedCount} documents (already existed)`);
+    console.log(`📦 Total: ${seededCount + skippedCount} documents in guideline_registry`);
+    console.log('');
     
-    // Graceful fallback
-    const regionKey = region || 'global';
-    const guidelines = GUIDELINE_REGISTRY[regionKey]?.[topic] || GUIDELINE_REGISTRY.global[topic] || {
-      local: [],
-      national: [],
-      regional: [],
-      international: []
-    };
-
-    res.json({ ok: true, guidelines, warning: 'Using static guideline registry' });
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error seeding guidelines:', error);
+    process.exit(1);
   }
-});
+}
 
-export default router;
+// Run seeding
+seedGuidelines();
