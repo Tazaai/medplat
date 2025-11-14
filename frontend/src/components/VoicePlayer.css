@@ -1,0 +1,221 @@
+/* VoicePlayer.css - Phase 7 M3 */
+
+.voice-player {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	background: #ffffff;
+	border: 2px solid #e5e7eb;
+	border-radius: 12px;
+}
+
+.playback-progress {
+	height: 8px;
+	background: #e5e7eb;
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+}
+
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+	border-radius: 4px;
+	transition: width 0.1s linear;
+}
+
+.playback-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.control-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border: none;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	color: white;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.control-button:hover:not(:disabled) {
+	background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.control-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.control-button.play-pause {
+	width: 56px;
+	height: 56px;
+}
+
+.control-button .icon {
+	width: 24px;
+	height: 24px;
+}
+
+.control-button.play-pause .icon {
+	width: 28px;
+	height: 28px;
+}
+
+.spinner-small {
+	width: 20px;
+	height: 20px;
+	border: 3px solid rgba(255, 255, 255, 0.3);
+	border-top-color: white;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+.control-button.stop {
+	background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.control-button.stop:hover:not(:disabled) {
+	background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+	box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.speed-controls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.speed-label {
+	font-size: 14px;
+	font-weight: 600;
+	color: #374151;
+}
+
+.speed-buttons {
+	display: flex;
+	gap: 4px;
+	background: #f3f4f6;
+	padding: 4px;
+	border-radius: 8px;
+}
+
+.speed-button {
+	padding: 6px 12px;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: #6b7280;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.speed-button:hover:not(:disabled) {
+	background: #e5e7eb;
+	color: #374151;
+}
+
+.speed-button.active {
+	background: #3b82f6;
+	color: white;
+}
+
+.speed-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.loading-indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 12px;
+	background: #eff6ff;
+	border: 2px solid #3b82f6;
+	border-radius: 8px;
+	color: #1e40af;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.spinner {
+	width: 20px;
+	height: 20px;
+	border: 3px solid #93c5fd;
+	border-top-color: #3b82f6;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.player-error {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 12px;
+	background: #fef2f2;
+	border: 2px solid #ef4444;
+	border-radius: 8px;
+	color: #991b1b;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.error-icon {
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.voice-player {
+		padding: 12px;
+		gap: 10px;
+	}
+
+	.playback-controls {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.speed-controls {
+		margin-left: 0;
+		justify-content: center;
+	}
+
+	.speed-buttons {
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.control-button {
+		width: 44px;
+		height: 44px;
+	}
+
+	.control-button.play-pause {
+		width: 52px;
+		height: 52px;
+	}
+}

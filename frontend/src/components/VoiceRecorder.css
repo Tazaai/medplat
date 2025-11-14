@@ -1,0 +1,207 @@
+/* VoiceRecorder.css - Phase 7 M3 */
+
+.voice-recorder {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 20px;
+	background: #ffffff;
+	border: 2px solid #e5e7eb;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.audio-visualizer {
+	height: 60px;
+	background: #f3f4f6;
+	border-radius: 8px;
+	overflow: hidden;
+	position: relative;
+}
+
+.audio-level-bar {
+	height: 100%;
+	transition: width 0.1s ease-out, background-color 0.3s;
+	border-radius: 8px;
+}
+
+.recording-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.record-button {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 24px;
+	border: none;
+	border-radius: 8px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	color: white;
+}
+
+.record-button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.record-button.start {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.record-button.start:hover:not(:disabled) {
+	background: linear-gradient(135deg, #059669 0%, #047857 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.record-button.pause {
+	background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.record-button.pause:hover {
+	background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.record-button.stop {
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.record-button.stop:hover {
+	background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.record-button .icon {
+	width: 20px;
+	height: 20px;
+}
+
+.duration {
+	font-size: 18px;
+	font-weight: 600;
+	color: #374151;
+	font-variant-numeric: tabular-nums;
+	min-width: 50px;
+	text-align: center;
+}
+
+.status-indicator {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: 600;
+	color: #374151;
+}
+
+.status-dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-indicator.recording .status-dot {
+	background: #ef4444;
+}
+
+.status-indicator.paused .status-dot {
+	background: #fbbf24;
+	animation: none;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+.transcribing-indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 12px;
+	background: #eff6ff;
+	border: 2px solid #3b82f6;
+	border-radius: 8px;
+	color: #1e40af;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.spinner {
+	width: 20px;
+	height: 20px;
+	border: 3px solid #93c5fd;
+	border-top-color: #3b82f6;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.error-message {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 12px;
+	background: #fef2f2;
+	border: 2px solid #ef4444;
+	border-radius: 8px;
+	color: #991b1b;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.error-icon {
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+	.voice-recorder {
+		padding: 16px;
+		gap: 12px;
+	}
+
+	.audio-visualizer {
+		height: 48px;
+	}
+
+	.record-button {
+		padding: 10px 20px;
+		font-size: 14px;
+	}
+
+	.record-button .icon {
+		width: 18px;
+		height: 18px;
+	}
+
+	.duration {
+		font-size: 16px;
+	}
+}

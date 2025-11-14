@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod] = await Promise.all([
+	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod, voiceMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -127,6 +127,7 @@ async function mountRoutes() {
 		import('./routes/social_api.mjs'), // Phase 6 M5: Social Features
 		import('./routes/reasoning_api.mjs'), // Phase 7 M1: AI Reasoning Engine
 		import('./routes/translation_api.mjs'), // Phase 7 M2: Multi-Language
+		import('./routes/voice_api.mjs'), // Phase 7 M3: Voice Interaction
 	]);		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
@@ -151,6 +152,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: socialMod keys=', Object.keys(socialMod || {}), 'defaultType=', typeof (socialMod && socialMod.default)); } catch (e) {}
 	try { console.log('MODULE: reasoningMod keys=', Object.keys(reasoningMod || {}), 'defaultType=', typeof (reasoningMod && reasoningMod.default)); } catch (e) {}
 	try { console.log('MODULE: translationMod keys=', Object.keys(translationMod || {}), 'defaultType=', typeof (translationMod && translationMod.default)); } catch (e) {}
+	try { console.log('MODULE: voiceMod keys=', Object.keys(voiceMod || {}), 'defaultType=', typeof (voiceMod && voiceMod.default)); } catch (e) {}
 
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
@@ -175,6 +177,7 @@ async function mountRoutes() {
 	const socialRouter = normalizeRouter(socialMod); // Phase 6 M5
 	const reasoningRouter = normalizeRouter(reasoningMod); // Phase 7 M1
 	const translationRouter = normalizeRouter(translationMod); // Phase 7 M2
+	const voiceRouter = normalizeRouter(voiceMod); // Phase 7 M3
 
 	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
@@ -404,6 +407,16 @@ async function mountRoutes() {
 	}
 } catch (err) {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);
+
+	// Phase 7 M3: Voice Interaction
+	try {
+		if (voiceRouter) {
+			app.use('/api/voice', voiceRouter);
+			console.log('✅ Mounted /api/voice -> ./routes/voice_api.mjs (Phase 7 M3)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/voice_api.mjs:', e && e.stack ? e.stack : e);
+	}
 	// continue — server can still run for diagnostics
 }
 }// Start server with Cloud Run friendly host/port after mounting routes
