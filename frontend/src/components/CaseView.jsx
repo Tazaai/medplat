@@ -10,6 +10,9 @@ import AnalyticsDashboard from "./AnalyticsDashboard"; // Phase 4 M4: Analytics 
 import GlobalMentorHub from "./GlobalMentorHub"; // Phase 5: Global AI Mentor Network
 import CertificationTab from "./CertificationTab"; // Phase 6 M1: Certification
 import LeaderboardTab from "./LeaderboardTab"; // Phase 6 M2: Leaderboard
+import ExamPrepTab from "./ExamPrepTab"; // Phase 6 M3: Exam Prep
+import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Analytics
+import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -547,6 +550,36 @@ export default function CaseView() {
         >
           🥇 Leaderboard
         </button>
+        <button
+          onClick={() => setActiveTab("exam_prep")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "exam_prep"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📝 Exam Prep
+        </button>
+        <button
+          onClick={() => setActiveTab("admin_analytics")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "admin_analytics"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📈 Admin
+        </button>
+        <button
+          onClick={() => setActiveTab("social")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "social"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          👥 Social
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -577,6 +610,21 @@ export default function CaseView() {
       {/* Show Leaderboard Tab when active (Phase 6 M2) */}
       {activeTab === "leaderboard" && (
         <LeaderboardTab uid={userUid} />
+      )}
+
+      {/* Show Exam Prep Tab when active (Phase 6 M3) */}
+      {activeTab === "exam_prep" && (
+        <ExamPrepTab uid={userUid} />
+      )}
+
+      {/* Show Admin Analytics Dashboard when active (Phase 6 M4) */}
+      {activeTab === "admin_analytics" && (
+        <AnalyticsDashboardTab uid={userUid} isAdmin={true} />
+      )}
+
+      {/* Show Social Tab when active (Phase 6 M5) */}
+      {activeTab === "social" && (
+        <SocialTab uid={userUid} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}
