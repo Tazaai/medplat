@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -123,6 +123,7 @@ async function mountRoutes() {
 			import('./routes/certification_api.mjs'), // Phase 6 M1: Certification Infrastructure
 			import('./routes/leaderboard_api.mjs'), // Phase 6 M2: Leaderboard System
 			import('./routes/exam_prep_api.mjs'), // Phase 6 M3: Exam Prep Tracks
+			import('./routes/analytics_dashboard_api.mjs'), // Phase 6 M4: Analytics Dashboard
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -145,6 +146,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: certificationMod keys=', Object.keys(certificationMod || {}), 'defaultType=', typeof (certificationMod && certificationMod.default)); } catch (e) {}
 		try { console.log('MODULE: leaderboardMod keys=', Object.keys(leaderboardMod || {}), 'defaultType=', typeof (leaderboardMod && leaderboardMod.default)); } catch (e) {}
 	try { console.log('MODULE: examPrepMod keys=', Object.keys(examPrepMod || {}), 'defaultType=', typeof (examPrepMod && examPrepMod.default)); } catch (e) {}
+	try { console.log('MODULE: analyticsDashboardMod keys=', Object.keys(analyticsDashboardMod || {}), 'defaultType=', typeof (analyticsDashboardMod && analyticsDashboardMod.default)); } catch (e) {}
 
 	const guidelinesRouter = normalizeRouter(guidelinesMod);
 	const dialogRouter = normalizeRouter(dialogMod);
@@ -166,6 +168,7 @@ async function mountRoutes() {
 	const certificationRouter = normalizeRouter(certificationMod); // Phase 6 M1
 	const leaderboardRouter = normalizeRouter(leaderboardMod); // Phase 6 M2
 	const examPrepRouter = normalizeRouter(examPrepMod); // Phase 6 M3
+	const analyticsDashboardRouter = normalizeRouter(analyticsDashboardMod); // Phase 6 M4
 
 	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
@@ -178,6 +181,7 @@ async function mountRoutes() {
 	console.log('DEBUG: certificationRouter=', certificationRouter, 'type=', typeof certificationRouter);
 	console.log('DEBUG: leaderboardRouter=', leaderboardRouter, 'type=', typeof leaderboardRouter);
 	console.log('DEBUG: examPrepRouter=', examPrepRouter, 'type=', typeof examPrepRouter);
+	console.log('DEBUG: analyticsDashboardRouter=', analyticsDashboardRouter, 'type=', typeof analyticsDashboardRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -353,8 +357,17 @@ async function mountRoutes() {
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/exam_prep_api.mjs:', e && e.stack ? e.stack : e);
 		}
+
+		try {
+			if (analyticsDashboardRouter) {
+				app.use('/api/analytics_dashboard', analyticsDashboardRouter);
+				console.log('✅ Mounted /api/analytics_dashboard -> ./routes/analytics_dashboard_api.mjs (Phase 6 M4)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/analytics_dashboard_api.mjs:', e && e.stack ? e.stack : e);
+		}
 	} catch (err) {
-			console.error('Route import failed:', err && err.stack ? err.stack : err);
+		console.error('Route import failed:', err && err.stack ? err.stack : err);
 		// continue — server can still run for diagnostics
 	}
 }
