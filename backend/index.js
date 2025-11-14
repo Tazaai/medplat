@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod] = await Promise.all([
+	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -123,12 +123,11 @@ async function mountRoutes() {
 			import('./routes/certification_api.mjs'), // Phase 6 M1: Certification Infrastructure
 			import('./routes/leaderboard_api.mjs'), // Phase 6 M2: Leaderboard System
 			import('./routes/exam_prep_api.mjs'), // Phase 6 M3: Exam Prep Tracks
-			import('./routes/analytics_dashboard_api.mjs'), // Phase 6 M4: Analytics Dashboard
-			import('./routes/social_api.mjs'), // Phase 6 M5: Social Features
-			import('./routes/reasoning_api.mjs'), // Phase 7 M1: AI Reasoning Engine
-		]);
-
-		// Log module shapes to help diagnose mount-time issues
+		import('./routes/analytics_dashboard_api.mjs'), // Phase 6 M4: Analytics Dashboard
+		import('./routes/social_api.mjs'), // Phase 6 M5: Social Features
+		import('./routes/reasoning_api.mjs'), // Phase 7 M1: AI Reasoning Engine
+		import('./routes/translation_api.mjs'), // Phase 7 M2: Multi-Language
+	]);		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyDirectMod keys=', Object.keys(gamifyDirectMod || {}), 'defaultType=', typeof (gamifyDirectMod && gamifyDirectMod.default)); } catch (e) {}
@@ -151,6 +150,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: analyticsDashboardMod keys=', Object.keys(analyticsDashboardMod || {}), 'defaultType=', typeof (analyticsDashboardMod && analyticsDashboardMod.default)); } catch (e) {}
 	try { console.log('MODULE: socialMod keys=', Object.keys(socialMod || {}), 'defaultType=', typeof (socialMod && socialMod.default)); } catch (e) {}
 	try { console.log('MODULE: reasoningMod keys=', Object.keys(reasoningMod || {}), 'defaultType=', typeof (reasoningMod && reasoningMod.default)); } catch (e) {}
+	try { console.log('MODULE: translationMod keys=', Object.keys(translationMod || {}), 'defaultType=', typeof (translationMod && translationMod.default)); } catch (e) {}
 
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
@@ -174,6 +174,7 @@ async function mountRoutes() {
 	const analyticsDashboardRouter = normalizeRouter(analyticsDashboardMod); // Phase 6 M4
 	const socialRouter = normalizeRouter(socialMod); // Phase 6 M5
 	const reasoningRouter = normalizeRouter(reasoningMod); // Phase 7 M1
+	const translationRouter = normalizeRouter(translationMod); // Phase 7 M2
 
 	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
@@ -189,6 +190,7 @@ async function mountRoutes() {
 	console.log('DEBUG: analyticsDashboardRouter=', analyticsDashboardRouter, 'type=', typeof analyticsDashboardRouter);
 	console.log('DEBUG: socialRouter=', socialRouter, 'type=', typeof socialRouter);
 	console.log('DEBUG: reasoningRouter=', reasoningRouter, 'type=', typeof reasoningRouter);
+	console.log('DEBUG: translationRouter=', translationRouter, 'type=', typeof translationRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -375,29 +377,36 @@ async function mountRoutes() {
 		}
 
 		try {
-			if (socialRouter) {
-				app.use('/api/social', socialRouter);
-				console.log('✅ Mounted /api/social -> ./routes/social_api.mjs (Phase 6 M5)');
-			}
-		} catch (e) {
-			console.error('❌ Could not mount ./routes/social_api.mjs:', e && e.stack ? e.stack : e);
+		if (socialRouter) {
+			app.use('/api/social', socialRouter);
+			console.log('✅ Mounted /api/social -> ./routes/social_api.mjs (Phase 6 M5)');
 		}
-
-		try {
-			if (reasoningRouter) {
-				app.use('/api/reasoning', reasoningRouter);
-				console.log('✅ Mounted /api/reasoning -> ./routes/reasoning_api.mjs (Phase 7 M1)');
-			}
-		} catch (e) {
-			console.error('❌ Could not mount ./routes/reasoning_api.mjs:', e && e.stack ? e.stack : e);
-		}
-	} catch (err) {
-		console.error('Route import failed:', err && err.stack ? err.stack : err);
-		// continue — server can still run for diagnostics
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/social_api.mjs:', e && e.stack ? e.stack : e);
 	}
-}
 
-// Start server with Cloud Run friendly host/port after mounting routes
+	try {
+		if (reasoningRouter) {
+			app.use('/api/reasoning', reasoningRouter);
+			console.log('✅ Mounted /api/reasoning -> ./routes/reasoning_api.mjs (Phase 7 M1)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/reasoning_api.mjs:', e && e.stack ? e.stack : e);
+	}
+
+	try {
+		if (translationRouter) {
+			app.use('/api/translation', translationRouter);
+			console.log('✅ Mounted /api/translation -> ./routes/translation_api.mjs (Phase 7 M2)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/translation_api.mjs:', e && e.stack ? e.stack : e);
+	}
+} catch (err) {
+	console.error('Route import failed:', err && err.stack ? err.stack : err);
+	// continue — server can still run for diagnostics
+}
+}// Start server with Cloud Run friendly host/port after mounting routes
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
 
