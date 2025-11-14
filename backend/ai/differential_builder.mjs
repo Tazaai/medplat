@@ -1,7 +1,8 @@
 // backend/ai/differential_builder.mjs — Differential diagnosis builder with ranking
 // Supports Bayesian updating and probability calculations
 
-import { openai } from '../openaiClient.js';
+import { getOpenAIClient } from '../openaiClient.js';
+const openai = getOpenAIClient();
 
 /**
  * Build differential diagnosis from clinical findings

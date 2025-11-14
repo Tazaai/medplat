@@ -1,7 +1,8 @@
 // backend/ai/reasoning_engine.mjs — Core AI reasoning engine for Phase 7 M1
 // Provides advanced clinical reasoning, differential diagnosis, and pattern recognition
 
-import { openai } from '../openaiClient.js';
+import { getOpenAIClient } from '../openaiClient.js';
+const openai = getOpenAIClient();
 
 /**
  * Generate expert differential diagnosis with probabilities
