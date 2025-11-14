@@ -2,7 +2,7 @@
 
 **Version:** v7.0.0 (Planning)  
 **Base:** v6.0.0-complete  
-**Timeline:** 10 weeks  
+**Timeline:** 8 weeks (Offline mode & Mobile apps deferred to Phase 8)  
 **Status:** 📋 PLANNING  
 **Priority:** HIGH
 
@@ -19,11 +19,12 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 
 ### Strategic Goals
 
-1. **Global Reach** - Support learners in 30+ languages across all resource settings
-2. **Clinical Reasoning Depth** - Move beyond recall to diagnostic thinking patterns
-3. **Accessibility** - Offline mode, voice UI, low-bandwidth optimization
+1. **Clinical Reasoning Depth** - Move beyond recall to diagnostic thinking patterns
+2. **Global Reach** - Support learners in 30+ languages with regional guidelines
+3. **Accessibility** - Voice UI for hands-free learning
 4. **AI Enhancement** - Real-time feedback on diagnostic reasoning quality
-5. **Mobile-First** - Native iOS/Android apps with full feature parity
+5. **Social Learning** - Enhanced community features with moderation
+6. **Medical Knowledge Access** - Interactive glossary for instant term definitions
 
 ---
 
@@ -33,9 +34,13 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 |---|-----------|-------|--------|----------|
 | 1 | Advanced AI Reasoning Engine | 1-3 | 📋 Planned | CRITICAL |
 | 2 | Multi-Language Infrastructure | 3-5 | 📋 Planned | CRITICAL |
-| 3 | Offline-First Architecture | 5-7 | 📋 Planned | HIGH |
-| 4 | Voice Interaction System | 7-8 | 📋 Planned | MEDIUM |
-| 5 | Mobile App Development | 8-10 | 📋 Planned | HIGH |
+| 3 | Voice Interaction System | 5-6 | 📋 Planned | HIGH |
+| 4 | Medical Glossary System | 6-7 | 📋 Planned | HIGH |
+| 5 | Advanced Social Features | 7-8 | 📋 Planned | MEDIUM |
+
+**Deferred to Phase 8:**
+- Offline-First Architecture (PWA, service workers, delta sync)
+- Mobile App Development (React Native iOS/Android)
 
 ---
 
@@ -705,21 +710,39 @@ Week 1-3:  Advanced AI Reasoning Engine
 Week 3-5:  Multi-Language Infrastructure
   ├── Translation API integration
   ├── Regional guidelines mapping
+  ├── Country/region selector UI
   ├── Tier 1 languages (8)
   └── Tier 2 languages (8)
 
-Week 5-7:  Offline-First Architecture
+Week 5-6:  Voice Interaction System
+  ├── Speech-to-text commands
+  ├── Text-to-speech cases
+  └── Voice-driven quiz mode
+
+Week 6-7:  Medical Glossary System
+  ├── Term definition API
+  ├── Hover tooltip UI
+  ├── Common terms cache
+  └── AI-powered definitions
+
+Week 7-8:  Advanced Social Features
+  ├── Full social feed (post/upvote/follow)
+  ├── AI content moderation
+  ├── Group chat system
+  ├── Monthly top contributors
+  └── Enhanced study group features
+
+---
+
+**DEFERRED TO PHASE 8 (Future):**
+
+Offline-First Architecture:
   ├── Service worker implementation
   ├── Offline case packages
   ├── Delta sync system
   └── Conflict resolution
 
-Week 7-8:  Voice Interaction System
-  ├── Speech-to-text commands
-  ├── Text-to-speech cases
-  └── Voice-driven quiz mode
-
-Week 8-10: Mobile App Development
+Mobile App Development:
   ├── React Native app
   ├── App store submission
   ├── Beta testing
@@ -774,7 +797,8 @@ Week 8-10: Mobile App Development
 ---
 
 **Status:** 📋 Ready to begin development  
-**Start Date:** TBD  
-**Target Completion:** v7.0.0 by February 2026  
+**Start Date:** November 2025  
+**Target Completion:** v7.0.0 by January 2026 (8 weeks)  
+**Deferred to Phase 8:** Offline mode, Mobile apps (Q1 2026)  
 
 **Copilot Instructions:** Follow docs/COPILOT_PHASE7_GUIDE.md for implementation details.

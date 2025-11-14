@@ -28,9 +28,11 @@ feature/phase7-ai-reasoning
 |---|-----------|----------------|-------|-----------|
 | **M1** | AI Reasoning Engine | Weeks 1-3 | 6 backend + 5 frontend | 12 new |
 | **M2** | Multi-Language | Weeks 3-5 | 5 backend + 4 frontend | 8 new |
-| **M3** | Offline Architecture | Weeks 5-7 | 3 backend + 5 frontend | 4 new |
-| **M4** | Voice Interaction | Weeks 7-8 | 3 backend + 3 frontend | 6 new |
-| **M5** | Mobile App | Weeks 8-10 | React Native app | N/A |
+| **M3** | Voice Interaction | Weeks 5-6 | 3 backend + 3 frontend | 6 new |
+| **M4** | Medical Glossary | Weeks 6-7 | 2 backend + 2 frontend | 4 new |
+| **M5** | Advanced Social | Weeks 7-8 | 4 backend + 3 frontend | 10 new |
+
+**Deferred to Phase 8:** Offline-first architecture, Mobile apps
 
 ---
 
