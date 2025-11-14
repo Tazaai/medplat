@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import glossaryService from './ai/glossary_service.mjs';
 
 /**
  * Try to extract a JSON object string from freeform model text.
@@ -560,6 +561,31 @@ Return ONLY valid JSON matching this exact structure:
         if (refValidation.warnings.length > 0) {
           refValidation.warnings.forEach(w => console.warn(w));
         }
+      }
+      
+      // 🧠 Phase 7 M4: Auto-link medical terms for tooltips
+      try {
+        // Auto-link terms in presentation, history, and exam fields
+        const fieldsToLink = ['presentation', 'history', 'exam'];
+        const linkedData = {};
+        
+        for (const field of fieldsToLink) {
+          if (extracted[field]) {
+            const linkResult = await glossaryService.autoLinkTerms(extracted[field], {
+              language: lang,
+              includeCommon: true
+            });
+            linkedData[`${field}_linked`] = linkResult;
+          }
+        }
+        
+        // Add linked data to case metadata
+        extracted.glossary_links = linkedData;
+        
+        console.log(`✅ Auto-linked medical terms: ${Object.values(linkedData).reduce((sum, d) => sum + d.linked_count, 0)} terms found`);
+      } catch (glossaryError) {
+        console.warn('⚠️ Glossary auto-linking failed:', glossaryError.message);
+        // Non-critical - case can still be used without tooltips
       }
       
       return extracted;

@@ -34,7 +34,7 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 |---|-----------|-------|--------|----------|
 | 1 | Advanced AI Reasoning Engine | 1-3 | ✅ DEPLOYED | CRITICAL |
 | 2 | Multi-Language Infrastructure | 3-5 | ✅ DEPLOYED | CRITICAL |
-| 3 | Voice Interaction System | 5-6 | 📋 Planned | HIGH |
+| 3 | Voice Interaction System | 5-6 | ✅ DEPLOYED | HIGH |
 | 4 | Medical Glossary System | 6-7 | 📋 Planned | HIGH |
 | 5 | Advanced Social Features | 7-8 | 📋 Planned | MEDIUM |
 
@@ -446,7 +446,21 @@ frontend/src/components/DownloadManager.jsx
 
 ---
 
-## Milestone 4: Voice Interaction System (Weeks 7-8)
+## Milestone 3: Voice Interaction System (Weeks 5-6) ✅ DEPLOYED
+
+**Status:** ✅ COMPLETE (Nov 14, 2025)  
+**Tag:** v7.0.0-m3  
+**Backend Revision:** medplat-backend-01065-hqf  
+**Frontend:** Components ready (VoiceRecorder.jsx, VoicePlayer.jsx)
+
+### Deployment Summary
+- ✅ Backend: 2 new files (738 lines) - Google Cloud Speech-to-Text/Text-to-Speech integration
+- ✅ Voice API: 6 endpoints operational (/transcribe, /synthesize, /command, /read-case, /languages, /health)
+- ✅ Languages: 20 supported for STT/TTS (Neural & WaveNet voices)
+- ✅ Medical terminology: 50+ clinical phrases boosted in recognition
+- ✅ Voice commands: Navigation, answer selection, case reading
+- ✅ Frontend: VoiceRecorder (audio visualization, recording controls) + VoicePlayer (TTS playback, speed control)
+- ✅ Dependencies: @google-cloud/speech@6.0.0, @google-cloud/text-to-speech@5.0.0, multer@1.4.5
 
 ### Objectives
 Enable **hands-free learning** via voice commands and audio feedback for accessibility and convenience.

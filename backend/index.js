@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod, voiceMod] = await Promise.all([
+	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod, voiceMod, glossaryMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -128,6 +128,7 @@ async function mountRoutes() {
 		import('./routes/reasoning_api.mjs'), // Phase 7 M1: AI Reasoning Engine
 		import('./routes/translation_api.mjs'), // Phase 7 M2: Multi-Language
 		import('./routes/voice_api.mjs'), // Phase 7 M3: Voice Interaction
+		import('./routes/glossary_api.mjs'), // Phase 7 M4: Medical Glossary
 	]);		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
@@ -178,6 +179,7 @@ async function mountRoutes() {
 	const reasoningRouter = normalizeRouter(reasoningMod); // Phase 7 M1
 	const translationRouter = normalizeRouter(translationMod); // Phase 7 M2
 	const voiceRouter = normalizeRouter(voiceMod); // Phase 7 M3
+	const glossaryRouter = normalizeRouter(glossaryMod); // Phase 7 M4
 
 	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
@@ -414,6 +416,16 @@ async function mountRoutes() {
 		}
 	} catch (e) {
 		console.error('❌ Could not mount ./routes/voice_api.mjs:', e && e.stack ? e.stack : e);
+	}
+
+	// Phase 7 M4: Medical Glossary (Dual-mode: Case tooltips + Gamification quizzes)
+	try {
+		if (glossaryRouter) {
+			app.use('/api/glossary', glossaryRouter);
+			console.log('✅ Mounted /api/glossary -> ./routes/glossary_api.mjs (Phase 7 M4)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/glossary_api.mjs:', e && e.stack ? e.stack : e);
 	}
 } catch (err) {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);

@@ -1,0 +1,502 @@
+/* GlossaryTooltip Styles - Phase 7 M4 */
+
+.glossary-tooltip-wrapper {
+  position: relative;
+  display: inline;
+}
+
+.glossary-term-highlight {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #60a5fa;
+  cursor: help;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.glossary-term-highlight:hover {
+  color: #1d4ed8;
+  text-decoration-color: #3b82f6;
+  background-color: rgba(37, 99, 235, 0.05);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Preview Tooltip (Hover) */
+.glossary-tooltip-preview {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  min-width: 280px;
+  max-width: 320px;
+  z-index: 1000;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.glossary-tooltip-preview::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: white;
+}
+
+.tooltip-loading,
+.tooltip-error {
+  padding: 8px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.tooltip-term-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.tooltip-pronunciation {
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.tooltip-definition-preview {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.tooltip-click-hint {
+  font-size: 12px;
+  color: #2563eb;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Expanded Details (Click) */
+.glossary-tooltip-expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  min-width: 400px;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 2000;
+  animation: modalFadeIn 0.3s ease;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tooltip-header-left h3 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.tooltip-full-name {
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.tooltip-close {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tooltip-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* Pronunciation Section */
+.tooltip-pronunciation-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.pronunciation-text {
+  flex: 1;
+  font-size: 16px;
+  color: #374151;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.pronunciation-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.pronunciation-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.pronunciation-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pronunciation-btn.playing {
+  animation: pulse 1.5s infinite;
+}
+
+/* Definition Section */
+.tooltip-definition {
+  margin-bottom: 16px;
+}
+
+.tooltip-definition strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.tooltip-definition p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+  margin: 0;
+}
+
+/* Translation Section */
+.tooltip-translation {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #eff6ff;
+  border-left: 3px solid #2563eb;
+  border-radius: 6px;
+}
+
+.tooltip-translation strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 6px;
+}
+
+.tooltip-translation p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e40af;
+  margin: 0;
+}
+
+/* Metadata Section */
+.tooltip-metadata {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.tooltip-meta-item {
+  font-size: 13px;
+  color: #374151;
+}
+
+.tooltip-meta-item strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #111827;
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.difficulty-badge.beginner {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.difficulty-badge.intermediate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.difficulty-badge.advanced {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.difficulty-badge.expert {
+  background: #ddd6fe;
+  color: #5b21b6;
+}
+
+/* Clinical Pearls */
+.tooltip-clinical-pearls {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fef9c3;
+  border-left: 3px solid #eab308;
+  border-radius: 6px;
+}
+
+.tooltip-clinical-pearls strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #854d0e;
+  margin-bottom: 6px;
+}
+
+.tooltip-clinical-pearls p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #713f12;
+  margin: 0;
+}
+
+/* Example Usage */
+.tooltip-example {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+}
+
+.tooltip-example strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.example-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4b5563;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Related Terms */
+.tooltip-related {
+  margin-bottom: 16px;
+}
+
+.tooltip-related strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.related-terms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-term-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #2563eb;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.related-term-btn:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Tags */
+.tooltip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.tag-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #e5e7eb;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Animations */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .glossary-tooltip-preview {
+    min-width: 240px;
+    max-width: 280px;
+  }
+
+  .glossary-tooltip-expanded {
+    min-width: 90vw;
+    max-width: 90vw;
+    padding: 16px;
+  }
+
+  .tooltip-header-left h3 {
+    font-size: 20px;
+  }
+
+  .tooltip-metadata {
+    grid-template-columns: 1fr;
+  }
+
+  .pronunciation-text {
+    font-size: 14px;
+  }
+
+  .pronunciation-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .glossary-tooltip-preview,
+  .glossary-tooltip-expanded {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f3f4f6;
+  }
+
+  .tooltip-term-name,
+  .tooltip-header-left h3,
+  .tooltip-definition strong,
+  .tooltip-meta-item strong {
+    color: #f3f4f6;
+  }
+
+  .tooltip-pronunciation,
+  .tooltip-definition-preview,
+  .tooltip-definition p {
+    color: #d1d5db;
+  }
+
+  .tooltip-close {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .tooltip-close:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+  }
+
+  .tooltip-pronunciation-section,
+  .tooltip-metadata,
+  .tooltip-example {
+    background: #111827;
+  }
+}
