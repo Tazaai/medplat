@@ -1,9 +1,10 @@
-# 🌍 MedPlat — Master Project Guide v6.0.0
+# 🌍 MedPlat — Master Project Guide v8.0.0
 
 **Last Updated:** November 14, 2025  
-**Current Version:** v6.0.0-complete (Production)  
-**Next Version:** v7.0.0 (8 weeks, January 2026)  
-**Status:** ✅ LIVE + 📋 PLANNING PHASE 7
+**Current Version:** v8.0.0-m1 (Production)  
+**Previous Version:** v7.0.0-m5 (Phase 7 complete)  
+**Next Version:** v8.0.0-m2 (Radiology Basics - Planned)  
+**Status:** ✅ LIVE — Phase 8 M1 DEPLOYED
 
 ---
 
@@ -27,30 +28,45 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 **Status:** DEPLOYED — All features operational  
 **Quality:** 0.967/1.0 average, regression tests 10/10 passing
 
-### 📋 Phase 7: ENHANCEMENT (8 weeks)
-**Target:** January 2026 v7.0.0  
-**Focus:** AI reasoning, multi-language, voice, glossary, social
+### ✅ Phase 7: AI ENHANCEMENT (COMPLETE)
+**Status:** ✅ DEPLOYED v7.0.0-m5  
+**Features:** AI reasoning, multi-language (30+ langs), voice interaction, medical glossary, advanced social
 
-### ⏸️ Phase 8: EXPANSION (Future)
-**Features:** Offline mode, mobile apps, pricing system, advanced features
+### ✅ Phase 8 M1: CLINICAL IMAGING (COMPLETE)
+**Status:** ✅ DEPLOYED v8.0.0-m1 (Nov 14, 2025)  
+**Features:** ECG interpretation module (15 cases), POCUS/ultrasound module (15 cases)  
+**Architecture:** Library-based (LITFL, POCUS101), AI-enhanced explanations, zero storage cost
 
-### 🚀 FULL PRODUCTION LAUNCH CRITERIA (v7.0.0)
+### 📋 Phase 8 M2-M3: RADIOLOGY + INTEGRATION (Planned)
+**Target:** January-February 2026  
+**Features:** Chest X-ray (20 cases), CT fundamentals (10 cases), clinical reasoning integration
+
+### ⏸️ Phase 9: MOBILE & OFFLINE (Future)
+**Features:** PWA offline mode, React Native iOS/Android apps
+
+### ⏸️ Phase 10: ENTERPRISE (Future)
+**Features:** Pricing system, institution dashboards, academic partnerships
+
+### 🚀 FULL PRODUCTION LAUNCH CRITERIA (v8.0.0+)
 
 **Ready to scale globally when:**
 - [x] Professor-level case quality (≥95%) — ✅ ACHIEVED
-- [x] Gamification + certifications — ✅ ACHIEVED
-- [x] Social features + study groups — ✅ ACHIEVED
-- [ ] Multi-language support (30+ languages) — 📋 Phase 7 M2
-- [ ] Voice interaction — 📋 Phase 7 M3
-- [ ] Advanced AI reasoning — 📋 Phase 7 M1
-- [ ] Payment system — ⏸️ Phase 8
-- [ ] Mobile apps — ⏸️ Phase 8
+- [x] Gamification + certifications — ✅ ACHIEVED (Phase 5-6)
+- [x] Social features + study groups — ✅ ACHIEVED (Phase 6-7)
+- [x] Multi-language support (30+ languages) — ✅ ACHIEVED (Phase 7 M2)
+- [x] Voice interaction — ✅ ACHIEVED (Phase 7 M3)
+- [x] Advanced AI reasoning — ✅ ACHIEVED (Phase 7 M1)
+- [x] Medical glossary — ✅ ACHIEVED (Phase 7 M4)
+- [x] Clinical imaging (ECG + POCUS) — ✅ ACHIEVED (Phase 8 M1)
+- [ ] Radiology basics (CXR + CT) — 📋 Phase 8 M2 (Planned)
+- [ ] Payment system — ⏸️ Phase 10
+- [ ] Mobile apps — ⏸️ Phase 9
 
-**Go-Live Decision Point:** After Phase 7 completion (January 2026)
+**Go-Live Decision Point:** ✅ READY NOW (v8.0.0-m1 deployed)
 
 ---
 
-## ✅ IMPLEMENTED FEATURES (v6.0.0-complete)
+## ✅ IMPLEMENTED FEATURES (v8.0.0-m1)
 
 ### Core Platform (Phase 3)
 - Two-stage case generation (Professor v2 + Internal Panel)
@@ -82,6 +98,23 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 **Social (M5):** Groups, challenges, achievements, sharing (12 endpoints)
 
 **Total:** 48 new endpoints in Phase 6
+
+### AI Enhancement (Phase 7) ✅ COMPLETE
+**Reasoning Engine (M1):** Differential diagnosis builder, Bayesian analysis, clinical scoring (11 endpoints)  
+**Multi-Language (M2):** 30+ language support, regional guidelines, medical term translation (5 endpoints)  
+**Voice Interaction (M3):** STT, TTS, voice commands (6 endpoints)  
+**Medical Glossary (M4):** 10K+ terms, hover tooltips, dynamic definitions (13 endpoints)  
+**Advanced Social (M5):** Enhanced community features, moderation (integrated with Phase 6)
+
+**Total:** 35 new endpoints in Phase 7
+
+### Clinical Imaging (Phase 8 M1) ✅ COMPLETE
+**ECG Interpretation:** 15 validated cases, 5 categories, AI-enhanced explanations (7 endpoints)  
+**POCUS/Ultrasound:** 15 validated cases, 5 categories, video links (7 endpoints)  
+**Library-Based:** Public educational resources (LITFL, POCUS101), zero storage cost  
+**Safety:** NO user uploads, pre-validated diagnoses only, educational use only
+
+**Total:** 14 new endpoints in Phase 8 M1
 
 ---
 
@@ -143,26 +176,77 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 
 ---
 
-## ⏸️ DEFERRED TO PHASE 8 (Q1-Q2 2026)
+## 📋 CURRENT FOCUS: PHASE 8 M2-M3 (Planned - Jan-Feb 2026)
 
-### Offline Mode
-**Why Deferred:** Complex PWA architecture, lower immediate impact  
-**When:** After multi-language + voice (core global features first)
+### Phase 8 M2: Radiology Basics (Planned - 3 weeks, January 2026)
+
+**Chest X-Ray Interpretation:**
+- 20 validated CXR cases (pneumonia, pneumothorax, CHF, pleural effusion, lung mass)
+- Categories: Normal, Infection, Fluid, Air, Masses, Bones
+- Source: Radiopaedia educational library
+- Same library-based approach as ECG/POCUS (zero storage cost)
+
+**CT Fundamentals:**
+- 10 validated CT cases (stroke, PE, AAA, trauma)
+- Categories: Head, Chest, Abdomen, Emergency
+- Source: Radiopaedia educational library
+
+**API Endpoints (7 new):**
+```
+GET  /api/radiology/health
+GET  /api/radiology/stats
+GET  /api/radiology/list
+GET  /api/radiology/case/:id
+POST /api/radiology/mcq/generate
+POST /api/radiology/quiz/generate
+POST /api/radiology/grade
+```
+
+### Phase 8 M3: Clinical Reasoning Integration (Planned - 2 weeks, February 2026)
+
+**Multi-Modal Cases:**
+- Combine ECG + clinical presentation + lab values
+- Example: "62M with chest pain" → ECG shows STEMI → Differential diagnosis
+- Link to Phase 7 M1 reasoning engine
+
+**ECG-to-Differential Mapping:**
+- Map ECG findings to differential diagnosis automatically
+- Example: "Anterior STEMI" → Reasoning engine generates MI differentials
+
+**POCUS-to-Clinical Decision:**
+- Link ultrasound findings to clinical decision trees
+- Example: "Positive FAST" → Activate trauma protocol
+
+---
+
+## ⏸️ DEFERRED TO PHASE 9 (Q2 2026)
+
+### Offline Mode (PWA)
+**Why Deferred:** Complex service worker architecture, lower immediate impact  
+**When:** After clinical imaging modules complete (Phase 8 M1-M3)
 
 ### Mobile Apps (iOS/Android)
 **Why Deferred:** Requires React Native rebuild, high maintenance  
-**When:** After web platform reaches stable v7.0.0
+**When:** After web platform reaches stable v8.0.0
+
+---
+
+## ⏸️ DEFERRED TO PHASE 10 (Q3 2026)
 
 ### Global Pricing System
 **Why Deferred:** Need user base + business model validation  
-**When:** After v7.0.0 launch with international users
+**When:** After v8.0.0 launch with international users
+
+### Enterprise Features
+- Institution dashboards
+- Academic partnerships
+- Research data export
+- Advanced analytics
 
 ### Additional Features
 - OSCE simulation module
 - Peer review system
 - Live multiplayer battles
-- Research data export
-- Academic partnerships
 
 ---
 
