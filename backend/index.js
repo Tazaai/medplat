@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod, voiceMod, glossaryMod] = await Promise.all([
+	const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod, translationMod, voiceMod, glossaryMod, ecgMod, pocusMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -129,6 +129,8 @@ async function mountRoutes() {
 		import('./routes/translation_api.mjs'), // Phase 7 M2: Multi-Language
 		import('./routes/voice_api.mjs'), // Phase 7 M3: Voice Interaction
 		import('./routes/glossary_api.mjs'), // Phase 7 M4: Medical Glossary
+		import('./routes/ecg_api.mjs'), // Phase 8 M1: ECG Interpretation
+		import('./routes/pocus_api.mjs'), // Phase 8 M1: POCUS/Ultrasound
 	]);		// Log module shapes to help diagnose mount-time issues
 	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
 	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
@@ -154,6 +156,8 @@ async function mountRoutes() {
 	try { console.log('MODULE: reasoningMod keys=', Object.keys(reasoningMod || {}), 'defaultType=', typeof (reasoningMod && reasoningMod.default)); } catch (e) {}
 	try { console.log('MODULE: translationMod keys=', Object.keys(translationMod || {}), 'defaultType=', typeof (translationMod && translationMod.default)); } catch (e) {}
 	try { console.log('MODULE: voiceMod keys=', Object.keys(voiceMod || {}), 'defaultType=', typeof (voiceMod && voiceMod.default)); } catch (e) {}
+	try { console.log('MODULE: ecgMod keys=', Object.keys(ecgMod || {}), 'defaultType=', typeof (ecgMod && ecgMod.default)); } catch (e) {}
+	try { console.log('MODULE: pocusMod keys=', Object.keys(pocusMod || {}), 'defaultType=', typeof (pocusMod && pocusMod.default)); } catch (e) {}
 
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
@@ -180,8 +184,10 @@ async function mountRoutes() {
 	const translationRouter = normalizeRouter(translationMod); // Phase 7 M2
 	const voiceRouter = normalizeRouter(voiceMod); // Phase 7 M3
 	const glossaryRouter = normalizeRouter(glossaryMod); // Phase 7 M4
+	const ecgRouter = normalizeRouter(ecgMod); // Phase 8 M1
+	const pocusRouter = normalizeRouter(pocusMod); // Phase 8 M1
 
-	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 routers
+	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 + Phase 8 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
 	console.log('DEBUG: adaptiveFeedbackRouter=', adaptiveFeedbackRouter, 'type=', typeof adaptiveFeedbackRouter);
 	console.log('DEBUG: telemetryRouter=', telemetryRouter, 'type=', typeof telemetryRouter);
@@ -196,6 +202,8 @@ async function mountRoutes() {
 	console.log('DEBUG: socialRouter=', socialRouter, 'type=', typeof socialRouter);
 	console.log('DEBUG: reasoningRouter=', reasoningRouter, 'type=', typeof reasoningRouter);
 	console.log('DEBUG: translationRouter=', translationRouter, 'type=', typeof translationRouter);
+	console.log('DEBUG: ecgRouter=', ecgRouter, 'type=', typeof ecgRouter);
+	console.log('DEBUG: pocusRouter=', pocusRouter, 'type=', typeof pocusRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -426,6 +434,26 @@ async function mountRoutes() {
 		}
 	} catch (e) {
 		console.error('❌ Could not mount ./routes/glossary_api.mjs:', e && e.stack ? e.stack : e);
+	}
+
+	// Phase 8 M1: ECG Interpretation Module
+	try {
+		if (ecgRouter) {
+			app.use('/api/ecg', ecgRouter);
+			console.log('✅ Mounted /api/ecg -> ./routes/ecg_api.mjs (Phase 8 M1)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/ecg_api.mjs:', e && e.stack ? e.stack : e);
+	}
+
+	// Phase 8 M1: POCUS/Ultrasound Interpretation Module
+	try {
+		if (pocusRouter) {
+			app.use('/api/pocus', pocusRouter);
+			console.log('✅ Mounted /api/pocus -> ./routes/pocus_api.mjs (Phase 8 M1)');
+		}
+	} catch (e) {
+		console.error('❌ Could not mount ./routes/pocus_api.mjs:', e && e.stack ? e.stack : e);
 	}
 } catch (err) {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);

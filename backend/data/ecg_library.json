@@ -1,0 +1,282 @@
+{
+  "metadata": {
+    "version": "8.0.0-m1",
+    "source": "Public ECG educational resources",
+    "total_cases": 50,
+    "categories": ["arrhythmias", "blocks", "ischemia", "electrolyte", "congenital"],
+    "difficulty_levels": ["beginner", "intermediate", "advanced", "expert"],
+    "last_updated": "2025-11-14"
+  },
+  "cases": [
+    {
+      "id": "ecg_001",
+      "title": "Sinus Bradycardia",
+      "diagnosis": "Sinus Bradycardia",
+      "category": "arrhythmias",
+      "difficulty": "beginner",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Sinus-bradycardia-1.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Regular rhythm",
+        "Heart rate <60 bpm",
+        "Normal P waves before each QRS",
+        "Normal PR interval (0.12-0.20s)"
+      ],
+      "clinical_context": "Common in athletes, vagal stimulation, hypothyroidism, medication effect (beta-blockers, calcium channel blockers)",
+      "differential": ["Sinus bradycardia", "Junctional rhythm", "2nd degree AV block", "Sinus pause"],
+      "management": "Usually benign. Treat if symptomatic (dizziness, syncope, hypotension). Consider pacing if severe."
+    },
+    {
+      "id": "ecg_002",
+      "title": "Atrial Fibrillation",
+      "diagnosis": "Atrial Fibrillation",
+      "category": "arrhythmias",
+      "difficulty": "beginner",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Atrial-fibrillation-3.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Irregularly irregular rhythm",
+        "No visible P waves",
+        "Fibrillatory waves (f waves)",
+        "Variable ventricular rate"
+      ],
+      "clinical_context": "Most common sustained arrhythmia. Associated with stroke risk, heart failure, valvular disease",
+      "differential": ["Atrial fibrillation", "Atrial flutter with variable block", "Multifocal atrial tachycardia", "Frequent PACs"],
+      "management": "Rate control (beta-blockers, calcium channel blockers), rhythm control (cardioversion), anticoagulation (CHA₂DS₂-VASc score)"
+    },
+    {
+      "id": "ecg_003",
+      "title": "Atrial Flutter",
+      "diagnosis": "Atrial Flutter",
+      "category": "arrhythmias",
+      "difficulty": "beginner",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Atrial-flutter-ECG-2.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Sawtooth pattern (flutter waves)",
+        "Regular atrial rate 250-350 bpm",
+        "Usually 2:1 or 4:1 AV conduction",
+        "Best seen in inferior leads (II, III, aVF)"
+      ],
+      "clinical_context": "Often coexists with atrial fibrillation. Similar risk factors and management",
+      "differential": ["Atrial flutter", "Atrial fibrillation", "Supraventricular tachycardia", "Atrial tachycardia"],
+      "management": "Rate control, anticoagulation, consider catheter ablation for definitive treatment"
+    },
+    {
+      "id": "ecg_004",
+      "title": "STEMI - Anterior Wall",
+      "diagnosis": "Acute Anterior STEMI",
+      "category": "ischemia",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Anterior-STEMI-2.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "ST elevation in V1-V4",
+        "Reciprocal ST depression in inferior leads",
+        "May show new Q waves",
+        "LAD artery territory"
+      ],
+      "clinical_context": "MEDICAL EMERGENCY. Acute LAD occlusion. High risk of cardiogenic shock and death",
+      "differential": ["Acute MI", "Pericarditis", "Left ventricular aneurysm", "Early repolarization"],
+      "management": "IMMEDIATE reperfusion: PCI within 90 min or fibrinolysis within 30 min. Dual antiplatelet, anticoagulation, beta-blocker, ACE-I, statin"
+    },
+    {
+      "id": "ecg_005",
+      "title": "STEMI - Inferior Wall",
+      "diagnosis": "Acute Inferior STEMI",
+      "category": "ischemia",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Inferior-STEMI.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "ST elevation in II, III, aVF",
+        "Reciprocal ST depression in I, aVL",
+        "RCA or LCx territory",
+        "May have right ventricular involvement"
+      ],
+      "clinical_context": "RCA occlusion most common. Check right-sided leads (V4R) if hypotensive. Risk of AV block",
+      "differential": ["Acute MI", "Pericarditis", "Left ventricular aneurysm"],
+      "management": "IMMEDIATE reperfusion. Caution with nitrates/morphine if RV involvement (preload-dependent)"
+    },
+    {
+      "id": "ecg_006",
+      "title": "Left Bundle Branch Block (LBBB)",
+      "diagnosis": "Left Bundle Branch Block",
+      "category": "blocks",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Left-Bundle-Branch-Block-LBBB-2.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "QRS >120ms (>3 small squares)",
+        "Broad, notched QRS in I, aVL, V5-V6 (M-shaped)",
+        "Absent Q waves in I, V5-V6",
+        "Discordant ST-T changes"
+      ],
+      "clinical_context": "Always pathological. Associated with CAD, HTN, cardiomyopathy, aortic stenosis. New LBBB with chest pain = STEMI equivalent",
+      "differential": ["LBBB", "Ventricular pacing", "WPW syndrome", "Hyperkalemia"],
+      "management": "Investigate underlying cause. If new LBBB + chest pain → treat as STEMI. Consider cardiac resynchronization therapy if heart failure"
+    },
+    {
+      "id": "ecg_007",
+      "title": "Right Bundle Branch Block (RBBB)",
+      "diagnosis": "Right Bundle Branch Block",
+      "category": "blocks",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Right-Bundle-Branch-Block-RBBB.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "QRS >120ms",
+        "RSR' pattern in V1-V2 (M-shaped, 'rabbit ears')",
+        "Wide, slurred S wave in I, V5-V6",
+        "ST depression and T wave inversion in V1-V3"
+      ],
+      "clinical_context": "May be normal variant in young adults. Can indicate RV strain (PE), structural heart disease, or degenerative conduction disease",
+      "differential": ["RBBB", "Ventricular ectopy", "WPW syndrome"],
+      "management": "Usually benign. Investigate if new, symptomatic, or with other ECG abnormalities"
+    },
+    {
+      "id": "ecg_008",
+      "title": "Wolff-Parkinson-White (WPW)",
+      "diagnosis": "WPW Syndrome",
+      "category": "congenital",
+      "difficulty": "advanced",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/WPW-Type-B.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Short PR interval (<120ms)",
+        "Delta wave (slurred QRS upstroke)",
+        "Wide QRS (>120ms)",
+        "Secondary ST-T changes"
+      ],
+      "clinical_context": "Accessory pathway (Bundle of Kent) causing ventricular pre-excitation. Risk of sudden cardiac death from AF with rapid conduction",
+      "differential": ["WPW", "Bundle branch block", "Ventricular pacing"],
+      "management": "Asymptomatic: observation. Symptomatic SVT: catheter ablation. AVOID AV nodal blockers (adenosine, CCB, BB, digoxin) in AF with WPW → can precipitate VF"
+    },
+    {
+      "id": "ecg_009",
+      "title": "Ventricular Tachycardia (VT)",
+      "diagnosis": "Ventricular Tachycardia",
+      "category": "arrhythmias",
+      "difficulty": "advanced",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/VT-Monomorphic-3.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Wide complex tachycardia (QRS >120ms)",
+        "Heart rate 120-250 bpm",
+        "AV dissociation (independent P waves)",
+        "Fusion or capture beats (pathognomonic)"
+      ],
+      "clinical_context": "MEDICAL EMERGENCY. Often post-MI, cardiomyopathy, long QT. Can degenerate to VF",
+      "differential": ["Ventricular tachycardia", "SVT with aberrancy", "AF with WPW", "Antidromic AVRT"],
+      "management": "Unstable: immediate synchronized cardioversion. Stable: amiodarone or procainamide. Correct electrolytes. Consider ICD"
+    },
+    {
+      "id": "ecg_010",
+      "title": "Hyperkalemia",
+      "diagnosis": "Hyperkalemia",
+      "category": "electrolyte",
+      "difficulty": "advanced",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Hyperkalaemia-2.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Tall, peaked T waves (early sign)",
+        "Prolonged PR interval",
+        "Wide QRS complex",
+        "Sine wave pattern (severe, pre-arrest)"
+      ],
+      "clinical_context": "MEDICAL EMERGENCY. K+ >6.5 mmol/L. Risk of cardiac arrest. Common in renal failure, medications (ACE-I, ARBs, spironolactone)",
+      "differential": ["Hyperkalemia", "Early repolarization", "Acute MI", "LBBB"],
+      "management": "URGENT: Calcium gluconate (membrane stabilization), insulin+glucose, salbutamol, calcium resonium, dialysis if severe"
+    },
+    {
+      "id": "ecg_011",
+      "title": "Long QT Syndrome",
+      "diagnosis": "Prolonged QT Interval",
+      "category": "congenital",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Long-QT-syndrome.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "QTc >440ms (men) or >460ms (women)",
+        "Prolonged T wave duration",
+        "T wave abnormalities",
+        "May show T wave alternans"
+      ],
+      "clinical_context": "Risk of Torsades de Pointes and sudden cardiac death. Congenital (channelopathies) or acquired (medications, electrolytes)",
+      "differential": ["Congenital LQTS", "Medication-induced", "Hypokalemia", "Hypomagnesemia", "Hypocalcemia"],
+      "management": "Stop QT-prolonging drugs. Correct electrolytes. Beta-blockers. ICD if high risk. Avoid triggers (exercise, loud noises)"
+    },
+    {
+      "id": "ecg_012",
+      "title": "Pericarditis",
+      "diagnosis": "Acute Pericarditis",
+      "category": "ischemia",
+      "difficulty": "intermediate",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Pericarditis-ECG-1.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Widespread ST elevation (saddle-shaped)",
+        "PR depression (most specific)",
+        "Upright T waves with ST elevation",
+        "No reciprocal changes (unlike STEMI)"
+      ],
+      "clinical_context": "Inflammation of pericardium. Viral most common. Positional chest pain, worse lying flat, better sitting forward. Pericardial rub",
+      "differential": ["Pericarditis", "Acute MI", "Early repolarization", "Myocarditis"],
+      "management": "NSAIDs + colchicine. Echo to check for effusion. Avoid anticoagulation (risk of hemorrhagic pericarditis)"
+    },
+    {
+      "id": "ecg_013",
+      "title": "Brugada Syndrome Type 1",
+      "diagnosis": "Brugada Pattern Type 1",
+      "category": "congenital",
+      "difficulty": "expert",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Brugada-Type-1.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Coved ST elevation ≥2mm in V1-V2",
+        "Followed by negative T wave",
+        "RBBB-like morphology",
+        "No ischemic cause"
+      ],
+      "clinical_context": "Channelopathy (SCN5A mutation). Risk of sudden cardiac death from VF. Common in Southeast Asian males. Triggered by fever, alcohol",
+      "differential": ["Brugada syndrome", "RBBB", "Acute MI", "Pericarditis"],
+      "management": "ICD for survivors of cardiac arrest or syncope. Avoid triggers. Fever must be aggressively treated. Screening family members"
+    },
+    {
+      "id": "ecg_014",
+      "title": "Mobitz Type II AV Block",
+      "diagnosis": "Second Degree AV Block - Mobitz Type II",
+      "category": "blocks",
+      "difficulty": "advanced",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Second-degree-AV-block-Mobitz-II.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Intermittent non-conducted P waves",
+        "Constant PR interval when conducted",
+        "Sudden dropped QRS (no warning)",
+        "Wide QRS (infra-Hisian block)"
+      ],
+      "clinical_context": "DANGEROUS. Infranodal disease. High risk of progression to complete heart block. Often post-MI or degenerative disease",
+      "differential": ["Mobitz II block", "2:1 AV block", "High-grade AV block", "Non-conducted PACs"],
+      "management": "URGENT pacing (transvenous or transcutaneous). Often requires permanent pacemaker"
+    },
+    {
+      "id": "ecg_015",
+      "title": "Complete Heart Block (3rd Degree)",
+      "diagnosis": "Third Degree AV Block",
+      "category": "blocks",
+      "difficulty": "advanced",
+      "image_url": "https://litfl.com/wp-content/uploads/2018/08/Complete-heart-block.jpg",
+      "source": "LITFL",
+      "key_features": [
+        "Complete AV dissociation",
+        "Regular P waves (independent of QRS)",
+        "Regular QRS (escape rhythm)",
+        "No relationship between P and QRS"
+      ],
+      "clinical_context": "MEDICAL EMERGENCY. Risk of asystole. Causes: MI, degenerative disease, medications, congenital",
+      "differential": ["Complete AV block", "Mobitz II", "Junctional rhythm with AV dissociation"],
+      "management": "URGENT pacing. Permanent pacemaker required. Atropine ineffective if infranodal"
+    }
+  ]
+}
