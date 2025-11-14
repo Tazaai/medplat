@@ -13,6 +13,7 @@ import LeaderboardTab from "./LeaderboardTab"; // Phase 6 M2: Leaderboard
 import ExamPrepTab from "./ExamPrepTab"; // Phase 6 M3: Exam Prep
 import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Analytics
 import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
+import ReasoningTab from "./ReasoningTab"; // Phase 7 M1: AI Reasoning Engine
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -580,6 +581,16 @@ export default function CaseView() {
         >
           👥 Social
         </button>
+        <button
+          onClick={() => setActiveTab("reasoning")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "reasoning"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🧠 Reasoning
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -625,6 +636,11 @@ export default function CaseView() {
       {/* Show Social Tab when active (Phase 6 M5) */}
       {activeTab === "social" && (
         <SocialTab uid={userUid} />
+      )}
+
+      {/* Show Reasoning Tab when active (Phase 7 M1) */}
+      {activeTab === "reasoning" && (
+        <ReasoningTab caseData={caseData} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}

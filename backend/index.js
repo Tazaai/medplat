@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod, analyticsDashboardMod, socialMod, reasoningMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -125,6 +125,7 @@ async function mountRoutes() {
 			import('./routes/exam_prep_api.mjs'), // Phase 6 M3: Exam Prep Tracks
 			import('./routes/analytics_dashboard_api.mjs'), // Phase 6 M4: Analytics Dashboard
 			import('./routes/social_api.mjs'), // Phase 6 M5: Social Features
+			import('./routes/reasoning_api.mjs'), // Phase 7 M1: AI Reasoning Engine
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -149,6 +150,7 @@ async function mountRoutes() {
 	try { console.log('MODULE: examPrepMod keys=', Object.keys(examPrepMod || {}), 'defaultType=', typeof (examPrepMod && examPrepMod.default)); } catch (e) {}
 	try { console.log('MODULE: analyticsDashboardMod keys=', Object.keys(analyticsDashboardMod || {}), 'defaultType=', typeof (analyticsDashboardMod && analyticsDashboardMod.default)); } catch (e) {}
 	try { console.log('MODULE: socialMod keys=', Object.keys(socialMod || {}), 'defaultType=', typeof (socialMod && socialMod.default)); } catch (e) {}
+	try { console.log('MODULE: reasoningMod keys=', Object.keys(reasoningMod || {}), 'defaultType=', typeof (reasoningMod && reasoningMod.default)); } catch (e) {}
 
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
@@ -171,8 +173,9 @@ async function mountRoutes() {
 	const examPrepRouter = normalizeRouter(examPrepMod); // Phase 6 M3
 	const analyticsDashboardRouter = normalizeRouter(analyticsDashboardMod); // Phase 6 M4
 	const socialRouter = normalizeRouter(socialMod); // Phase 6 M5
+	const reasoningRouter = normalizeRouter(reasoningMod); // Phase 7 M1
 
-	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 routers
+	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
 	console.log('DEBUG: adaptiveFeedbackRouter=', adaptiveFeedbackRouter, 'type=', typeof adaptiveFeedbackRouter);
 	console.log('DEBUG: telemetryRouter=', telemetryRouter, 'type=', typeof telemetryRouter);
@@ -185,6 +188,7 @@ async function mountRoutes() {
 	console.log('DEBUG: examPrepRouter=', examPrepRouter, 'type=', typeof examPrepRouter);
 	console.log('DEBUG: analyticsDashboardRouter=', analyticsDashboardRouter, 'type=', typeof analyticsDashboardRouter);
 	console.log('DEBUG: socialRouter=', socialRouter, 'type=', typeof socialRouter);
+	console.log('DEBUG: reasoningRouter=', reasoningRouter, 'type=', typeof reasoningRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -377,6 +381,15 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/social_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (reasoningRouter) {
+				app.use('/api/reasoning', reasoningRouter);
+				console.log('✅ Mounted /api/reasoning -> ./routes/reasoning_api.mjs (Phase 7 M1)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/reasoning_api.mjs:', e && e.stack ? e.stack : e);
 		}
 	} catch (err) {
 		console.error('Route import failed:', err && err.stack ? err.stack : err);
