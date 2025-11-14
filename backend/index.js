@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod, certificationMod, leaderboardMod, examPrepMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -122,6 +122,7 @@ async function mountRoutes() {
 			import('./routes/mentor_network_api.mjs'), // Phase 5: Global AI Mentor Network
 			import('./routes/certification_api.mjs'), // Phase 6 M1: Certification Infrastructure
 			import('./routes/leaderboard_api.mjs'), // Phase 6 M2: Leaderboard System
+			import('./routes/exam_prep_api.mjs'), // Phase 6 M3: Exam Prep Tracks
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -142,7 +143,10 @@ async function mountRoutes() {
 	try { console.log('MODULE: analyticsMod keys=', Object.keys(analyticsMod || {}), 'defaultType=', typeof (analyticsMod && analyticsMod.default)); } catch (e) {}
 	try { console.log('MODULE: mentorNetworkMod keys=', Object.keys(mentorNetworkMod || {}), 'defaultType=', typeof (mentorNetworkMod && mentorNetworkMod.default)); } catch (e) {}
 	try { console.log('MODULE: certificationMod keys=', Object.keys(certificationMod || {}), 'defaultType=', typeof (certificationMod && certificationMod.default)); } catch (e) {}
-	try { console.log('MODULE: leaderboardMod keys=', Object.keys(leaderboardMod || {}), 'defaultType=', typeof (leaderboardMod && leaderboardMod.default)); } catch (e) {}
+		try { console.log('MODULE: leaderboardMod keys=', Object.keys(leaderboardMod || {}), 'defaultType=', typeof (leaderboardMod && leaderboardMod.default)); } catch (e) {}
+	try { console.log('MODULE: examPrepMod keys=', Object.keys(examPrepMod || {}), 'defaultType=', typeof (examPrepMod && examPrepMod.default)); } catch (e) {}
+
+	const guidelinesRouter = normalizeRouter(guidelinesMod);
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const gamifyDirectRouter = normalizeRouter(gamifyDirectMod);
@@ -161,6 +165,7 @@ async function mountRoutes() {
 	const mentorNetworkRouter = normalizeRouter(mentorNetworkMod); // Phase 5
 	const certificationRouter = normalizeRouter(certificationMod); // Phase 6 M1
 	const leaderboardRouter = normalizeRouter(leaderboardMod); // Phase 6 M2
+	const examPrepRouter = normalizeRouter(examPrepMod); // Phase 6 M3
 
 	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
@@ -172,6 +177,7 @@ async function mountRoutes() {
 	console.log('DEBUG: mentorNetworkRouter=', mentorNetworkRouter, 'type=', typeof mentorNetworkRouter);
 	console.log('DEBUG: certificationRouter=', certificationRouter, 'type=', typeof certificationRouter);
 	console.log('DEBUG: leaderboardRouter=', leaderboardRouter, 'type=', typeof leaderboardRouter);
+	console.log('DEBUG: examPrepRouter=', examPrepRouter, 'type=', typeof examPrepRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -338,8 +344,17 @@ async function mountRoutes() {
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/leaderboard_api.mjs:', e && e.stack ? e.stack : e);
 		}
+
+		try {
+			if (examPrepRouter) {
+				app.use('/api/exam_prep', examPrepRouter);
+				console.log('✅ Mounted /api/exam_prep -> ./routes/exam_prep_api.mjs (Phase 6 M3)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/exam_prep_api.mjs:', e && e.stack ? e.stack : e);
+		}
 	} catch (err) {
-		console.error('Route import failed:', err && err.stack ? err.stack : err);
+			console.error('Route import failed:', err && err.stack ? err.stack : err);
 		// continue — server can still run for diagnostics
 	}
 }

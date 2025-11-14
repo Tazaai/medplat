@@ -1,0 +1,217 @@
+{
+  "usmle-step1": {
+    "id": "usmle-step1",
+    "name": "USMLE Step 1",
+    "description": "United States Medical Licensing Examination - Step 1",
+    "exam_body": "NBME",
+    "country": "United States",
+    "total_questions": 280,
+    "duration_minutes": 480,
+    "passing_score": 194,
+    "sections": [
+      {
+        "name": "Biochemistry & Nutrition",
+        "question_count": 35,
+        "topics": ["metabolism", "vitamins", "enzymes", "nutrition"]
+      },
+      {
+        "name": "Microbiology & Immunology",
+        "question_count": 40,
+        "topics": ["bacteriology", "virology", "mycology", "parasitology", "immunology"]
+      },
+      {
+        "name": "Pathology",
+        "question_count": 50,
+        "topics": ["cell_injury", "inflammation", "neoplasia", "genetic_disorders"]
+      },
+      {
+        "name": "Pharmacology",
+        "question_count": 40,
+        "topics": ["autonomic", "cardiovascular", "cns", "antimicrobials"]
+      },
+      {
+        "name": "Physiology",
+        "question_count": 45,
+        "topics": ["cardiovascular", "respiratory", "renal", "gastrointestinal", "endocrine"]
+      },
+      {
+        "name": "Anatomy",
+        "question_count": 35,
+        "topics": ["gross_anatomy", "neuroanatomy", "embryology", "histology"]
+      },
+      {
+        "name": "Behavioral Science",
+        "question_count": 35,
+        "topics": ["psychology", "ethics", "statistics", "epidemiology"]
+      }
+    ],
+    "difficulty": "high",
+    "estimated_prep_weeks": 16
+  },
+  "usmle-step2": {
+    "id": "usmle-step2",
+    "name": "USMLE Step 2 CK",
+    "description": "United States Medical Licensing Examination - Step 2 Clinical Knowledge",
+    "exam_body": "NBME",
+    "country": "United States",
+    "total_questions": 318,
+    "duration_minutes": 540,
+    "passing_score": 209,
+    "sections": [
+      {
+        "name": "Internal Medicine",
+        "question_count": 80,
+        "topics": ["cardiology", "pulmonology", "gastroenterology", "nephrology", "endocrinology"]
+      },
+      {
+        "name": "Surgery",
+        "question_count": 50,
+        "topics": ["general_surgery", "trauma", "orthopedics", "urology"]
+      },
+      {
+        "name": "Pediatrics",
+        "question_count": 45,
+        "topics": ["neonatology", "growth_development", "pediatric_diseases"]
+      },
+      {
+        "name": "Psychiatry",
+        "question_count": 35,
+        "topics": ["mood_disorders", "psychotic_disorders", "substance_abuse"]
+      },
+      {
+        "name": "Obstetrics & Gynecology",
+        "question_count": 45,
+        "topics": ["pregnancy", "labor_delivery", "gynecologic_disorders"]
+      },
+      {
+        "name": "Emergency Medicine",
+        "question_count": 40,
+        "topics": ["trauma", "acute_care", "toxicology"]
+      },
+      {
+        "name": "Preventive Medicine",
+        "question_count": 23,
+        "topics": ["screening", "immunizations", "health_maintenance"]
+      }
+    ],
+    "difficulty": "high",
+    "estimated_prep_weeks": 12
+  },
+  "plab-1": {
+    "id": "plab-1",
+    "name": "PLAB Part 1",
+    "description": "Professional and Linguistic Assessments Board Test - Part 1",
+    "exam_body": "GMC",
+    "country": "United Kingdom",
+    "total_questions": 180,
+    "duration_minutes": 180,
+    "passing_score": 125,
+    "sections": [
+      {
+        "name": "Medicine",
+        "question_count": 50,
+        "topics": ["cardiology", "respiratory", "gastroenterology", "endocrinology"]
+      },
+      {
+        "name": "Surgery",
+        "question_count": 35,
+        "topics": ["general_surgery", "orthopedics", "urology", "ent"]
+      },
+      {
+        "name": "Obstetrics & Gynecology",
+        "question_count": 25,
+        "topics": ["antenatal_care", "labor", "gynecology"]
+      },
+      {
+        "name": "Pediatrics",
+        "question_count": 25,
+        "topics": ["neonatology", "child_health", "development"]
+      },
+      {
+        "name": "Psychiatry",
+        "question_count": 20,
+        "topics": ["mental_health_act", "common_disorders", "treatment"]
+      },
+      {
+        "name": "General Practice",
+        "question_count": 25,
+        "topics": ["primary_care", "chronic_disease", "health_promotion"]
+      }
+    ],
+    "difficulty": "medium",
+    "estimated_prep_weeks": 10
+  },
+  "amc-mcq": {
+    "id": "amc-mcq",
+    "name": "AMC MCQ Exam",
+    "description": "Australian Medical Council Multiple Choice Question Examination",
+    "exam_body": "AMC",
+    "country": "Australia",
+    "total_questions": 150,
+    "duration_minutes": 210,
+    "passing_score": 105,
+    "sections": [
+      {
+        "name": "Medicine",
+        "question_count": 45,
+        "topics": ["cardiology", "respiratory", "endocrinology", "infectious_diseases"]
+      },
+      {
+        "name": "Surgery",
+        "question_count": 30,
+        "topics": ["general_surgery", "trauma", "orthopedics"]
+      },
+      {
+        "name": "Pediatrics & Child Health",
+        "question_count": 25,
+        "topics": ["child_development", "common_conditions", "immunizations"]
+      },
+      {
+        "name": "Women's Health",
+        "question_count": 20,
+        "topics": ["obstetrics", "gynecology", "reproductive_health"]
+      },
+      {
+        "name": "Mental Health",
+        "question_count": 15,
+        "topics": ["psychiatry", "psychology", "addiction"]
+      },
+      {
+        "name": "Population Health",
+        "question_count": 15,
+        "topics": ["epidemiology", "public_health", "aboriginal_health"]
+      }
+    ],
+    "difficulty": "medium",
+    "estimated_prep_weeks": 8
+  },
+  "neet-pg": {
+    "id": "neet-pg",
+    "name": "NEET-PG",
+    "description": "National Eligibility cum Entrance Test - Postgraduate",
+    "exam_body": "NBE",
+    "country": "India",
+    "total_questions": 200,
+    "duration_minutes": 210,
+    "passing_score": 50,
+    "sections": [
+      {
+        "name": "Pre-Clinical",
+        "question_count": 50,
+        "topics": ["anatomy", "physiology", "biochemistry", "pharmacology", "pathology", "microbiology"]
+      },
+      {
+        "name": "Para-Clinical",
+        "question_count": 30,
+        "topics": ["forensic_medicine", "community_medicine", "radiology"]
+      },
+      {
+        "name": "Clinical",
+        "question_count": 120,
+        "topics": ["medicine", "surgery", "obgyn", "pediatrics", "orthopedics", "ent", "ophthalmology", "psychiatry", "dermatology", "anesthesia"]
+      }
+    ],
+    "difficulty": "very_high",
+    "estimated_prep_weeks": 20
+  }
+}
