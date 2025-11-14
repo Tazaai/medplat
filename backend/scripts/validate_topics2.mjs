@@ -23,7 +23,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
 // Initialize Firebase
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT || 
+const serviceAccountPath = process.env.FIREBASE_SERVICE_KEY || 
                            process.env.GOOGLE_APPLICATION_CREDENTIALS ||
                            './firebase_key.json';
 
