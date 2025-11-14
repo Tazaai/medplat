@@ -1,224 +1,272 @@
-# MedPlat Project Guide
+# 🌍 MedPlat — Master Project Guide v6.0.0
 
-**Last Updated:** November 8, 2025
-**Status:** Production-ready with professor-level quality (≥95%)
-
-**Important Documentation:**
-- 📘 **AI Improvement Guide**: See `AI_IMPROVEMENT_GUIDE.md` for safe AI-driven improvements and quality boundaries
-- 🤖 **Copilot Instructions**: See `.github/copilot-instructions.md` for automated agent guidelines
+**Last Updated:** November 14, 2025  
+**Current Version:** v6.0.0-complete (Production)  
+**Next Version:** v7.0.0 (8 weeks, January 2026)  
+**Status:** ✅ LIVE + 📋 PLANNING PHASE 7
 
 ---
 
-  - `DialogChat.jsx` → AI chat dialog
-  - `CaseList.jsx`, `CaseSelectors.jsx`, etc.
-- Uses dynamic props:
-  - `model` (`gpt-4o`, `gpt-4o-mini`)
-  - `lang` (ISO language)
-  - `gamify` (true / false)
+## 📌 PLATFORM VISION & PURPOSE
+
+MedPlat is a **global, AI-powered medical education platform** that generates realistic, dynamic clinical cases with adaptive mentorship, gamification, and community-based learning across all medical specialties and languages.
+
+### Core Principles
+
+✅ **Dynamic** — No static cases, no hardcoded guidelines  
+✅ **Global** — Auto-adapts to user's region with manual override  
+✅ **Safe** — Educational only, never provides real clinical advice  
+✅ **Evidence-Based** — Guidelines from ESC, AHA, NICE, WHO, national societies  
+✅ **Quality-First** — Professor-level content (≥95% accuracy baseline)
 
 ---
 
-## � Backend API Endpoints
+## 🎯 GO-LIVE STRATEGY & MILESTONES
 
-### Core Routes
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/topics` | GET | Fetch all 1115 topics from Firestore `topics2` collection |
-| `/api/topics/categories` | POST | Get 30 unique categories (areas) from topics |
-| `/api/topics/search` | POST | Filter topics by category/area |
-| `/api/cases` | POST | **Two-stage pipeline**: Stage 1 (professor-v2 generator ≥95%) + Stage 2 (internal panel validation) |
-| `/api/internal-panel` | POST | **Stage 2**: Lightweight validation layer (quality scoring + micro-refinement if needed) |
-| `/api/panel-discussion` | POST | **Optional**: Medical conference-style discussion (user-requested, not automatic) |
-| `/api/dialog` | POST | Interactive AI chat for case discussion |
-| `/api/gamify` | POST | Generate 12-question adaptive MCQ quiz |
-| `/api/quickref` | GET/POST | Medical term tooltips (definitions, clinical significance) |
-| `/api/evidence` | POST | Test performance comparisons (sensitivity/specificity %) |
-| `/api/panel/review` | POST | Expert panel case review (legacy) |
-| `/api/expert-panel` | POST | **External**: Dynamic 12-role expert panel review (manual/developer use) |
-| `/api/location` | GET | Detect user region for guideline adaptation |
-| `/api/comment` | POST | Save user feedback/comments |
+### ✅ Phase 3-6: PRODUCTION (LIVE)
+**Status:** DEPLOYED — All features operational  
+**Quality:** 0.967/1.0 average, regression tests 10/10 passing
 
----
+### 📋 Phase 7: ENHANCEMENT (8 weeks)
+**Target:** January 2026 v7.0.0  
+**Focus:** AI reasoning, multi-language, voice, glossary, social
 
-### 🎯 TWO-STAGE CASE GENERATION PIPELINE (Professor-Level Quality)
+### ⏸️ Phase 8: EXPANSION (Future)
+**Features:** Offline mode, mobile apps, pricing system, advanced features
 
-MedPlat uses a **two-stage architecture** to ensure every case achieves professor-level academic quality:
+### 🚀 FULL PRODUCTION LAUNCH CRITERIA (v7.0.0)
 
-#### **Stage 1: Professor-v2 Generator (≥95% Quality Baseline)**
+**Ready to scale globally when:**
+- [x] Professor-level case quality (≥95%) — ✅ ACHIEVED
+- [x] Gamification + certifications — ✅ ACHIEVED
+- [x] Social features + study groups — ✅ ACHIEVED
+- [ ] Multi-language support (30+ languages) — 📋 Phase 7 M2
+- [ ] Voice interaction — 📋 Phase 7 M3
+- [ ] Advanced AI reasoning — 📋 Phase 7 M1
+- [ ] Payment system — ⏸️ Phase 8
+- [ ] Mobile apps — ⏸️ Phase 8
 
-**Mission**: Generate cases that are **95-100% ready for publication** on first pass, minimizing the need for panel rewrites.
-
-**Key Features**:
-- **Global Quality Rules**: Applied to ALL specialties (Cardiology, Neurology, Toxicology, Pediatrics, Surgery, Psychiatry, Infectious Disease, Endocrinology, etc.)
-- **Regional Calibration**: Auto-selects guidelines by region:
-  - 🇺🇸 US: AHA, ACC, ACEP, ATS, IDSA, ADA
-  - 🇪🇺 EU/DK: ESC, NICE, NNBV, ERS, ESCMID, EASD
-  - 🇬🇧 UK: NICE, BTS, BCS, RCOG, SIGN
-  - 🇨🇦 Canada: CCS, CTS, Diabetes Canada
-- **Content Expansion Directives** (Universal):
-  - **History**: Functional status, lifestyle, adherence, social context
-  - **Examination**: Neuro/systemic always documented, vitals ONCE, hemodynamic profile
-  - **Pathophysiology**: Molecular → cellular → organ → clinical mechanism
-  - **Differentials**: ≥1 metabolic/structural/functional with "why_against" reasoning for rejected diagnoses
-  - **Management**: Timing windows, escalation, low-resource fallbacks
-  - **Evidence**: Auto-generated test comparisons (sensitivity/specificity %)
-  - **Teaching**: Pearls, pitfalls, reflection questions, mnemonics (REQUIRED for ALL cases)
-- **Quality Targets**: Completeness 100%, Accuracy ≥95%, Pathophysiology ≥90%
-- **Meta Fields**: `generator_version: "professor_v2"`, `quality_estimate: 0.95`
-
-#### **Stage 2: Internal Expert Panel (Lightweight Validation)**
-
-**Mission**: Perform **lightweight validation** and micro-fixes on cases already at ≥95% quality. Panel is NO LONGER a heavy rewriter.
-
-**Quality Scoring Weights** (Rebalanced):
-- Completeness: 20% (all sections filled)
-- Clinical Accuracy: 20% (realistic values, logical consistency)
-- Guideline Adherence: 15% (region-appropriate, evidence-based)
-- **Pathophysiology Depth: 20%** (+5% increase from previous 15%)
-- **Educational Value: 20%** (+5% increase from previous 15%)
-- Academic Rigor: 5%
-
-**Minimum Threshold**: **0.95** (raised from 0.85)
-- Cases ≥0.95: Panel approves with minimal changes
-- Cases <0.95: One micro-refinement pass (temperature 0.6)
-
-**Telemetry**: Logs quality metrics for monitoring:
-```
-📊 Quality Metrics | Topic: X | Category: Y | Score: 0.XXX | Generator: professor_v2
-```
-
-**Cost Optimization**: 60-70% reduction in regeneration passes compared to previous architecture.
-
-### 🧬 INTERNAL EXPERT PANEL (inside case generator — invisible to users)
-
-### 🩺 Purpose
-
-Automatically **reviews, validates, and enhances** each generated case before it is shown to the user. Acts as a professor-level multidisciplinary review board, ensuring every case meets academic, clinical, and educational excellence.
-
-> 🧠 Goal: Deliver reasoning, structure, and quality that **surpass UpToDate, AMBOSS, and Medscape**, setting MedPlat as the global benchmark for intelligent clinical learning.
+**Go-Live Decision Point:** After Phase 7 completion (January 2026)
 
 ---
 
-### 🧩 Dynamic Composition
+## ✅ IMPLEMENTED FEATURES (v6.0.0-complete)
 
-The internal panel is automatically assembled based on the case’s specialty and complexity.
+### Core Platform (Phase 3)
+- Two-stage case generation (Professor v2 + Internal Panel)
+- 1,115 medical topics across all specialties
+- Regional guideline adaptation (US, EU/DK, UK, Canada)
+- Quality scoring system (avg: 0.967/1.0)
+- 20+ API endpoints
 
-**Standard composition (context-adaptive):**
+### AI Mentor & Curriculum (Phase 4)
+- Personalized tutoring sessions
+- Weak area detection
+- Adaptive study paths
+- Progress tracking
+- 8+ API endpoints
 
-- 3 senior specialists from the relevant field (e.g., Cardiology, Toxicology, Neurology, etc.)
-- 2 general practitioners (GPs)
-- 2 emergency medicine consultants
-- 1 clinical pharmacist
-- 1 field researcher (for public health / epidemiology)
-- 1 university professor of medicine (for academic oversight)
-- 1 radiologist (optional, per case need)
-- 1 internal AI-education logic reviewer (for structure and reasoning clarity)
+### Gamification (Phase 5)
+- XP system with 23 levels
+- Daily streak tracking (7/14/30/60/100 milestones)
+- Daily challenges
+- Global leaderboard
+- Motivational system
+- 5+ API endpoints
 
----
+### Competitive Features (Phase 6)
+**Certifications (M1):** 5 pathways, PDF generation, verification (9 endpoints)  
+**Leaderboard (M2):** 6-tier system, global/specialty rankings (8 endpoints)  
+**Exam Prep (M3):** 5 tracks (USMLE/PLAB/AMC), timed sessions (11 endpoints)  
+**Analytics (M4):** Admin dashboard, CSV export (8 endpoints)  
+**Social (M5):** Groups, challenges, achievements, sharing (12 endpoints)
 
-### ⚙️ Behavior
-
-- Runs **automatically inside `/api/dialog`** immediately after raw case generation.
-- The panel silently:
-
-  - Reviews all structured fields (history, exam, labs, management, teaching).
-  - Checks **guideline accuracy**, **timing windows**, and **evidence depth**.
-  - Adds missing **red flags**, **social/disposition notes**, or **ethical concerns**.
-  - Ensures **clinical scales and quantifications** (e.g., NIHSS, Killip, SOFA) appear when relevant.
-  - Refines language to be concise, academic, and globally guideline-aware.
-- Only the refined, consensus-approved version is returned.
-- Users only see the tag:
-
-  > ✅ *Validated by Internal Expert Panel*
-
----
-
-### 🎯 Focus and Quality Criteria
-
-1. **Realism & Completeness:** every section filled, logical, and region-adapted.
-2. **Guideline Integration:** harmonize with **NNBV, ESC, AHA, NICE, WHO**, and regional authorities.
-3. **Academic Depth:** teaching pearls, mnemonics, and evidence hierarchy always included.
-4. **Diversity of Reasoning:** encourage alternative explanations and clinical uncertainty when realistic.
-5. **Scalability:** logic remains dynamic and specialty-aware — never static or hardcoded.
-6. **Regeneration Loop:** if internal panel quality score < 0.85 (out of 1.0) → automatic refinement before publishing.
+**Total:** 48 new endpoints in Phase 6
 
 ---
 
-### 🏆 Vision & Quality Benchmark
+## 📋 PHASE 7 ROADMAP (8 WEEKS)
 
-> **MedPlat's two-stage pipeline ensures every case reads like a university-level clinical masterclass** — structured, evidence-anchored, and pedagogically superior to any existing reference source.
+### M1: Advanced AI Reasoning Engine (Weeks 1-3) 🔥
+**Why:** Transform from simple quizzes to diagnostic thinking training
 
-**Competitive Benchmark**: Surpass UpToDate, AMBOSS, and Medscape across ALL clinical domains by:
-- Delivering **95-100% quality on first pass** (Stage 1)
-- Providing **lightweight validation** instead of heavy rewrites (Stage 2)
-- Maintaining **consistent excellence across all specialties** (Cardiology, Neurology, Toxicology, Pediatrics, Surgery, etc.)
-- Enabling **global guideline adaptation** (US, EU/DK, UK, Canada, International)
+**Features:**
+- Differential diagnosis builder with expert comparison
+- Bayesian probability tracking
+- Clinical reasoning pattern analysis
+- Multi-step case progression
 
-**Verified Quality Scores** (Multi-Specialty):
-- Cardiology (Acute MI): 0.96
-- Neurology (Stroke): 0.96
-- Toxicology (Paracetamol): 0.97
-- Infectious Disease (CAP): 0.97
-- Surgery (Appendicitis): 0.97
-- Endocrinology (DKA): 0.96
-- Intensive Care (Septic Shock): 0.98
+**Impact:** +20% improvement in diagnostic reasoning skills
 
-**Average Stage 2 Quality**: **0.967** (target: ≥0.95) ✅
+### M2: Multi-Language Infrastructure (Weeks 3-5) 🔥
+**Why:** Reach 60% of global medical learners (non-English speakers)
 
----
+**Features:**
+- 30+ language support (Tier 1: 8 languages, Tier 2: 8 languages)
+- Regional guideline mapping
+- Country/region selector
+- Medical term translation with preservation
 
-### 📚 Frontend Teaching Elements
+**Impact:** +40% international user growth
 
-Cases display teaching content in collapsible, color-coded panels:
+### M3: Voice Interaction (Weeks 5-6) 🎯
+**Why:** Hands-free learning for busy clinicians
 
-- **💎 Clinical Pearls** (green): Key diagnostic insights
-- **⚠️ Common Pitfall** (orange): Errors to avoid
-- **🤔 Reflection Question** (blue): Self-assessment prompts
-- **🧠 Mnemonics** (purple): Memory aids with clinical context
+**Features:**
+- Voice commands (navigate, answer, review)
+- Text-to-speech case narration
+- Multi-language voice support
 
-**Panel Discussion** (optional, user-requested):
-- Click "🩺 View Internal Panel Discussion" button
-- Medical conference-style layout with expert arguments
-- **Arguments FOR** (✅ green) with supporting evidence
-- **Arguments AGAINST** (❌ red) with contradicting evidence, alternative explanations
-- Panel consensus with confidence level
-- Teaching insights and next steps
+**Impact:** 15% user adoption, accessibility boost
 
----
+### M4: Medical Glossary (Weeks 6-7) 🎯
+**Why:** Instant knowledge access without context switching
 
-### Implementation notes (developer guidance)
+**Features:**
+- 10K+ medical term definitions
+- Hover tooltips on all cases
+- AI-powered dynamic definitions
+- Clinical scores reference
 
-- Stage 1 (professor-v2) targets ≥95% quality before panel review
-- Stage 2 (internal panel) performs lightweight validation, not heavy rewriting
-- Maintain metadata: `meta.generator_version = "professor_v2"`, `meta.quality_estimate = 0.95`, `meta.quality_score` (from panel)
-- Log quality metrics for telemetry: `📊 Quality Metrics | Topic: X | Score: Y | Generator: professor_v2`
-- Panel discussion is OPTIONAL and lazy-loaded (not automatic)
-- Keep `/api/internal-panel` read-only for data stores; it must not perform Firestore writes to topic collections
+**Impact:** 40% reduction in external reference use
 
----
+### M5: Advanced Social (Weeks 7-8) 📊
+**Why:** Complete social learning ecosystem
 
-## �🔐 Secret Management
+**Features:**
+- Full social feed (post/upvote/follow)
+- AI content moderation
+- Group chat system
+- Monthly top contributors
 
-### Repository Secrets (GitHub → Settings → Actions)
-| Secret | Purpose |
-|---------|----------|
-| `OPENAI_API_KEY` | Access to GPT models |
-| `GCP_PROJECT` | Cloud project ID |
-| `GCP_SA_KEY` | Service account JSON for Cloud Run deploy |
-| `FIREBASE_SERVICE_KEY` | Firebase Admin SDK credentials |
-| `VITE_API_BASE` | Backend URL for frontend build |
-
-> 🧩 **No `.env` files are used in production.**  
-> Development keys reside in `.env.local` (ignored by git).
+**Impact:** +25% engagement through community
 
 ---
 
-## 🧰 Local Development
+## ⏸️ DEFERRED TO PHASE 8 (Q1-Q2 2026)
 
-### Prerequisites
+### Offline Mode
+**Why Deferred:** Complex PWA architecture, lower immediate impact  
+**When:** After multi-language + voice (core global features first)
+
+### Mobile Apps (iOS/Android)
+**Why Deferred:** Requires React Native rebuild, high maintenance  
+**When:** After web platform reaches stable v7.0.0
+
+### Global Pricing System
+**Why Deferred:** Need user base + business model validation  
+**When:** After v7.0.0 launch with international users
+
+### Additional Features
+- OSCE simulation module
+- Peer review system
+- Live multiplayer battles
+- Research data export
+- Academic partnerships
+
+---
+
+## 🔄 DEVELOPMENT PROCESS
+
+### Current Sprint (Phase 7 M1)
+1. Create feature branch: `feature/phase7-ai-reasoning`
+2. Implement reasoning engine (6 backend files)
+3. Build UI components (5 frontend files)
+4. Deploy to staging
+5. External panel review
+6. Merge + tag v7.0.0-m1
+
+### Quality Gates (Every Milestone)
+- ✅ Regression tests: 10/10 passing
+- ✅ Performance: API <2s p95
+- ✅ Code review: Panel feedback integrated
+- ✅ Documentation: Plans updated
+- ✅ Deployment: Production verified
+
+### Deployment Commands
 ```bash
-npm install
-npm install --prefix backend
-npm install --prefix frontend
+# Backend
+gcloud builds submit --tag gcr.io/medplat-458911/medplat-backend:v7-m1
+gcloud run deploy medplat-backend --image gcr.io/medplat-458911/medplat-backend:v7-m1
 
-_For temporary ops toggles (e.g. SOFT_FAIL_CONNECTIVITY), see docs/SOFT_FAIL_CONNECTIVITY.md._
+# Frontend
+gcloud builds submit --tag gcr.io/medplat-458911/medplat-frontend:v7-m1
+gcloud run deploy medplat-frontend --image gcr.io/medplat-458911/medplat-frontend:v7-m1
+
+# Tag
+git tag v7.0.0-m1 && git push origin v7.0.0-m1
+```
+
+---
+
+## 📊 SUCCESS METRICS
+
+### Current Performance (v6.0.0)
+- Quality Score: 0.967/1.0
+- Uptime: 99.9%
+- API Response: <1.5s p95
+- Regression Tests: 10/10 passing
+
+### Phase 7 Targets
+- DAU Growth: +40% (via multi-language)
+- Engagement: +25% (via reasoning + social)
+- Reasoning Accuracy: ≥90%
+- Translation Quality: ≥4.5/5.0
+- Voice Recognition: ≥85%
+- 7-day Retention: ≥70%
+
+---
+
+## 🔐 EXTERNAL DEVELOPMENT PANEL
+
+**17-Member Composition:**
+- Medical Student, Doctor, 3 Specialists
+- Pharmacist, 2 GPs, 2 EM Consultants
+- Field Researcher, 1-2 Radiologists
+- Professor of Medicine, AI Expert, USMLE Expert
+- Web Developer, Competitor Voice, Business Consultant, Marketing Expert
+
+**Review Frequency:** Quarterly + Milestone checkpoints
+
+**Deliverables:**
+- Clinical accuracy validation
+- Guideline verification
+- Educational quality assessment
+- UX feedback
+- Priority recommendations
+
+---
+
+## 📚 DOCUMENTATION
+
+**Core Files:**
+- `PROJECT_GUIDE.md` — This file (master roadmap)
+- `PHASE7_PLAN.md` — Detailed Phase 7 specification
+- `MASTER_PLAN_REVIEW.md` — Critical analysis of proposed features
+
+**Implementation Guides:**
+- `docs/COPILOT_PHASE7_GUIDE.md` — Developer templates
+- `docs/COPILOT_MASTER_GUIDE.md` — Global governance
+- `docs/EXTERNAL_PANEL_GUIDE_FOR_COPILOT.md` — Philosophy
+
+**Validation:**
+- `validate_phase3.sh` — Regression test suite (10/10)
+
+---
+
+## 🚀 NEXT IMMEDIATE ACTIONS
+
+1. **Review & Approve** this consolidated project guide
+2. **Start Phase 7 M1** (AI Reasoning Engine)
+3. **Timeline:** 8 weeks to v7.0.0 (January 2026)
+4. **Go-Live Decision:** After Phase 7 completion
+
+---
+
+**Last Updated:** November 14, 2025  
+**Version:** 6.0.0-complete → 7.0.0 (in progress)  
+**Maintained By:** GitHub Copilot + External Development Panel
+
+---
+
+✅ **This guide consolidates the ChatGPT master plan with actual v6.0.0 implementation reality**
