@@ -7,6 +7,7 @@ import ConferencePanel from "./ConferencePanel";
 import MentorTab from "./MentorTab"; // Phase 4 M2: AI Mentor
 import CurriculumTab from "./CurriculumTab"; // Phase 4 M3: Curriculum Builder
 import AnalyticsDashboard from "./AnalyticsDashboard"; // Phase 4 M4: Analytics & Optimization
+import GlobalMentorHub from "./GlobalMentorHub"; // Phase 5: Global AI Mentor Network
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -514,6 +515,16 @@ export default function CaseView() {
         >
           📊 Analytics
         </button>
+        <button
+          onClick={() => setActiveTab("mentor_hub")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "mentor_hub"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🌍 Mentor Hub
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -529,6 +540,11 @@ export default function CaseView() {
       {/* Show Analytics Dashboard when active (admin-only) */}
       {activeTab === "analytics" && (
         <AnalyticsDashboard user={{ uid: userUid }} />
+      )}
+
+      {/* Show Global Mentor Hub when active (Phase 5) */}
+      {activeTab === "mentor_hub" && (
+        <GlobalMentorHub user={{ uid: userUid }} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}

@@ -7,9 +7,9 @@ import path from 'path';
 import url from 'url';
 import fs from 'fs';
 import topicsRouter from './routes/topics_api.mjs';
-import panelRouter from './routes/panel_api.mjs';
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
+import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Development Panel
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -102,7 +102,7 @@ function normalizeRouter(mod) {
 async function mountRoutes() {
 	try {
 		// Dynamic imports keep this code robust in diverse container runtimes
-		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod] = await Promise.all([
+		const [topicsMod, dialogMod, gamifyMod, gamifyDirectMod, commentMod, locationMod, casesMod, quickrefMod, evidenceMod, panelDiscussionMod, guidelinesMod, adaptiveFeedbackMod, telemetryMod, mentorMod, curriculumMod, analyticsMod, mentorNetworkMod] = await Promise.all([
 			import('./routes/topics_api.mjs'),
 			import('./routes/dialog_api.mjs'),
 			import('./routes/gamify_api.mjs'),
@@ -119,6 +119,7 @@ async function mountRoutes() {
 			import('./routes/mentor_api.mjs'), // Phase 4 M2: AI Mentor
 			import('./routes/curriculum_api.mjs'), // Phase 4 M3: Curriculum Builder
 			import('./routes/analytics_api.mjs'), // Phase 4 M4: Analytics & Optimization
+			import('./routes/mentor_network_api.mjs'), // Phase 5: Global AI Mentor Network
 		]);
 
 		// Log module shapes to help diagnose mount-time issues
@@ -136,6 +137,8 @@ async function mountRoutes() {
 	try { console.log('MODULE: telemetryMod keys=', Object.keys(telemetryMod || {}), 'defaultType=', typeof (telemetryMod && telemetryMod.default)); } catch (e) {}
 	try { console.log('MODULE: mentorMod keys=', Object.keys(mentorMod || {}), 'defaultType=', typeof (mentorMod && mentorMod.default)); } catch (e) {}
 	try { console.log('MODULE: curriculumMod keys=', Object.keys(curriculumMod || {}), 'defaultType=', typeof (curriculumMod && curriculumMod.default)); } catch (e) {}
+	try { console.log('MODULE: analyticsMod keys=', Object.keys(analyticsMod || {}), 'defaultType=', typeof (analyticsMod && analyticsMod.default)); } catch (e) {}
+	try { console.log('MODULE: mentorNetworkMod keys=', Object.keys(mentorNetworkMod || {}), 'defaultType=', typeof (mentorNetworkMod && mentorNetworkMod.default)); } catch (e) {}
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const gamifyDirectRouter = normalizeRouter(gamifyDirectMod);
@@ -151,14 +154,16 @@ async function mountRoutes() {
 	const mentorRouter = normalizeRouter(mentorMod); // Phase 4 M2
 	const curriculumRouter = normalizeRouter(curriculumMod); // Phase 4 M3
 	const analyticsRouter = normalizeRouter(analyticsMod); // Phase 4 M4
+	const mentorNetworkRouter = normalizeRouter(mentorNetworkMod); // Phase 5
 
-	// Debug logging for Phase 3 + Phase 4 routers
+	// Debug logging for Phase 3 + Phase 4 + Phase 5 routers
 	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
 	console.log('DEBUG: adaptiveFeedbackRouter=', adaptiveFeedbackRouter, 'type=', typeof adaptiveFeedbackRouter);
 	console.log('DEBUG: telemetryRouter=', telemetryRouter, 'type=', typeof telemetryRouter);
 	console.log('DEBUG: mentorRouter=', mentorRouter, 'type=', typeof mentorRouter);
 	console.log('DEBUG: curriculumRouter=', curriculumRouter, 'type=', typeof curriculumRouter);
 	console.log('DEBUG: analyticsRouter=', analyticsRouter, 'type=', typeof analyticsRouter);
+	console.log('DEBUG: mentorNetworkRouter=', mentorNetworkRouter, 'type=', typeof mentorNetworkRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
@@ -297,6 +302,15 @@ async function mountRoutes() {
 			}
 		} catch (e) {
 			console.error('❌ Could not mount ./routes/analytics_api.mjs:', e && e.stack ? e.stack : e);
+		}
+
+		try {
+			if (mentorNetworkRouter) {
+				app.use('/api/mentor_network', mentorNetworkRouter);
+				console.log('✅ Mounted /api/mentor_network -> ./routes/mentor_network_api.mjs (Phase 5)');
+			}
+		} catch (e) {
+			console.error('❌ Could not mount ./routes/mentor_network_api.mjs:', e && e.stack ? e.stack : e);
 		}
 	} catch (err) {
 		console.error('Route import failed:', err && err.stack ? err.stack : err);
