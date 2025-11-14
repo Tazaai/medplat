@@ -33,7 +33,7 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 | # | Milestone | Weeks | Status | Priority |
 |---|-----------|-------|--------|----------|
 | 1 | Advanced AI Reasoning Engine | 1-3 | ✅ DEPLOYED | CRITICAL |
-| 2 | Multi-Language Infrastructure | 3-5 | 🚀 DEPLOYING | CRITICAL |
+| 2 | Multi-Language Infrastructure | 3-5 | ✅ DEPLOYED | CRITICAL |
 | 3 | Voice Interaction System | 5-6 | 📋 Planned | HIGH |
 | 4 | Medical Glossary System | 6-7 | 📋 Planned | HIGH |
 | 5 | Advanced Social Features | 7-8 | 📋 Planned | MEDIUM |
@@ -222,7 +222,21 @@ frontend/src/components/ReasoningInsights.jsx
 
 ---
 
-## Milestone 2: Multi-Language Infrastructure (Weeks 3-5)
+## Milestone 2: Multi-Language Infrastructure (Weeks 3-5) ✅ DEPLOYED
+
+**Status:** ✅ COMPLETE (Nov 14, 2025)  
+**Tag:** v7.0.0-m2  
+**Backend Revision:** medplat-backend-01060-jk6  
+**Frontend Revision:** medplat-frontend-00352-jwg
+
+### Deployment Summary
+- ✅ Backend: 3 new files (763 lines) - Translation API client, service with medical term preservation, REST endpoints
+- ✅ Frontend: 2 new files + 1 modified (326 lines) - Language selector component with RTL support
+- ✅ Translation API: 10 endpoints operational
+- ✅ Languages: 34 supported (European, RTL, Asian, African)
+- ✅ Firestore caching: 30-day TTL
+- ✅ Medical terms: 50+ preserved in English during translation
+- ✅ Regional guidelines: ESC→AHA→Local mapping
 
 ### Objectives
 Make MedPlat accessible to **30+ languages** with culturally adapted content, local guidelines, and regional medication names.
