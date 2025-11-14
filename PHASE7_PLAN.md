@@ -1,9 +1,9 @@
 # 🚀 MedPlat Phase 7: AI-Powered Clinical Reasoning & Multi-Language
 
-**Version:** v7.0.0 (Planning)  
+**Version:** v7.0.0-m1 (M1 Complete)  
 **Base:** v6.0.0-complete  
 **Timeline:** 8 weeks (Offline mode & Mobile apps deferred to Phase 8)  
-**Status:** 📋 PLANNING  
+**Status:** 🚧 IN PROGRESS (M1 ✅ DEPLOYED)  
 **Priority:** HIGH
 
 ---
@@ -32,7 +32,7 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 
 | # | Milestone | Weeks | Status | Priority |
 |---|-----------|-------|--------|----------|
-| 1 | Advanced AI Reasoning Engine | 1-3 | 📋 Planned | CRITICAL |
+| 1 | Advanced AI Reasoning Engine | 1-3 | ✅ DEPLOYED | CRITICAL |
 | 2 | Multi-Language Infrastructure | 3-5 | 📋 Planned | CRITICAL |
 | 3 | Voice Interaction System | 5-6 | 📋 Planned | HIGH |
 | 4 | Medical Glossary System | 6-7 | 📋 Planned | HIGH |
@@ -44,7 +44,21 @@ Phase 7 elevates MedPlat to a **globally accessible, AI-enhanced clinical reason
 
 ---
 
-## Milestone 1: Advanced AI Reasoning Engine (Weeks 1-3)
+## Milestone 1: Advanced AI Reasoning Engine (Weeks 1-3) ✅ DEPLOYED
+
+**Status:** ✅ COMPLETE (Nov 14, 2025)  
+**Tag:** v7.0.0-m1  
+**Backend Revision:** medplat-backend-01056-xvn  
+**Frontend Revision:** medplat-frontend-[latest]
+
+### Deployment Summary
+- ✅ Backend: 6 new files (1,262 lines) - reasoning engine, differential builder, Bayesian analyzer, API routes, clinical scoring
+- ✅ Frontend: 6 new components (1,744 lines) - ReasoningTab, DifferentialBuilder, BayesianCalculator, MultiStepCase, ReasoningInsights, CSS
+- ✅ API: 11 new endpoints under `/api/reasoning/*`
+- ✅ Regression: 10/10 tests passing
+- ✅ Production URLs:
+  - Backend: https://medplat-backend-139218747785.europe-west1.run.app
+  - Frontend: https://medplat-frontend-139218747785.europe-west1.run.app
 
 ### Objectives
 Transform case generation from single-answer quizzes to **multi-step diagnostic reasoning challenges** that mirror real clinical thinking.
