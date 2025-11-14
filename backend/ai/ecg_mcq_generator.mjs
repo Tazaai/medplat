@@ -4,7 +4,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import openaiClient from '../openaiClient.js';
+import { getOpenAIClient } from '../openaiClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -118,9 +118,10 @@ export async function generateECGMCQ(caseId, options = {}) {
 	let explanation = null;
 	if (include_explanation) {
 		try {
-			const prompt = `You are a cardiology educator. Explain this ECG finding for medical students.
+		const prompt = `You are a cardiology educator. Explain this ECG finding for medical students.
 
-ECG Diagnosis: ${ecgCase.diagnosis}
+ECG: ${ecgCase.title}
+Diagnosis: ${ecgCase.diagnosis}
 Key Features: ${ecgCase.key_features.join(', ')}
 Clinical Context: ${ecgCase.clinical_context}
 Management: ${ecgCase.management}
@@ -132,6 +133,7 @@ Provide a concise 3-4 sentence explanation focusing on:
 
 Be educational, accurate, and evidence-based.`;
 
+			const openaiClient = getOpenAIClient();
 			const completion = await openaiClient.chat.completions.create({
 				model: 'gpt-4o-mini',
 				messages: [{ role: 'user', content: prompt }],
