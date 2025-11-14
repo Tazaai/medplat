@@ -1,7 +1,8 @@
 // backend/utils/translationClient.js - Google Cloud Translation API client
 
-import { Translate } from '@google-cloud/translate/v2';
+import { v2 } from '@google-cloud/translate';
 
+const { Translate } = v2;
 let translateClient = null;
 
 /**
