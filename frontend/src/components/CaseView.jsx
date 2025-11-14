@@ -14,6 +14,7 @@ import ExamPrepTab from "./ExamPrepTab"; // Phase 6 M3: Exam Prep
 import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Analytics
 import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
 import ReasoningTab from "./ReasoningTab"; // Phase 7 M1: AI Reasoning Engine
+import LanguageSelector from "./LanguageSelector"; // Phase 7 M2: Multi-Language
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -141,6 +142,9 @@ export default function CaseView() {
   // Phase 4 M2/M3/M4: Multi-tab state (case | mentor | curriculum | analytics)
   const [activeTab, setActiveTab] = useState("case");
   const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    return localStorage.getItem('medplat_language') || 'en';
+  });
 
   // 🌍 detect location
   useEffect(() => {
@@ -477,7 +481,13 @@ export default function CaseView() {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
+        <LanguageSelector 
+          currentLanguage={currentLanguage} 
+          onLanguageChange={setCurrentLanguage} 
+        />
+      </div>
 
       {/* Phase 4: Tab Navigation */}
       <div className="flex gap-2 border-b border-gray-300 mb-4">
