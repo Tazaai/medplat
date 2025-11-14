@@ -405,7 +405,6 @@ async function mountRoutes() {
 	} catch (e) {
 		console.error('❌ Could not mount ./routes/translation_api.mjs:', e && e.stack ? e.stack : e);
 	}
-} catch (err) {
 
 	// Phase 7 M3: Voice Interaction
 	try {
@@ -416,7 +415,10 @@ async function mountRoutes() {
 	} catch (e) {
 		console.error('❌ Could not mount ./routes/voice_api.mjs:', e && e.stack ? e.stack : e);
 	}
+} catch (err) {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);
+	// continue — server can still run for diagnostics
+}
 }// Start server with Cloud Run friendly host/port after mounting routes
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -510,3 +512,4 @@ app.get('/debug/env', (req, res) => {
 });
 
 export default app;
+// (paste code above)
