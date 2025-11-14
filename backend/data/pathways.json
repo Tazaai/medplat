@@ -1,0 +1,137 @@
+{
+  "cardiology-specialist": {
+    "id": "cardiology-specialist",
+    "name": "Cardiology Specialist Pathway",
+    "specialty": "Cardiology",
+    "description": "Master cardiovascular medicine from acute coronary syndromes to advanced heart failure management",
+    "requirements": {
+      "topics_mastered": 120,
+      "xp_required": 15000,
+      "quiz_accuracy_min": 0.85,
+      "streak_days_min": 30,
+      "quizzes_completed_min": 100
+    },
+    "topics": [
+      "acute-coronary-syndrome",
+      "heart-failure",
+      "arrhythmias",
+      "valvular-disease",
+      "ecg-interpretation",
+      "hypertension",
+      "lipid-disorders",
+      "congenital-heart-disease",
+      "pericardial-disease",
+      "aortic-disease"
+    ],
+    "estimated_hours": 80,
+    "certification_valid_years": 2
+  },
+  "emergency-medicine": {
+    "id": "emergency-medicine",
+    "name": "Emergency Medicine Pathway",
+    "specialty": "Emergency Medicine",
+    "description": "Critical care and emergency protocols from trauma to toxicology",
+    "requirements": {
+      "topics_mastered": 100,
+      "xp_required": 12000,
+      "quiz_accuracy_min": 0.80,
+      "streak_days_min": 21,
+      "quizzes_completed_min": 80
+    },
+    "topics": [
+      "trauma-management",
+      "sepsis-shock",
+      "acute-abdomen",
+      "toxicology",
+      "resuscitation",
+      "airway-management",
+      "pediatric-emergencies",
+      "neurological-emergencies",
+      "environmental-emergencies",
+      "disaster-medicine"
+    ],
+    "estimated_hours": 60,
+    "certification_valid_years": 2
+  },
+  "internal-medicine": {
+    "id": "internal-medicine",
+    "name": "Internal Medicine Pathway",
+    "specialty": "Internal Medicine",
+    "description": "Comprehensive adult medicine covering major organ systems and chronic disease management",
+    "requirements": {
+      "topics_mastered": 150,
+      "xp_required": 18000,
+      "quiz_accuracy_min": 0.85,
+      "streak_days_min": 45,
+      "quizzes_completed_min": 120
+    },
+    "topics": [
+      "diabetes-mellitus",
+      "chronic-kidney-disease",
+      "liver-disease",
+      "pulmonary-disease",
+      "rheumatology",
+      "endocrinology",
+      "hematology",
+      "infectious-disease",
+      "gastroenterology",
+      "nephrology"
+    ],
+    "estimated_hours": 100,
+    "certification_valid_years": 3
+  },
+  "pediatrics": {
+    "id": "pediatrics",
+    "name": "Pediatrics Pathway",
+    "specialty": "Pediatrics",
+    "description": "Child health from neonatology through adolescent medicine",
+    "requirements": {
+      "topics_mastered": 90,
+      "xp_required": 10000,
+      "quiz_accuracy_min": 0.80,
+      "streak_days_min": 21,
+      "quizzes_completed_min": 70
+    },
+    "topics": [
+      "neonatology",
+      "growth-development",
+      "pediatric-infectious-disease",
+      "pediatric-cardiology",
+      "pediatric-pulmonology",
+      "pediatric-gastroenterology",
+      "adolescent-medicine",
+      "pediatric-endocrinology",
+      "child-abuse",
+      "developmental-disabilities"
+    ],
+    "estimated_hours": 70,
+    "certification_valid_years": 2
+  },
+  "surgery-general": {
+    "id": "surgery-general",
+    "name": "General Surgery Pathway",
+    "specialty": "Surgery",
+    "description": "Surgical principles and perioperative management across major systems",
+    "requirements": {
+      "topics_mastered": 110,
+      "xp_required": 13000,
+      "quiz_accuracy_min": 0.85,
+      "streak_days_min": 30,
+      "quizzes_completed_min": 90
+    },
+    "topics": [
+      "abdominal-surgery",
+      "breast-surgery",
+      "endocrine-surgery",
+      "vascular-surgery",
+      "trauma-surgery",
+      "colorectal-surgery",
+      "hepatobiliary-surgery",
+      "perioperative-care",
+      "surgical-complications",
+      "minimally-invasive-surgery"
+    ],
+    "estimated_hours": 85,
+    "certification_valid_years": 2
+  }
+}
