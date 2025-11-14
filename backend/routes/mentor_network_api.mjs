@@ -27,12 +27,17 @@
 
 import { Router } from 'express';
 import { db } from '../firebaseClient.js';
-import { generateCaseWithOpenAI } from '../openaiClient.js';
-import { logEngagementEvent } from '../telemetry/telemetry_logger.mjs';
+import OpenAI from 'openai';
+import { logEngagementEvent, logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import admin from 'firebase-admin';
 
 const router = Router();
 const FieldValue = admin.firestore.FieldValue;
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 // ========================================
 // CONFIGURATION: XP & Gamification
@@ -201,7 +206,7 @@ router.post('/chat', async (req, res) => {
       { role: 'user', content: user_message }
     ];
     
-    const completion = await generateCaseWithOpenAI({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: openaiMessages,
       temperature: 0.7,
@@ -224,6 +229,16 @@ router.post('/chat', async (req, res) => {
           }
         }
       }
+    });
+    
+    // Log OpenAI call for telemetry
+    await logOpenAICall({
+      uid: session.uid,
+      model: 'gpt-4o-mini',
+      endpoint: 'chat.completions',
+      prompt_tokens: completion.usage?.prompt_tokens || 0,
+      completion_tokens: completion.usage?.completion_tokens || 0,
+      total_tokens: completion.usage?.total_tokens || 0
     });
     
     const mentorData = JSON.parse(completion.choices[0].message.content);
