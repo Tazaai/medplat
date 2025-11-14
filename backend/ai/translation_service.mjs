@@ -1,7 +1,7 @@
 // backend/ai/translation_service.mjs - Medical translation service with term preservation
 
 import { translateText, translateBatch, getLanguageInfo } from '../utils/translationClient.js';
-import { getFirestore } from '../firebaseClient.js';
+import { db } from '../firebaseClient.js';
 
 /**
  * Medical terms that should NOT be translated (preserve in English)
@@ -191,7 +191,6 @@ export async function getCachedTranslation(text, targetLanguage, category = 'gen
 		return text;
 	}
 
-	const db = getFirestore();
 	const cacheKey = `${category}_${Buffer.from(text).toString('base64').substring(0, 50)}_${targetLanguage}`;
 
 	try {
