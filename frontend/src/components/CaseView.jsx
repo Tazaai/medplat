@@ -8,6 +8,8 @@ import MentorTab from "./MentorTab"; // Phase 4 M2: AI Mentor
 import CurriculumTab from "./CurriculumTab"; // Phase 4 M3: Curriculum Builder
 import AnalyticsDashboard from "./AnalyticsDashboard"; // Phase 4 M4: Analytics & Optimization
 import GlobalMentorHub from "./GlobalMentorHub"; // Phase 5: Global AI Mentor Network
+import CertificationTab from "./CertificationTab"; // Phase 6 M1: Certification
+import LeaderboardTab from "./LeaderboardTab"; // Phase 6 M2: Leaderboard
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -525,6 +527,26 @@ export default function CaseView() {
         >
           🌍 Mentor Hub
         </button>
+        <button
+          onClick={() => setActiveTab("certifications")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "certifications"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🏆 Certifications
+        </button>
+        <button
+          onClick={() => setActiveTab("leaderboard")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "leaderboard"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🥇 Leaderboard
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -545,6 +567,16 @@ export default function CaseView() {
       {/* Show Global Mentor Hub when active (Phase 5) */}
       {activeTab === "mentor_hub" && (
         <GlobalMentorHub user={{ uid: userUid }} />
+      )}
+
+      {/* Show Certifications Tab when active (Phase 6 M1) */}
+      {activeTab === "certifications" && (
+        <CertificationTab uid={userUid} />
+      )}
+
+      {/* Show Leaderboard Tab when active (Phase 6 M2) */}
+      {activeTab === "leaderboard" && (
+        <LeaderboardTab uid={userUid} />
       )}
 
       {/* Case Generator Content (show only when case tab is active) */}
