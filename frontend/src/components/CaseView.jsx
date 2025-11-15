@@ -19,6 +19,7 @@ import ECGModule from "./ECGModule"; // Phase 8: ECG Mastery Module
 import ECGMentorPlan from "./ECGMentorPlan"; // Phase 9: AI ECG Study Plan
 import CurriculumECG from "./CurriculumECG"; // Phase 10: Curriculum Builder
 import ECGExamMode from "./ECGExamMode"; // Phase 11: Certification Mode
+import AdminECGAnalytics from "./AdminECGAnalytics"; // Phase 12: Analytics & Admin
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -657,6 +658,16 @@ export default function CaseView() {
         >
           🎓 ECG Certification
         </button>
+        <button
+          onClick={() => setActiveTab("ecg_analytics")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "ecg_analytics"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📊 ECG Analytics
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -722,6 +733,11 @@ export default function CaseView() {
       {/* Show ECG Exam Mode when active (Phase 11) */}
       {activeTab === "ecg_exam" && (
         <ECGExamMode />
+      )}
+
+      {/* Show ECG Analytics when active (Phase 12) */}
+      {activeTab === "ecg_analytics" && (
+        <AdminECGAnalytics />
       )}
 
       {/* Show Reasoning Tab when active (Phase 7 M1) */}

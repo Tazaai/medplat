@@ -322,4 +322,150 @@ router.post('/exam', async (req, res) => {
 	}
 });
 
+/**
+ * GET /api/ecg/admin/usage
+ * Admin analytics: ECG module usage statistics
+ * Phase 12: Analytics & Admin Dashboard
+ */
+router.get('/admin/usage', async (req, res) => {
+	try {
+		// Simulated analytics (in production, would query Firestore telemetry)
+		const usage = {
+			total_users: 1247,
+			active_last_7_days: 421,
+			active_last_30_days: 856,
+			total_sessions: 5632,
+			avg_session_duration_minutes: 12.4,
+			total_cases_attempted: 12847,
+			total_quizzes_completed: 4521,
+			total_exams_taken: 287,
+			exam_pass_rate: 68.3,
+			most_popular_categories: [
+				{ category: 'arrhythmias', sessions: 2134 },
+				{ category: 'ischemia', sessions: 1876 },
+				{ category: 'blocks', sessions: 1421 },
+				{ category: 'electrolyte', sessions: 1098 },
+				{ category: 'congenital', sessions: 589 }
+			],
+			difficulty_distribution: {
+				beginner: 4521,
+				intermediate: 3876,
+				advanced: 2234,
+				expert: 1216
+			},
+			peak_usage_hours: [
+				{ hour: 9, sessions: 456 },
+				{ hour: 14, sessions: 521 },
+				{ hour: 20, sessions: 612 }
+			],
+			timestamp: new Date().toISOString()
+		};
+		
+		res.json({ success: true, usage });
+	} catch (error) {
+		console.error('❌ /api/ecg/admin/usage error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * GET /api/ecg/admin/progress
+ * Admin analytics: User progress trends
+ * Phase 12: Analytics & Admin Dashboard
+ */
+router.get('/admin/progress', async (req, res) => {
+	try {
+		// Simulated progress analytics
+		const progress = {
+			avg_level: 4.2,
+			avg_xp: 1245,
+			level_distribution: [
+				{ level: 1, users: 234 },
+				{ level: 2, users: 198 },
+				{ level: 3, users: 167 },
+				{ level: 4, users: 145 },
+				{ level: 5, users: 121 },
+				{ level: 6, users: 98 },
+				{ level: 7, users: 76 },
+				{ level: 8, users: 54 },
+				{ level: 9, users: 32 },
+				{ level: 10, users: 22 }
+			],
+			avg_accuracy_by_category: {
+				arrhythmias: 72.4,
+				ischemia: 68.1,
+				blocks: 65.3,
+				electrolyte: 71.2,
+				congenital: 58.7
+			},
+			streak_distribution: {
+				'0_days': 421,
+				'1-3_days': 289,
+				'4-7_days': 167,
+				'8-14_days': 98,
+				'15-30_days': 54,
+				'30+_days': 12
+			},
+			certification_stats: {
+				total_attempts: 287,
+				total_passes: 196,
+				avg_score: 74.8,
+				avg_time_minutes: 18.3
+			},
+			timestamp: new Date().toISOString()
+		};
+		
+		res.json({ success: true, progress });
+	} catch (error) {
+		console.error('❌ /api/ecg/admin/progress error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * GET /api/ecg/admin/weaknesses
+ * Admin analytics: Common weak areas heatmap
+ * Phase 12: Analytics & Admin Dashboard
+ */
+router.get('/admin/weaknesses', async (req, res) => {
+	try {
+		// Simulated weakness analytics
+		const weaknesses = {
+			by_category: [
+				{ category: 'congenital', avg_accuracy: 58.7, users_struggling: 421 },
+				{ category: 'blocks', avg_accuracy: 65.3, users_struggling: 367 },
+				{ category: 'ischemia', avg_accuracy: 68.1, users_struggling: 298 },
+				{ category: 'electrolyte', avg_accuracy: 71.2, users_struggling: 234 },
+				{ category: 'arrhythmias', avg_accuracy: 72.4, users_struggling: 189 }
+			],
+			by_difficulty: {
+				beginner: { avg_accuracy: 81.2, completion_rate: 92.1 },
+				intermediate: { avg_accuracy: 69.4, completion_rate: 78.3 },
+				advanced: { avg_accuracy: 54.7, completion_rate: 61.2 },
+				expert: { avg_accuracy: 42.1, completion_rate: 48.9 }
+			},
+			most_failed_questions: [
+				{ question_id: 'ecg_187', diagnosis: 'Brugada Syndrome Type 1', failure_rate: 67.8 },
+				{ question_id: 'ecg_142', diagnosis: '3rd Degree AV Block with VT', failure_rate: 64.2 },
+				{ question_id: 'ecg_093', diagnosis: 'Hyperkalemia (K+ >7)', failure_rate: 62.1 },
+				{ question_id: 'ecg_201', diagnosis: 'WPW with AVRT', failure_rate: 59.4 },
+				{ question_id: 'ecg_156', diagnosis: 'Posterior STEMI', failure_rate: 57.8 }
+			],
+			improvement_recommendations: [
+				'Add more Brugada pattern examples',
+				'Create dedicated AV block tutorial',
+				'Expand electrolyte ECG changes module',
+				'Add WPW syndrome practice cases',
+				'Improve posterior MI ECG recognition'
+			],
+			timestamp: new Date().toISOString()
+		};
+		
+		res.json({ success: true, weaknesses });
+	} catch (error) {
+		console.error('❌ /api/ecg/admin/weaknesses error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
 export default router;
