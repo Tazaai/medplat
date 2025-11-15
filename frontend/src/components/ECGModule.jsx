@@ -69,8 +69,11 @@ export default function ECGModule({ user }) {
 				// Calculate weak categories (accuracy < 60%)
 				const weak = [];
 				Object.entries(progress.performanceByCategory || {}).forEach(([cat, perf]) => {
-					const accuracy = perf.correct / (perf.correct + perf.wrong);
-					if (accuracy < 0.6 && perf.correct + perf.wrong >= 3) {
+					const total = perf.correct + perf.wrong;
+					if (total === 0) return; // Safeguard: skip if no attempts
+					
+					const accuracy = perf.correct / total;
+					if (accuracy < 0.6 && total >= 3) {
 						weak.push(cat);
 					}
 				});
@@ -112,8 +115,11 @@ export default function ECGModule({ user }) {
 			// Recalculate weak categories
 			const weak = [];
 			Object.entries(updated).forEach(([cat, perf]) => {
-				const accuracy = perf.correct / (perf.correct + perf.wrong);
-				if (accuracy < 0.6 && perf.correct + perf.wrong >= 3) {
+				const total = perf.correct + perf.wrong;
+				if (total === 0) return; // Safeguard: skip if no attempts
+				
+				const accuracy = perf.correct / total;
+				if (accuracy < 0.6 && total >= 3) {
 					weak.push(cat);
 				}
 			});
