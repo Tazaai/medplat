@@ -343,4 +343,268 @@ function generateSuggestedTopics(topic, weakAreas) {
   return relatedTopics[topic] || ['Continue with ' + topic];
 }
 
+/**
+ * POST /api/mentor/ecg-path
+ * Phase 9: Generate personalized 7-day ECG study plan
+ * 
+ * Body:
+ * {
+ *   "performanceByCategory": { [category]: { correct, wrong } },
+ *   "level": number,
+ *   "streak": number,
+ *   "weakCategories": string[]
+ * }
+ * 
+ * Response:
+ * {
+ *   "success": true,
+ *   "data": {
+ *     "plan": [ { day, focus, cases, categories, xpTarget, motivation }, ... ],
+ *     "summary": string,
+ *     "weakAreaFocus": string[],
+ *     "weeklyXpGoal": number,
+ *     "encouragement": string
+ *   },
+ *   "meta": { currentLevel, currentStreak, accuracy, totalAttempts, weakCategories }
+ * }
+ */
+router.post('/ecg-path', async (req, res) => {
+  const startTime = Date.now();
+  
+  try {
+    const { 
+      performanceByCategory = {}, 
+      level = 1, 
+      streak = 0, 
+      weakCategories = [] 
+    } = req.body;
+
+    // Calculate overall accuracy
+    let totalCorrect = 0;
+    let totalWrong = 0;
+    Object.values(performanceByCategory).forEach(cat => {
+      totalCorrect += cat.correct || 0;
+      totalWrong += cat.wrong || 0;
+    });
+    const totalAttempts = totalCorrect + totalWrong;
+    const accuracy = totalAttempts > 0 ? ((totalCorrect / totalAttempts) * 100).toFixed(1) : 0;
+
+    // Build AI prompt
+    const prompt = `You are an expert medical educator specializing in ECG interpretation. Create a personalized 7-day ECG study plan.
+
+**Student Profile:**
+- Current Level: ${level}
+- Current Streak: ${streak} correct answers
+- Overall Accuracy: ${accuracy}%
+- Total Cases Attempted: ${totalAttempts}
+- Weak Categories: ${weakCategories.length > 0 ? weakCategories.join(', ') : 'None identified yet'}
+
+**Performance by Category:**
+${Object.entries(performanceByCategory).map(([cat, stats]) => {
+  const catTotal = (stats.correct || 0) + (stats.wrong || 0);
+  const catAccuracy = catTotal > 0 ? ((stats.correct / catTotal) * 100).toFixed(1) : 0;
+  return `- ${cat}: ${stats.correct}/${catTotal} correct (${catAccuracy}%)`;
+}).join('\n') || 'No performance data yet'}
+
+**Study Plan Requirements:**
+1. Create exactly 7 days of study tasks
+2. Focus 60% on weak categories: ${weakCategories.join(', ') || 'balanced review'}
+3. Focus 40% on unlocked/new categories for variety
+4. Each day should have:
+   - Specific focus area (1-2 ECG categories)
+   - Recommended number of cases (3-5 per day)
+   - Daily XP target
+   - Motivational message (1 sentence, encouraging)
+5. Include specific ECG categories: arrhythmias, ischemia, conduction_blocks, chamber_abnormalities, electrolyte_disorders, pacemakers
+6. Total weekly XP goal should be: ${level * 100 + 50}
+
+**Output Format (JSON only, no additional text):**
+{
+  "plan": [
+    {
+      "day": 1,
+      "focus": "Arrhythmias - Basic rhythms",
+      "cases": 4,
+      "categories": ["arrhythmias"],
+      "xpTarget": 40,
+      "motivation": "Start with rhythm recognition - the foundation of ECG mastery!"
+    }
+  ],
+  "summary": "Brief 2-sentence overview",
+  "weakAreaFocus": ["category1"],
+  "weeklyXpGoal": 350,
+  "encouragement": "Personalized message"
+}`;
+
+    // Call OpenAI
+    const completion = await client.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert medical educator creating personalized ECG study plans. Always respond with valid JSON only, no additional text.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500
+    });
+
+    // Log telemetry
+    await logOpenAICall('ecg-mentor-plan', completion.usage);
+
+    // Parse response
+    let studyPlan;
+    try {
+      const content = completion.choices[0].message.content.trim();
+      // Remove markdown code blocks if present
+      const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      studyPlan = JSON.parse(jsonContent);
+    } catch (parseError) {
+      console.warn('JSON parsing failed, using fallback plan:', parseError.message);
+      studyPlan = generateFallbackECGPlan(level, weakCategories, accuracy);
+    }
+
+    res.json({
+      success: true,
+      data: studyPlan,
+      meta: {
+        currentLevel: level,
+        currentStreak: streak,
+        accuracy: parseFloat(accuracy),
+        totalAttempts,
+        weakCategories
+      }
+    });
+
+  } catch (error) {
+    console.error('Error generating AI mentor ECG plan:', error);
+    
+    // Fallback plan on error
+    const fallbackPlan = generateFallbackECGPlan(
+      req.body.level || 1, 
+      req.body.weakCategories || [], 
+      0
+    );
+
+    res.json({
+      success: true,
+      data: fallbackPlan,
+      meta: {
+        fallback: true,
+        reason: 'AI service unavailable - using template plan'
+      }
+    });
+  }
+});
+
+/**
+ * Helper: Generate fallback ECG study plan when AI is unavailable
+ */
+function generateFallbackECGPlan(level, weakCategories, accuracy) {
+  const allCategories = [
+    'arrhythmias', 
+    'ischemia', 
+    'conduction_blocks', 
+    'chamber_abnormalities', 
+    'electrolyte_disorders', 
+    'pacemakers'
+  ];
+
+  // Prioritize weak categories
+  let focusCategories = [...weakCategories];
+  if (focusCategories.length === 0) {
+    focusCategories = allCategories.slice(0, 2);
+  }
+
+  // Mix weak + new categories
+  const otherCategories = allCategories.filter(c => !focusCategories.includes(c));
+  const mixedCategories = [];
+  
+  for (let i = 0; i < 7; i++) {
+    if (i < 4) {
+      mixedCategories.push(focusCategories[i % focusCategories.length]);
+    } else {
+      mixedCategories.push(otherCategories[(i - 4) % otherCategories.length]);
+    }
+  }
+
+  const dailyXp = Math.floor((level * 100 + 50) / 7);
+  const weeklyXpGoal = level * 100 + 50;
+
+  const capitalize = (str) => str.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  const plan = [
+    {
+      day: 1,
+      focus: `${capitalize(mixedCategories[0])} - Foundation`,
+      cases: 4,
+      categories: [mixedCategories[0]],
+      xpTarget: dailyXp,
+      motivation: "Build your ECG foundation with systematic practice!"
+    },
+    {
+      day: 2,
+      focus: `${capitalize(mixedCategories[1])} - Pattern Recognition`,
+      cases: 4,
+      categories: [mixedCategories[1]],
+      xpTarget: dailyXp,
+      motivation: "Pattern recognition improves with consistent exposure!"
+    },
+    {
+      day: 3,
+      focus: `${capitalize(mixedCategories[2])} - Clinical Correlation`,
+      cases: 5,
+      categories: [mixedCategories[2]],
+      xpTarget: dailyXp,
+      motivation: "Connect ECG findings to clinical scenarios!"
+    },
+    {
+      day: 4,
+      focus: `${capitalize(mixedCategories[3])} - Deep Dive`,
+      cases: 5,
+      categories: [mixedCategories[3]],
+      xpTarget: dailyXp,
+      motivation: "Master the details - accuracy comes from understanding!"
+    },
+    {
+      day: 5,
+      focus: `${capitalize(mixedCategories[4])} - Mixed Practice`,
+      cases: 4,
+      categories: [mixedCategories[4], mixedCategories[0]],
+      xpTarget: dailyXp,
+      motivation: "Variety strengthens your diagnostic skills!"
+    },
+    {
+      day: 6,
+      focus: `${capitalize(mixedCategories[5])} - Challenge Mode`,
+      cases: 5,
+      categories: [mixedCategories[5], mixedCategories[1]],
+      xpTarget: dailyXp,
+      motivation: "Push your limits - you're ready for harder cases!"
+    },
+    {
+      day: 7,
+      focus: "Comprehensive Review - All Categories",
+      cases: 6,
+      categories: mixedCategories.slice(0, 3),
+      xpTarget: dailyXp,
+      motivation: "Weekly review solidifies your learning - finish strong!"
+    }
+  ];
+
+  return {
+    plan,
+    summary: `This 7-day plan focuses on strengthening your weak areas (${weakCategories.join(', ') || 'balanced review'}) while maintaining variety. Complete 31 cases this week to boost your ECG mastery!`,
+    weakAreaFocus: weakCategories.length > 0 ? weakCategories : focusCategories.slice(0, 2),
+    weeklyXpGoal,
+    encouragement: accuracy > 70 
+      ? "You're doing great! This plan will help you reach expert level."
+      : "Consistent practice is the key to ECG mastery. You've got this!"
+  };
+}
+
 export default router;

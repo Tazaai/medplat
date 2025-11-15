@@ -413,6 +413,18 @@ export default function ECGModule({ user }) {
 						📋 Review
 					</button>
 					<button 
+						className="header-btn ai-mentor" 
+						onClick={() => {
+							// Save current progress before navigating
+							saveUserProgress();
+							// Navigate to ECG Mentor Plan (assumes CaseView tab system)
+							window.dispatchEvent(new CustomEvent('switchToTab', { detail: 'ecg_mentor' }));
+						}}
+						title="Get AI-Generated Study Plan"
+					>
+						💬 AI Study Plan
+					</button>
+					<button 
 						className="header-btn" 
 						onClick={() => setColorBlindMode(!colorBlindMode)}
 						title="Toggle Color-Blind Friendly Mode"

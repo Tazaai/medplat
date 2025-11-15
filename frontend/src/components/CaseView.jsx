@@ -15,6 +15,8 @@ import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Anal
 import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
 import ReasoningTab from "./ReasoningTab"; // Phase 7 M1: AI Reasoning Engine
 import LanguageSelector from "./LanguageSelector"; // Phase 7 M2: Multi-Language
+import ECGModule from "./ECGModule"; // Phase 8: ECG Mastery Module
+import ECGMentorPlan from "./ECGMentorPlan"; // Phase 9: AI ECG Study Plan
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -145,6 +147,18 @@ export default function CaseView() {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     return localStorage.getItem('medplat_language') || 'en';
   });
+
+  // Phase 9: Listen for tab switch events from child components (e.g., ECGModule)
+  useEffect(() => {
+    const handleTabSwitch = (event) => {
+      if (event.detail) {
+        setActiveTab(event.detail);
+      }
+    };
+    
+    window.addEventListener('switchToTab', handleTabSwitch);
+    return () => window.removeEventListener('switchToTab', handleTabSwitch);
+  }, []);
 
   // 🌍 detect location
   useEffect(() => {
@@ -601,6 +615,26 @@ export default function CaseView() {
         >
           🧠 Reasoning
         </button>
+        <button
+          onClick={() => setActiveTab("ecg")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "ecg"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          📊 ECG Mastery
+        </button>
+        <button
+          onClick={() => setActiveTab("ecg_mentor")}
+          className={`px-4 py-2 font-semibold transition-colors ${
+            activeTab === "ecg_mentor"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
+        >
+          🧠 ECG Study Plan
+        </button>
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -646,6 +680,16 @@ export default function CaseView() {
       {/* Show Social Tab when active (Phase 6 M5) */}
       {activeTab === "social" && (
         <SocialTab uid={userUid} />
+      )}
+
+      {/* Show ECG Module when active (Phase 8) */}
+      {activeTab === "ecg" && (
+        <ECGModule />
+      )}
+
+      {/* Show ECG Mentor Plan when active (Phase 9) */}
+      {activeTab === "ecg_mentor" && (
+        <ECGMentorPlan />
       )}
 
       {/* Show Reasoning Tab when active (Phase 7 M1) */}
