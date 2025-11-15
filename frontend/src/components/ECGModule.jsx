@@ -236,17 +236,50 @@ export default function ECGModule({ user }) {
 				<div className="quiz-container">
 				<div className="quiz-header">
 					<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+					
+					{/* Mini Progress Bar - Phase 8 M1.5 */}
+					<div className="mini-progress-bar">
+						<div 
+							className="progress-segment correct" 
+							style={{width: `${(Math.floor(score/3) / (Math.floor(score/3) + wrongCount + 1)) * 100}%`}}
+						></div>
+						<div 
+							className="progress-segment wrong" 
+							style={{width: `${(wrongCount / (Math.floor(score/3) + wrongCount + 1)) * 100}%`}}
+						></div>
+					</div>
+					
 					<div className="quiz-stats">
 						<span className="stat">Score: <strong>{score} XP ⭐</strong></span>
 						<span className="stat">Correct: <strong>{Math.floor(score / 3)}</strong> | Wrong: <strong>{wrongCount}</strong></span>
 					</div>
-				</div>				{/* ECG Image - Prominent Display */}
-				<div className="ecg-image-container">
-					<img src={quiz.image_url} alt="ECG" className="ecg-full" />
-					<div className="ecg-quality-indicator">
-						Normal quality | Good P waves visible
+			</div>				{/* ECG Image - Prominent Display */}
+			<div className="ecg-image-container">
+				<img src={quiz.image_url} alt="ECG" className="ecg-full" />
+				<div className="ecg-quality-indicator">
+					Normal quality | Good P waves visible
+				</div>
+				
+				{/* Key Features from Library */}
+				{quiz.key_features && quiz.key_features.length > 0 && (
+					<div className="key-features-box">
+						<h4>🔍 Key ECG Features:</h4>
+						<ul>
+							{quiz.key_features.map((feature, idx) => (
+								<li key={idx}>{feature}</li>
+							))}
+						</ul>
 					</div>
-				</div>					<div className="question-section">
+				)}
+				
+				{/* Clinical Context from Library */}
+				{quiz.clinical_context && (
+					<div className="clinical-context-box">
+						<h4>📋 Clinical Context:</h4>
+						<p>{quiz.clinical_context}</p>
+					</div>
+				)}
+			</div>				<div className="question-section">
 						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
 
 						<div className="options-grid">

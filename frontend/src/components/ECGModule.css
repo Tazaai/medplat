@@ -229,6 +229,31 @@
 	margin-bottom: 20px;
 	padding-bottom: 15px;
 	border-bottom: 2px solid #e9ecef;
+	flex-wrap: wrap;
+}
+
+/* Mini Progress Bar - Phase 8 M1.5 */
+.mini-progress-bar {
+	height: 6px;
+	width: 100%;
+	background: #e9ecef;
+	border-radius: 3px;
+	overflow: hidden;
+	display: flex;
+	order: 3;
+}
+
+.progress-segment {
+	height: 100%;
+	transition: width 0.3s ease;
+}
+
+.progress-segment.correct {
+	background: #27ae60;
+}
+
+.progress-segment.wrong {
+	background: #e74c3c;
 }
 
 .quiz-stats {
@@ -244,6 +269,52 @@
 .quiz-stats .stat strong {
 	color: #3498db;
 	font-size: 1.2rem;
+}
+
+/* Key Features Box - Phase 8 M1.5 */
+.key-features-box {
+	margin-top: 15px;
+	padding: 15px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	border-left: 4px solid #3498db;
+}
+
+.key-features-box h4 {
+	margin: 0 0 10px 0;
+	font-size: 1rem;
+	color: #2c3e50;
+}
+
+.key-features-box ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.key-features-box li {
+	margin: 5px 0;
+	color: #495057;
+}
+
+/* Clinical Context Box - Phase 8 M1.5 */
+.clinical-context-box {
+	margin-top: 15px;
+	padding: 15px;
+	background: #e9ecef;
+	border-radius: 8px;
+	border-left: 4px solid #6c757d;
+}
+
+.clinical-context-box h4 {
+	margin: 0 0 10px 0;
+	font-size: 1rem;
+	color: #2c3e50;
+}
+
+.clinical-context-box p {
+	margin: 0;
+	color: #495057;
+	line-height: 1.6;
 }
 
 .ecg-image-container {
@@ -393,6 +464,15 @@
 
 .explanation-section {
 	animation: slideIn 0.4s ease-out;
+	background: #fff9db; /* Soft yellow background */
+	border: 2px solid #f4d03f;
+	border-radius: 12px;
+	padding: 25px;
+	margin-top: 20px;
+}
+
+.explanation-section h4::before {
+	content: "💡 ";
 }
 
 @keyframes slideIn {
