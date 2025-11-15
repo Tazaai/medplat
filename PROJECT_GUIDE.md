@@ -34,8 +34,8 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 
 ### ✅ Phase 8 M1: CLINICAL IMAGING (COMPLETE)
 **Status:** ✅ DEPLOYED v8.0.0-m1 (Nov 14, 2025)  
-**Features:** ECG interpretation module (15 cases), POCUS/ultrasound module (15 cases)  
-**Architecture:** Library-based (LITFL, POCUS101), AI-enhanced explanations, zero storage cost
+**Features:** ECG interpretation module (15 cases)  
+**Architecture:** Library-based (LITFL), AI-enhanced explanations, zero storage cost
 
 ### 📋 Phase 8 M2-M3: RADIOLOGY + INTEGRATION (Planned)
 **Target:** January-February 2026  
@@ -57,7 +57,7 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 - [x] Voice interaction — ✅ ACHIEVED (Phase 7 M3)
 - [x] Advanced AI reasoning — ✅ ACHIEVED (Phase 7 M1)
 - [x] Medical glossary — ✅ ACHIEVED (Phase 7 M4)
-- [x] Clinical imaging (ECG + POCUS) — ✅ ACHIEVED (Phase 8 M1)
+- [x] Clinical imaging (ECG) — ✅ ACHIEVED (Phase 8 M1)
 - [ ] Radiology basics (CXR + CT) — 📋 Phase 8 M2 (Planned)
 - [ ] Payment system — ⏸️ Phase 10
 - [ ] Mobile apps — ⏸️ Phase 9
@@ -110,11 +110,10 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 
 ### Clinical Imaging (Phase 8 M1) ✅ COMPLETE
 **ECG Interpretation:** 15 validated cases, 5 categories, AI-enhanced explanations (7 endpoints)  
-**POCUS/Ultrasound:** 15 validated cases, 5 categories, video links (7 endpoints)  
-**Library-Based:** Public educational resources (LITFL, POCUS101), zero storage cost  
+**Library-Based:** Public educational resources (LITFL), zero storage cost  
 **Safety:** NO user uploads, pre-validated diagnoses only, educational use only
 
-**Total:** 14 new endpoints in Phase 8 M1
+**Total:** 7 new endpoints in Phase 8 M1
 
 ---
 
@@ -184,7 +183,7 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 - 20 validated CXR cases (pneumonia, pneumothorax, CHF, pleural effusion, lung mass)
 - Categories: Normal, Infection, Fluid, Air, Masses, Bones
 - Source: Radiopaedia educational library
-- Same library-based approach as ECG/POCUS (zero storage cost)
+- Same library-based approach as ECG (zero storage cost)
 
 **CT Fundamentals:**
 - 10 validated CT cases (stroke, PE, AAA, trauma)
@@ -212,10 +211,6 @@ POST /api/radiology/grade
 **ECG-to-Differential Mapping:**
 - Map ECG findings to differential diagnosis automatically
 - Example: "Anterior STEMI" → Reasoning engine generates MI differentials
-
-**POCUS-to-Clinical Decision:**
-- Link ultrasound findings to clinical decision trees
-- Example: "Positive FAST" → Activate trauma protocol
 
 ---
 
