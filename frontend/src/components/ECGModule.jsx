@@ -1,6 +1,7 @@
-// frontend/src/components/ECGModule.jsx — Phase 8 M1: ECG Interpretation Module
+// frontend/src/components/ECGModule.jsx — Phase 8 M1+M2: ECG Interpretation with Adaptive Difficulty
 import { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
+import ECGPatternMapping from './ECGPatternMapping';
 import './ECGModule.css';
 
 export default function ECGModule({ user }) {
@@ -18,11 +19,31 @@ export default function ECGModule({ user }) {
 	const [wrongCount, setWrongCount] = useState(0);
 	const [xpEarned, setXpEarned] = useState(0);
 	const [loading, setLoading] = useState(false);
+	
+	// Phase 8 M2: Adaptive difficulty tracking
+	const [userLevel, setUserLevel] = useState(1);
+	const [unlockedDifficulties, setUnlockedDifficulties] = useState(['beginner']);
+	const [performanceByCategory, setPerformanceByCategory] = useState({});
+	const [weakCategories, setWeakCategories] = useState([]);
 
 	// Load categories on mount
 	useEffect(() => {
 		loadCategories();
+		loadUserProgress();
 	}, []);
+	
+	// Phase 8 M2: Calculate user level based on score
+	useEffect(() => {
+		const newLevel = Math.floor(score / 3) + 1; // 3 XP per correct = 1 level
+		setUserLevel(newLevel);
+		
+		// Update unlocked difficulties based on level
+		const unlocked = ['beginner'];
+		if (newLevel >= 5) unlocked.push('intermediate');
+		if (newLevel >= 10) unlocked.push('advanced');
+		if (newLevel >= 15) unlocked.push('expert');
+		setUnlockedDifficulties(unlocked);
+	}, [score]);
 
 	async function loadCategories() {
 		try {
@@ -32,6 +53,74 @@ export default function ECGModule({ user }) {
 		} catch (error) {
 			console.error('Failed to load ECG categories:', error);
 		}
+	}
+	
+	// Phase 8 M2: Load user progress from localStorage
+	function loadUserProgress() {
+		try {
+			const saved = localStorage.getItem('ecg_progress');
+			if (saved) {
+				const progress = JSON.parse(saved);
+				setScore(progress.score || 0);
+				setWrongCount(progress.wrongCount || 0);
+				setXpEarned(progress.xpEarned || 0);
+				setPerformanceByCategory(progress.performanceByCategory || {});
+				
+				// Calculate weak categories (accuracy < 60%)
+				const weak = [];
+				Object.entries(progress.performanceByCategory || {}).forEach(([cat, perf]) => {
+					const accuracy = perf.correct / (perf.correct + perf.wrong);
+					if (accuracy < 0.6 && perf.correct + perf.wrong >= 3) {
+						weak.push(cat);
+					}
+				});
+				setWeakCategories(weak);
+			}
+		} catch (error) {
+			console.warn('Failed to load progress:', error);
+		}
+	}
+	
+	// Phase 8 M2: Save user progress to localStorage
+	function saveUserProgress() {
+		try {
+			const progress = {
+				score,
+				wrongCount,
+				xpEarned,
+				performanceByCategory,
+				lastUpdated: new Date().toISOString()
+			};
+			localStorage.setItem('ecg_progress', JSON.stringify(progress));
+		} catch (error) {
+			console.warn('Failed to save progress:', error);
+		}
+	}
+	
+	// Phase 8 M2: Update category performance
+	function updateCategoryPerformance(category, correct) {
+		setPerformanceByCategory(prev => {
+			const current = prev[category] || { correct: 0, wrong: 0 };
+			const updated = {
+				...prev,
+				[category]: {
+					correct: current.correct + (correct ? 1 : 0),
+					wrong: current.wrong + (correct ? 0 : 1)
+				}
+			};
+			
+			// Recalculate weak categories
+			const weak = [];
+			Object.entries(updated).forEach(([cat, perf]) => {
+				const accuracy = perf.correct / (perf.correct + perf.wrong);
+				if (accuracy < 0.6 && perf.correct + perf.wrong >= 3) {
+					weak.push(cat);
+				}
+			});
+			setWeakCategories(weak);
+			
+			return updated;
+		});
 	}
 
 	async function loadCasesByCategory(categoryId) {
@@ -88,6 +177,11 @@ export default function ECGModule({ user }) {
 			setWrongCount(wrongCount + 1);
 		}
 		
+		// Phase 8 M2: Track category performance for weak-area targeting
+		const category = quiz.category || selectedCase?.category || 'unknown';
+		updateCategoryPerformance(category, isCorrect);
+		saveUserProgress();
+		
 		// Show explanation immediately
 		setShowExplanation(true);
 	}
@@ -127,6 +221,18 @@ export default function ECGModule({ user }) {
 						<span className="stat-label">XP Earned</span>
 					</div>
 				</div>
+				
+				{/* Phase 8 M2: Weak Area Notification */}
+				{weakCategories.length > 0 && (
+					<div className="weak-area-banner">
+						<span className="weak-icon">⚠️</span>
+						<div className="weak-content">
+							<strong>Weak Areas Detected:</strong>
+							<span className="weak-list">{weakCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}</span>
+						</div>
+						<span className="weak-tip">Practice more in these categories to improve!</span>
+					</div>
+				)}
 
 				<div className="category-grid">
 					{categories.map(cat => (
@@ -203,11 +309,19 @@ export default function ECGModule({ user }) {
 				<div className="loading">Loading ECG cases...</div>
 			) : (
 				<div className="case-grid">
-					{filteredCases.map(c => (
-						<div key={c.id} className="ecg-case-card">
-							<img src={c.image_url} alt={c.title} className="ecg-preview" />
-							<h3>{c.title}</h3>
-							<div className="case-meta">
+					{filteredCases.map(c => {
+						// Phase 8 M2: Check if case is unlocked based on difficulty
+						const isLocked = !unlockedDifficulties.includes(c.difficulty);
+						const reqLevel = c.difficulty === 'beginner' ? 1 : 
+											c.difficulty === 'intermediate' ? 5 :
+											c.difficulty === 'advanced' ? 10 : 15;
+						
+						return (
+							<div key={c.id} className={`ecg-case-card ${isLocked ? 'locked' : ''}`}>
+								<img src={c.image_url} alt={c.title} className="ecg-preview" />
+								{isLocked && <div className="lock-overlay">🔒 Level {reqLevel}</div>}
+								<h3>{c.title}</h3>
+								<div className="case-meta">
 									<span className={`difficulty difficulty-${c.difficulty}`}>
 										{c.difficulty}
 									</span>
@@ -215,12 +329,14 @@ export default function ECGModule({ user }) {
 								</div>
 								<button
 									className="start-quiz-button"
-									onClick={() => startQuiz(c)}
+									onClick={() => !isLocked && startQuiz(c)}
+									disabled={isLocked}
 								>
-									Start Quiz
+									{isLocked ? `🔒 Reach Level ${reqLevel}` : 'Start Quiz'}
 								</button>
 							</div>
-						))}
+						);
+					})}
 					</div>
 				)}
 			</div>
@@ -250,8 +366,26 @@ export default function ECGModule({ user }) {
 					</div>
 					
 					<div className="quiz-stats">
+						<span className="stat">Level: <strong>{userLevel}</strong></span>
 						<span className="stat">Score: <strong>{score} XP ⭐</strong></span>
 						<span className="stat">Correct: <strong>{Math.floor(score / 3)}</strong> | Wrong: <strong>{wrongCount}</strong></span>
+					</div>
+					
+					{/* Phase 8 M2: Difficulty Unlock Progress */}
+					<div className="difficulty-unlocks">
+						{['beginner', 'intermediate', 'advanced', 'expert'].map((diff, idx) => {
+							const reqLevel = idx === 0 ? 1 : idx === 1 ? 5 : idx === 2 ? 10 : 15;
+							const isUnlocked = unlockedDifficulties.includes(diff);
+							const progress = isUnlocked ? 100 : Math.min((userLevel / reqLevel) * 100, 99);
+							
+							return (
+								<div key={diff} className={`unlock-badge ${isUnlocked ? 'unlocked' : 'locked'}`} title={`${diff.charAt(0).toUpperCase() + diff.slice(1)} - Level ${reqLevel}`}>
+									<span className="unlock-icon">{isUnlocked ? '🔓' : '🔒'}</span>
+									<span className="unlock-label">{diff.charAt(0).toUpperCase()}</span>
+									{!isUnlocked && <div className="unlock-progress" style={{width: `${progress}%`}}></div>}
+								</div>
+							);
+						})}
 					</div>
 			</div>				{/* ECG Image - Prominent Display */}
 			<div className="ecg-image-container">
@@ -279,6 +413,9 @@ export default function ECGModule({ user }) {
 						<p>{quiz.clinical_context}</p>
 					</div>
 				)}
+				
+				{/* Phase 8 M2: ECG Pattern Mapping */}
+				<ECGPatternMapping ecgCase={selectedCase} />
 			</div>				<div className="question-section">
 						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
 

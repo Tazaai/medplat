@@ -117,23 +117,109 @@ router.post('/quiz/generate', async (req, res) => {
 /**
  * POST /api/ecg/grade
  * Grade user's ECG MCQ answer
- * Body: { question_data, user_answer }
+ * Body: { question_data, user_answer, user_id }
  */
 router.post('/grade', async (req, res) => {
 	try {
-		const { question_data, user_answer } = req.body;
+		const { question_data, user_answer, user_id } = req.body;
 		
 		if (!question_data || !user_answer) {
 			return res.status(400).json({ error: 'question_data and user_answer are required' });
 		}
 		
 		const result = gradeECGAnswer(question_data, user_answer);
+		
+		// Phase 8 M2: Track performance for adaptive difficulty
+		if (user_id && result.correct !== undefined) {
+			const category = question_data.category || 'unknown';
+			const difficulty = question_data.difficulty || 'unknown';
+			
+			// Store performance in telemetry (non-blocking)
+			try {
+				await fetch(`${process.env.API_BASE || 'http://localhost:5000'}/api/telemetry/log`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						event_type: 'ecg_answer',
+						user_id,
+						metadata: {
+							case_id: question_data.case_id,
+							category,
+							difficulty,
+							correct: result.correct,
+							timestamp: new Date().toISOString()
+						}
+					})
+				}).catch(err => console.warn('Telemetry log failed (non-critical):', err.message));
+			} catch (e) {
+				// Telemetry failure is non-critical
+			}
+		}
+		
 		res.json(result);
 	} catch (error) {
 		console.error('❌ /api/ecg/grade error:', error);
 		res.status(500).json({ error: error.message });
 	}
 });
+
+/**
+ * POST /api/ecg/recommend
+ * Get recommended ECG case based on user performance
+ * Body: { user_id, user_level, performance_data }
+ */
+router.post('/recommend', async (req, res) => {
+	try {
+		const { user_id, user_level = 1, performance_data = {} } = req.body;
+		
+		// Phase 8 M2: Adaptive difficulty progression
+		const { weak_categories = [], total_correct = 0, total_wrong = 0 } = performance_data;
+		
+		// Calculate accuracy
+		const total_attempts = total_correct + total_wrong;
+		const accuracy = total_attempts > 0 ? total_correct / total_attempts : 0.5;
+		
+		// Determine difficulty based on level and accuracy
+		let recommended_difficulty = 'beginner';
+		if (user_level >= 15 || accuracy >= 0.85) {
+			recommended_difficulty = 'expert';
+		} else if (user_level >= 10 || accuracy >= 0.75) {
+			recommended_difficulty = 'advanced';
+		} else if (user_level >= 5 || accuracy >= 0.65) {
+			recommended_difficulty = 'intermediate';
+		}
+		
+		// Weak-area targeting: 60% weak areas, 40% new topics
+		let recommended_category = null;
+		if (weak_categories.length > 0 && Math.random() < 0.6) {
+			// Pick random weak category
+			recommended_category = weak_categories[Math.floor(Math.random() * weak_categories.length)];
+		}
+		
+		res.json({
+			recommended_difficulty,
+			recommended_category,
+			reason: weak_categories.length > 0 
+				? `Focusing on weak area: ${recommended_category}` 
+				: 'Exploring new topics',
+			unlocked_difficulties: getUnlockedDifficulties(user_level)
+		});
+	} catch (error) {
+		console.error('❌ /api/ecg/recommend error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * Helper: Get unlocked difficulty levels based on user level
+ */
+function getUnlockedDifficulties(user_level) {
+	const unlocked = ['beginner'];
+	if (user_level >= 5) unlocked.push('intermediate');
+	if (user_level >= 10) unlocked.push('advanced');
+	if (user_level >= 15) unlocked.push('expert');
+	return unlocked;
+}
 
 /**
  * GET /api/ecg/categories

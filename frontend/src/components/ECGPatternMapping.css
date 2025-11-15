@@ -1,0 +1,110 @@
+/* frontend/src/components/ECGPatternMapping.css — Phase 8 M2: Pattern Analysis Styles */
+
+.ecg-pattern-mapping {
+	margin: 20px 0;
+	padding: 20px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border-radius: 12px;
+	color: white;
+	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.ecg-pattern-mapping h4 {
+	margin: 0 0 15px 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.pattern-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 12px;
+	margin-bottom: 15px;
+}
+
+.pattern-item {
+	background: rgba(255, 255, 255, 0.15);
+	padding: 12px;
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	transition: all 0.2s ease;
+}
+
+.pattern-item:hover {
+	background: rgba(255, 255, 255, 0.25);
+	transform: translateY(-2px);
+}
+
+.pattern-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	opacity: 0.9;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.pattern-value {
+	font-size: 1rem;
+	font-weight: 500;
+}
+
+.pattern-summary {
+	background: rgba(255, 255, 255, 0.1);
+	padding: 15px;
+	border-radius: 8px;
+	border-left: 4px solid #ffd700;
+	backdrop-filter: blur(10px);
+}
+
+.pattern-summary strong {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 0.95rem;
+}
+
+.pattern-summary ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.pattern-summary li {
+	margin: 5px 0;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.pattern-grid {
+		grid-template-columns: 1fr;
+	}
+	
+	.ecg-pattern-mapping {
+		padding: 15px;
+	}
+	
+	.pattern-item {
+		padding: 10px;
+	}
+}
+
+/* Animation */
+@keyframes patternReveal {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.ecg-pattern-mapping {
+	animation: patternReveal 0.4s ease-out;
+}

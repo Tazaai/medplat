@@ -130,6 +130,48 @@
 	color: white;
 }
 
+/* Phase 8 M2: Weak Area Banner */
+.weak-area-banner {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	padding: 15px 20px;
+	margin: 20px 0;
+	background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+	border-radius: 12px;
+	border-left: 5px solid #e17055;
+	box-shadow: 0 2px 8px rgba(225, 112, 85, 0.2);
+}
+
+.weak-icon {
+	font-size: 1.5rem;
+	flex-shrink: 0;
+}
+
+.weak-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.weak-content strong {
+	font-size: 1rem;
+	color: #2d3436;
+}
+
+.weak-list {
+	font-size: 0.9rem;
+	color: #636e72;
+	font-weight: 500;
+}
+
+.weak-tip {
+	font-size: 0.85rem;
+	color: #2d3436;
+	font-style: italic;
+}
+
 .case-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -215,6 +257,43 @@
 	background: #2980b9;
 }
 
+/* Phase 8 M2: Locked Cases */
+.ecg-case-card.locked {
+	position: relative;
+	opacity: 0.6;
+}
+
+.ecg-case-card.locked .ecg-preview {
+	filter: grayscale(70%) blur(2px);
+}
+
+.lock-overlay {
+	position: absolute;
+	top: 40%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgba(0, 0, 0, 0.85);
+	color: white;
+	padding: 12px 20px;
+	border-radius: 8px;
+	font-weight: 600;
+	font-size: 1.1rem;
+	z-index: 10;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	white-space: nowrap;
+}
+
+.start-quiz-button:disabled {
+	background: #6c757d;
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+.start-quiz-button:disabled:hover {
+	background: #6c757d;
+	transform: none;
+}
+
 .quiz-container {
 	background: white;
 	border-radius: 12px;
@@ -254,6 +333,68 @@
 
 .progress-segment.wrong {
 	background: #e74c3c;
+}
+
+/* Phase 8 M2: Difficulty Unlock Badges */
+.difficulty-unlocks {
+	width: 100%;
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	margin-top: 10px;
+	order: 4;
+}
+
+.unlock-badge {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	border: 2px solid #e9ecef;
+	background: white;
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+.unlock-badge.unlocked {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border-color: #667eea;
+	color: white;
+	box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.unlock-badge.locked {
+	background: #f8f9fa;
+	border-color: #dee2e6;
+	color: #6c757d;
+}
+
+.unlock-icon {
+	font-size: 1.2rem;
+}
+
+.unlock-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.unlock-progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 3px;
+	background: linear-gradient(90deg, #667eea, #764ba2);
+	transition: width 0.5s ease;
+}
+
+.unlock-badge.locked:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .quiz-stats {
