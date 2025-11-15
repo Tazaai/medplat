@@ -743,3 +743,142 @@
 	font-size: 1.2rem;
 	color: #7f8c8d;
 }
+
+/* ========================================
+   Phase 8 M2.3: Micro-Logic Polish Styles
+   ======================================== */
+
+/* ECG Tip of the Day */
+.ecg-tip-of-day {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	padding: 20px;
+	border-radius: 12px;
+	margin: 20px 0;
+	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.ecg-tip-of-day h4 {
+	margin: 0 0 10px 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+
+.ecg-tip-of-day p {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	opacity: 0.95;
+}
+
+/* Confidence Meter */
+.confidence-meter {
+	background: white;
+	border-radius: 12px;
+	padding: 15px 20px;
+	margin: 20px 0;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.confidence-icon {
+	font-size: 1.5rem;
+}
+
+.confidence-label {
+	font-weight: 600;
+	font-size: 1rem;
+	color: #2c3e50;
+	flex: 1;
+}
+
+.confidence-streak {
+	font-size: 0.9rem;
+	color: #7f8c8d;
+	background: #ecf0f1;
+	padding: 4px 12px;
+	border-radius: 12px;
+}
+
+.confidence-bar {
+	height: 8px;
+	background: #ecf0f1;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.confidence-fill {
+	height: 100%;
+	transition: width 0.5s ease;
+	border-radius: 4px;
+}
+
+.confidence-fill.confidence-building {
+	background: linear-gradient(90deg, #3498db, #2980b9);
+}
+
+.confidence-fill.confidence-confident {
+	background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.confidence-fill.confidence-expert {
+	background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+/* Mini-Timer (Quiz View) */
+.quiz-stats .stat.timer {
+	background: #ecf0f1;
+	padding: 5px 12px;
+	border-radius: 8px;
+	font-size: 0.95rem;
+}
+
+/* Repeated Mistake Warning */
+.repeated-mistake-warning {
+	background: linear-gradient(135deg, #fff9e6 0%, #ffe6b3 100%);
+	border: 2px solid #ffb84d;
+	border-radius: 12px;
+	padding: 15px;
+	margin: 15px 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.warning-icon {
+	font-size: 1.5rem;
+}
+
+.warning-text {
+	color: #cc8800;
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 0 8px rgba(255, 184, 77, 0);
+	}
+}
+
+/* Info Tooltip (Weak Area Banner) */
+.info-tooltip {
+	cursor: help;
+	font-size: 0.9rem;
+	opacity: 0.8;
+	transition: opacity 0.2s ease;
+}
+
+.info-tooltip:hover {
+	opacity: 1;
+}

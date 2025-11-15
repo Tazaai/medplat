@@ -25,6 +25,13 @@ export default function ECGModule({ user }) {
 	const [unlockedDifficulties, setUnlockedDifficulties] = useState(['beginner']);
 	const [performanceByCategory, setPerformanceByCategory] = useState({});
 	const [weakCategories, setWeakCategories] = useState([]);
+	
+	// Phase 8 M2.3: Micro-logic polish (UI-only intelligence)
+	const [questionStartTime, setQuestionStartTime] = useState(null);
+	const [elapsedTime, setElapsedTime] = useState(0);
+	const [repeatedMistakes, setRepeatedMistakes] = useState([]);
+	const [currentStreak, setCurrentStreak] = useState(0);
+	const [confidenceLevel, setConfidenceLevel] = useState('building'); // building | confident | expert
 
 	// Load categories on mount
 	useEffect(() => {
@@ -44,6 +51,17 @@ export default function ECGModule({ user }) {
 		if (newLevel >= 15) unlocked.push('expert');
 		setUnlockedDifficulties(unlocked);
 	}, [score]);
+	
+	// Phase 8 M2.3: Timer effect (updates every second during quiz)
+	useEffect(() => {
+		if (quiz && !answered && questionStartTime) {
+			const interval = setInterval(() => {
+				const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
+				setElapsedTime(elapsed);
+			}, 1000);
+			return () => clearInterval(interval);
+		}
+	}, [quiz, answered, questionStartTime]);
 
 	async function loadCategories() {
 		try {
@@ -65,6 +83,8 @@ export default function ECGModule({ user }) {
 				setWrongCount(progress.wrongCount || 0);
 				setXpEarned(progress.xpEarned || 0);
 				setPerformanceByCategory(progress.performanceByCategory || {});
+				setRepeatedMistakes(progress.repeatedMistakes || []);
+				setCurrentStreak(progress.currentStreak || 0);
 				
 				// Calculate weak categories (accuracy < 60%)
 				const weak = [];
@@ -161,6 +181,8 @@ export default function ECGModule({ user }) {
 			setSelectedAnswer(null);
 			setAnswered(false);
 			setShowExplanation(false);
+			setQuestionStartTime(Date.now()); // Start timer
+			setElapsedTime(0);
 		} catch (error) {
 			console.error('Failed to generate ECG quiz:', error);
 		} finally {
@@ -174,13 +196,34 @@ export default function ECGModule({ user }) {
 		setSelectedAnswer(optionLabel);
 		setAnswered(true);
 		
+		// Calculate time taken
+		if (questionStartTime) {
+			const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
+			setElapsedTime(timeTaken);
+		}
+		
 		// Immediate scoring (3 points correct, 0 wrong - matches Level2 pattern)
 		const isCorrect = optionLabel === quiz.correct_answer;
 		if (isCorrect) {
 			setScore(score + 3);
 			setXpEarned(xpEarned + quiz.xp_reward);
+			const newStreak = currentStreak + 1;
+			setCurrentStreak(newStreak);
+			
+			// Update confidence based on streak
+			if (newStreak >= 10) setConfidenceLevel('expert');
+			else if (newStreak >= 5) setConfidenceLevel('confident');
+			else setConfidenceLevel('building');
 		} else {
 			setWrongCount(wrongCount + 1);
+			setCurrentStreak(0); // Reset streak
+			setConfidenceLevel('building');
+			
+			// Track repeated mistakes (same case ID)
+			const caseId = selectedCase?.id;
+			if (caseId && !repeatedMistakes.includes(caseId)) {
+				setRepeatedMistakes([...repeatedMistakes, caseId]);
+			}
 		}
 		
 		// Phase 8 M2: Track category performance for weak-area targeting
@@ -206,6 +249,24 @@ export default function ECGModule({ user }) {
 		setCases([]);
 		setSelectedCase(null);
 		setQuiz(null);
+	}
+	
+	// Phase 8 M2.3: ECG Tip of the Day (static tips, cycled by day)
+	function getECGTipOfDay() {
+		const tips = [
+			"Always check the calibration! A standard ECG is 10mm/mV and 25mm/s.",
+			"P waves before every QRS? Think sinus rhythm. No P waves? Consider AF or junctional.",
+			"ST elevation >1mm in 2+ contiguous leads = STEMI until proven otherwise.",
+			"Wide QRS (>120ms) suggests bundle branch block or ventricular origin.",
+			"Prolonged QT (>440ms men, >460ms women) increases torsades risk.",
+			"Hyperkalemia: Tall peaked T waves → PR prolongation → Wide QRS → Sine wave.",
+			"Hypothermia: Look for Osborn (J) waves at the QRS-ST junction.",
+			"Digitalis effect: Downsloping ST depression (Salvador Dalí moustache).",
+			"Wellens syndrome: Biphasic T waves in V2-V3 = critical LAD stenosis.",
+			"Delta wave + short PR + wide QRS = WPW syndrome (pre-excitation)."
+		];
+		const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+		return tips[dayOfYear % tips.length];
 	}
 
 	// Render category selection
@@ -236,22 +297,49 @@ export default function ECGModule({ user }) {
 						<strong>Weak Areas Detected: <span className="info-tooltip" title="Weak areas are identified when accuracy < 60% after 3 or more attempts in a category.">ℹ️</span></strong>
 						<span className="weak-list">{weakCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}</span>
 					</div>
-					<span className="weak-tip">Practice more in these categories to improve!</span>
-				</div>
-				)}
+									<span className="weak-tip">Practice more in these categories to improve!</span>
+			</div>
+			)}
 
-				<div className="category-grid">
-					{categories.map(cat => (
-						<div
-							key={cat.id}
-							className="category-card"
-							onClick={() => loadCasesByCategory(cat.id)}
-						>
-							<h3>{cat.name}</h3>
-							<p>{cat.description}</p>
-						</div>
-					))}
+			{/* Phase 8 M2.3: ECG Tip of the Day */}
+			<div className="ecg-tip-of-day">
+				<h4>💡 ECG Tip of the Day</h4>
+				<p>{getECGTipOfDay()}</p>
+			</div>
+			
+			{/* Phase 8 M2.3: Confidence Meter */}
+			{currentStreak > 0 && (
+				<div className="confidence-meter">
+					<div className="confidence-header">
+						<span className="confidence-icon">
+							{confidenceLevel === 'expert' ? '🏆' : confidenceLevel === 'confident' ? '⭐' : '📈'}
+						</span>
+						<span className="confidence-label">
+							{confidenceLevel === 'expert' ? 'Expert Level' : confidenceLevel === 'confident' ? 'Confident' : 'Building Confidence'}
+						</span>
+						<span className="confidence-streak">{currentStreak} streak</span>
+					</div>
+					<div className="confidence-bar">
+						<div 
+							className={`confidence-fill confidence-${confidenceLevel}`}
+							style={{width: `${Math.min((currentStreak / 10) * 100, 100)}%`}}
+						></div>
+					</div>
 				</div>
+			)}
+
+			<div className="category-grid">
+				{categories.map(cat => (
+					<div
+						key={cat.id}
+						className="category-card"
+						onClick={() => loadCasesByCategory(cat.id)}
+					>
+						<h3>{cat.name}</h3>
+						<p>{cat.description}</p>
+					</div>
+				))}
+			</div>
 			</div>
 		);
 	}
@@ -371,13 +459,23 @@ export default function ECGModule({ user }) {
 						></div>
 					</div>
 					
-					<div className="quiz-stats">
-						<span className="stat">Level: <strong>{userLevel}</strong></span>
-						<span className="stat">Score: <strong>{score} XP ⭐</strong></span>
-						<span className="stat">Correct: <strong>{Math.floor(score / 3)}</strong> | Wrong: <strong>{wrongCount}</strong></span>
+				<div className="quiz-stats">
+					<span className="stat">Level: <strong>{userLevel}</strong></span>
+					<span className="stat">Score: <strong>{score} XP ⭐</strong></span>
+					<span className="stat">Correct: <strong>{Math.floor(score / 3)}</strong> | Wrong: <strong>{wrongCount}</strong></span>
+					{/* Phase 8 M2.3: Mini-timer (visual only) */}
+					{!answered && questionStartTime && (
+						<span className="stat timer">⏱️ <strong>{elapsedTime}s</strong></span>
+					)}
+				</div>
+				
+				{/* Phase 8 M2.3: Repeated Mistake Warning */}
+				{repeatedMistakes.includes(selectedCase?.id) && (
+					<div className="repeated-mistake-warning">
+						<span className="warning-icon">🔁</span>
+						<span className="warning-text">You've answered this case incorrectly before — review carefully!</span>
 					</div>
-					
-					{/* Phase 8 M2: Difficulty Unlock Progress */}
+				)}					{/* Phase 8 M2: Difficulty Unlock Progress */}
 					<div className="difficulty-unlocks">
 						{['beginner', 'intermediate', 'advanced', 'expert'].map((diff, idx) => {
 							const reqLevel = idx === 0 ? 1 : idx === 1 ? 5 : idx === 2 ? 10 : 15;
