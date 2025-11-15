@@ -229,15 +229,15 @@ export default function ECGModule({ user }) {
 				</div>
 				
 				{/* Phase 8 M2: Weak Area Notification */}
-				{weakCategories.length > 0 && (
-					<div className="weak-area-banner">
-						<span className="weak-icon">⚠️</span>
-						<div className="weak-content">
-							<strong>Weak Areas Detected:</strong>
-							<span className="weak-list">{weakCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}</span>
-						</div>
-						<span className="weak-tip">Practice more in these categories to improve!</span>
+			{weakCategories.length > 0 && (
+				<div className="weak-area-banner">
+					<span className="weak-icon">⚠️</span>
+					<div className="weak-content">
+						<strong>Weak Areas Detected: <span className="info-tooltip" title="Weak areas are identified when accuracy < 60% after 3 or more attempts in a category.">ℹ️</span></strong>
+						<span className="weak-list">{weakCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}</span>
 					</div>
+					<span className="weak-tip">Practice more in these categories to improve!</span>
+				</div>
 				)}
 
 				<div className="category-grid">
@@ -462,12 +462,10 @@ export default function ECGModule({ user }) {
 									<p className="diagnosis-highlight">{selectedCase.diagnosis}</p>
 								</div>
 
-								<div className="explanation-text">
-									<h4>📖 Explanation:</h4>
-									<p>{quiz.explanation}</p>
-								</div>
-
-								<div className="key-features">
+					<div className="explanation-text">
+						<h4>📈 ECG Explanation:</h4>
+						<p>{quiz.explanation}</p>
+					</div>								<div className="key-features">
 									<h4>🔑 Key ECG Features:</h4>
 									<ul>
 										{quiz.key_features?.map((feature, idx) => (
