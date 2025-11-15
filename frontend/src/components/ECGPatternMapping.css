@@ -7,6 +7,19 @@
 	border-radius: 12px;
 	color: white;
 	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+	/* Phase 8 M3: FadeIn animation */
+	animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .ecg-pattern-mapping h4 {

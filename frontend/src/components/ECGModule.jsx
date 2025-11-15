@@ -1,5 +1,5 @@
-// frontend/src/components/ECGModule.jsx — Phase 8 M1+M2: ECG Interpretation with Adaptive Difficulty
-import { useState, useEffect } from 'react';
+// frontend/src/components/ECGModule.jsx — Phase 8 M1+M2+M3: ECG Interpretation with Adaptive Difficulty
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { API_BASE } from '../config';
 import ECGPatternMapping from './ECGPatternMapping';
 import './ECGModule.css';
@@ -32,6 +32,12 @@ export default function ECGModule({ user }) {
 	const [repeatedMistakes, setRepeatedMistakes] = useState([]);
 	const [currentStreak, setCurrentStreak] = useState(0);
 	const [confidenceLevel, setConfidenceLevel] = useState('building'); // building | confident | expert
+	
+	// Phase 8 M3: Module completion features
+	const [recentECGs, setRecentECGs] = useState([]);
+	const [showReviewScreen, setShowReviewScreen] = useState(false);
+	const [colorBlindMode, setColorBlindMode] = useState(false);
+	const [showXPPopup, setShowXPPopup] = useState(false);
 
 	// Load categories on mount
 	useEffect(() => {
@@ -56,8 +62,8 @@ export default function ECGModule({ user }) {
 	useEffect(() => {
 		if (quiz && !answered && questionStartTime) {
 			const interval = setInterval(() => {
-				const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
-				setElapsedTime(elapsed);
+				const elapsed = Math.floor((Date.now() - (questionStartTime || Date.now())) / 1000);
+				setElapsedTime(Math.max(0, elapsed)); // Ensure non-negative
 			}, 1000);
 			return () => clearInterval(interval);
 		}
@@ -174,15 +180,18 @@ export default function ECGModule({ user }) {
 					include_explanation: true
 				})
 			});
-			const mcq = await res.json();
-			setSelectedCase(caseItem);
-			setQuiz(mcq);
-			setCurrentQuestionIndex(0);
-			setSelectedAnswer(null);
-			setAnswered(false);
-			setShowExplanation(false);
-			setQuestionStartTime(Date.now()); // Start timer
-			setElapsedTime(0);
+		const mcq = await res.json();
+		setSelectedCase(caseItem);
+		setQuiz(mcq);
+		setCurrentQuestionIndex(0);
+		setSelectedAnswer(null);
+		setAnswered(false);
+		setShowExplanation(false);
+		setQuestionStartTime(Date.now()); // Start timer
+		setElapsedTime(0);
+		
+		// Phase 8 M3: Scroll to top on new question
+		window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (error) {
 			console.error('Failed to generate ECG quiz:', error);
 		} finally {
@@ -210,6 +219,10 @@ export default function ECGModule({ user }) {
 			const newStreak = currentStreak + 1;
 			setCurrentStreak(newStreak);
 			
+			// Phase 8 M3: Show XP popup animation
+			setShowXPPopup(true);
+			setTimeout(() => setShowXPPopup(false), 2000);
+			
 			// Update confidence based on streak
 			if (newStreak >= 10) setConfidenceLevel('expert');
 			else if (newStreak >= 5) setConfidenceLevel('confident');
@@ -231,6 +244,9 @@ export default function ECGModule({ user }) {
 		updateCategoryPerformance(category, isCorrect);
 		saveUserProgress();
 		
+		// Phase 8 M3: Add to recent ECGs for review
+		addToRecentECGs(selectedCase, isCorrect);
+		
 		// Show explanation immediately
 		setShowExplanation(true);
 	}
@@ -251,8 +267,8 @@ export default function ECGModule({ user }) {
 		setQuiz(null);
 	}
 	
-	// Phase 8 M2.3: ECG Tip of the Day (static tips, cycled by day)
-	function getECGTipOfDay() {
+	// Phase 8 M2.3: ECG Tip of the Day (static tips, cycled by day) - Memoized for performance
+	const ecgTipOfDay = useMemo(() => {
 		const tips = [
 			"Always check the calibration! A standard ECG is 10mm/mV and 25mm/s.",
 			"P waves before every QRS? Think sinus rhythm. No P waves? Consider AF or junctional.",
@@ -267,13 +283,152 @@ export default function ECGModule({ user }) {
 		];
 		const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
 		return tips[dayOfYear % tips.length];
+	}, []);
+	
+	// Phase 8 M3: Image preloading for next ECG
+	const preloadNextImage = useCallback((imageUrl) => {
+		if (imageUrl) {
+			const img = new Image();
+			img.src = imageUrl;
+		}
+	}, []);
+	
+	// Phase 8 M3: Frontend fallback recommendation generator
+	const getFallbackRecommendation = useCallback(() => {
+		const difficulties = unlockedDifficulties;
+		const recommended_difficulty = difficulties[difficulties.length - 1] || 'beginner';
+		
+		// Pick from weak categories if available, otherwise random
+		let recommended_category = null;
+		if (weakCategories.length > 0 && Math.random() < 0.6) {
+			recommended_category = weakCategories[Math.floor(Math.random() * weakCategories.length)];
+		}
+		
+		// Get 3 random case IDs from current cases
+		const availableCases = cases.filter(c => 
+			unlockedDifficulties.includes(c.difficulty) &&
+			(!recommended_category || c.category === recommended_category)
+		);
+		
+		const recommendedIds = availableCases
+			.sort(() => Math.random() - 0.5)
+			.slice(0, 3)
+			.map(c => c.id);
+		
+		return {
+			recommended_difficulty,
+			recommended_category,
+			recommended_ids: recommendedIds.length >= 3 ? recommendedIds : null,
+			reason: weakCategories.includes(recommended_category)
+				? `Focusing on weak area: ${recommended_category}`
+				: 'Exploring new topics'
+		};
+	}, [cases, unlockedDifficulties, weakCategories]);
+	
+	// Phase 8 M3: Reset all progress with confirmation
+	function resetProgress() {
+		if (!window.confirm('⚠️ This will reset ALL your ECG progress. Continue?')) return;
+		if (!window.confirm('Last chance! This cannot be undone.')) return;
+		
+		try {
+			localStorage.removeItem('ecg_progress');
+			setScore(0);
+			setWrongCount(0);
+			setXpEarned(0);
+			setPerformanceByCategory({});
+			setRepeatedMistakes([]);
+			setCurrentStreak(0);
+			setUserLevel(1);
+			setUnlockedDifficulties(['beginner']);
+			setWeakCategories([]);
+			setRecentECGs([]);
+			alert('✅ Progress reset successfully!');
+		} catch (error) {
+			console.error('Failed to reset progress:', error);
+			alert('❌ Failed to reset progress. Please try again.');
+		}
+	}
+	
+	// Phase 8 M3: Track recent ECGs for review
+	function addToRecentECGs(caseItem, isCorrect) {
+		const recent = [
+			{ case: caseItem, correct: isCorrect, timestamp: Date.now() },
+			...recentECGs.slice(0, 4) // Keep last 5
+		];
+		setRecentECGs(recent);
+		try {
+			localStorage.setItem('ecg_recent', JSON.stringify(recent));
+		} catch (error) {
+			console.warn('Failed to save recent ECGs:', error);
+		}
+	}
+
+	// Phase 8 M3: Render review screen
+	if (showReviewScreen) {
+		return (
+			<div className="ecg-module">
+				<div className="ecg-compact-header">
+					<span className="mode-badge">Review Last 5 ECGs</span>
+					<button className="header-btn" onClick={() => setShowReviewScreen(false)}>← Back</button>
+					<span className="version-badge">v8</span>
+				</div>
+				
+				<div className="review-screen">
+					{recentECGs.length === 0 ? (
+						<div className="empty-state">
+							<p>No recent ECGs yet. Start practicing to see your history here!</p>
+						</div>
+					) : (
+						<div className="review-list">
+							{recentECGs.map((item, idx) => (
+								<div key={idx} className={`review-item ${item.correct ? 'correct' : 'incorrect'}`}>
+									<div className="review-icon">{item.correct ? '✅' : '❌'}</div>
+									<div className="review-details">
+										<h4>{item.case?.title || 'Unknown Case'}</h4>
+										<p>{item.case?.diagnosis || 'No diagnosis'}</p>
+										<span className="review-time">{new Date(item.timestamp).toLocaleString()}</span>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+			</div>
+		);
 	}
 
 	// Render category selection
 	if (!selectedCategory) {
 		return (
 			<div className="ecg-module">
-				<div className="ecg-header">
+			{/* Phase 8 M3: Compact Header */}
+			<div className="ecg-compact-header">
+				<span className="mode-badge">ECG Mastery Mode</span>
+				<div className="header-actions">
+					<button 
+						className="header-btn" 
+						onClick={() => setShowReviewScreen(!showReviewScreen)}
+						title="Review Last 5 ECGs"
+					>
+						📋 Review
+					</button>
+					<button 
+						className="header-btn" 
+						onClick={() => setColorBlindMode(!colorBlindMode)}
+						title="Toggle Color-Blind Friendly Mode"
+					>
+						{colorBlindMode ? '🎨' : '👁️'}
+					</button>
+					<button 
+						className="header-btn danger" 
+						onClick={resetProgress}
+						title="Reset All Progress"
+					>
+						🔄 Reset
+					</button>
+				</div>
+				<span className="version-badge">v8</span>
+			</div>				<div className="ecg-header">
 					<h1>📊 ECG Interpretation Module</h1>
 					<p>Master ECG interpretation with validated cases from LITFL and educational resources</p>
 				</div>
@@ -304,7 +459,7 @@ export default function ECGModule({ user }) {
 			{/* Phase 8 M2.3: ECG Tip of the Day */}
 			<div className="ecg-tip-of-day">
 				<h4>💡 ECG Tip of the Day</h4>
-				<p>{getECGTipOfDay()}</p>
+				<p>{ecgTipOfDay}</p>
 			</div>
 			
 			{/* Phase 8 M2.3: Confidence Meter */}
@@ -338,8 +493,13 @@ export default function ECGModule({ user }) {
 						<h3>{cat.name}</h3>
 						<p>{cat.description}</p>
 					</div>
-				))}
-			</div>
+					))}
+				</div>
+				
+				{/* Phase 8 M3: Footer */}
+				<div className="ecg-footer">
+					<span>MedPlat · adaptive ECG engine</span>
+				</div>
 			</div>
 		);
 	}
@@ -442,12 +602,19 @@ export default function ECGModule({ user }) {
 		const isCorrect = selectedAnswer === quiz.correct_answer;
 		
 		return (
-			<div className="ecg-module">
-				<div className="quiz-container">
-				<div className="quiz-header">
-					<button className="back-button" onClick={handleBackToCategories}>← Back</button>
-					
-					{/* Mini Progress Bar - Phase 8 M1.5 */}
+		<div className="ecg-module">
+			<div className="quiz-container">
+			{/* Phase 8 M3: XP Popup Animation */}
+			{showXPPopup && (
+				<div className="xp-popup">
+					+{quiz.xp_reward} XP! 🎉
+				</div>
+			)}
+			
+			<div className="quiz-header">
+				<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+				
+				{/* Mini Progress Bar - Phase 8 M1.5 */}
 					<div className="mini-progress-bar">
 						<div 
 							className="progress-segment correct" 
@@ -482,18 +649,30 @@ export default function ECGModule({ user }) {
 							const isUnlocked = unlockedDifficulties.includes(diff);
 							const progress = isUnlocked ? 100 : Math.min((userLevel / reqLevel) * 100, 99);
 							
-							return (
-								<div key={diff} className={`unlock-badge ${isUnlocked ? 'unlocked' : 'locked'}`} title={`${diff.charAt(0).toUpperCase() + diff.slice(1)} - Level ${reqLevel}`}>
-									<span className="unlock-icon">{isUnlocked ? '🔓' : '🔒'}</span>
-									<span className="unlock-label">{diff.charAt(0).toUpperCase()}</span>
-									{!isUnlocked && <div className="unlock-progress" style={{width: `${progress}%`}}></div>}
-								</div>
-							);
+						return (
+							<div 
+								key={diff} 
+								className={`unlock-badge ${isUnlocked ? 'unlocked' : 'locked'}`} 
+								title={`${diff.charAt(0).toUpperCase() + diff.slice(1)} - ${isUnlocked ? 'Unlocked!' : `Level ${reqLevel} required (${Math.floor(progress)}% progress)`}`}
+							>
+								<span className="unlock-icon">{isUnlocked ? '🔓' : '🔒'}</span>
+								<span className="unlock-label">{diff.charAt(0).toUpperCase()}</span>
+								{!isUnlocked && <div className="unlock-progress" style={{width: `${progress}%`}}></div>}
+							</div>
+						);
 						})}
 					</div>
 			</div>				{/* ECG Image - Prominent Display */}
 			<div className="ecg-image-container">
-				<img src={quiz.image_url} alt="ECG" className="ecg-full" />
+				<img 
+					src={quiz.image_url} 
+					alt="ECG" 
+					className="ecg-full"
+					onError={(e) => {
+						e.target.onerror = null;
+						e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23ecf0f1" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%237f8c8d" font-size="20"%3EECG Image Unavailable%3C/text%3E%3C/svg%3E';
+					}}
+				/>
 				<div className="ecg-quality-indicator">
 					Normal quality | Good P waves visible
 				</div>
@@ -518,12 +697,21 @@ export default function ECGModule({ user }) {
 					</div>
 				)}
 				
-				{/* Phase 8 M2: ECG Pattern Mapping */}
-				<ECGPatternMapping ecgCase={selectedCase} />
-			</div>				<div className="question-section">
-						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
-
-						<div className="options-grid">
+			{/* Phase 8 M2: ECG Pattern Mapping */}
+			<ECGPatternMapping ecgCase={selectedCase} />
+			
+			{/* Phase 8 M3: Clinical Correlation Microcard */}
+			{quiz.key_features && quiz.key_features.length > 0 && (
+				<div className="clinical-correlation-microcard">
+					<h5>💡 What This Pattern Often Means</h5>
+					<p className="correlation-text">
+						{quiz.key_features.slice(0, 2).join('. ')}. 
+						{quiz.clinical_context ? ` Clinical correlation: ${quiz.clinical_context.slice(0, 100)}...` : ''}
+					</p>
+				</div>
+			)}
+		</div>				<div className="question-section">
+					<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>						<div className="options-grid">
 							{quiz.options.map(opt => {
 								const isSelected = selectedAnswer === opt.label;
 								const isCorrectOption = opt.label === quiz.correct_answer;
@@ -548,14 +736,12 @@ export default function ECGModule({ user }) {
 						</div>
 						
 						{/* Immediate Feedback - Show after answer selected */}
-						{showExplanation && (
-							<div className="explanation-section">
-								<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'}`}>
-									{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
-									{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
-								</div>
-
-								<div className="correct-answer-section">
+					{showExplanation && (
+						<div className="explanation-section">
+							<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'} ${colorBlindMode ? 'colorblind' : ''}`}>
+								{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
+								{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
+							</div>								<div className="correct-answer-section">
 									<h4>✓ Correct Answer:</h4>
 									<p className="diagnosis-highlight">{selectedCase.diagnosis}</p>
 								</div>
@@ -577,15 +763,38 @@ export default function ECGModule({ user }) {
 									<p>{quiz.clinical_context}</p>
 								</div>
 
-							<div className="management-info">
-								<h4>💊 Management:</h4>
-								<p>{quiz.management}</p>
-							</div>
+						<div className="management-info">
+							<h4>💊 Management:</h4>
+							<p>{quiz.management}</p>
+						</div>
 
+						{/* Phase 8 M3: Button group with learning path */}
+						<div className="quiz-actions">
 							<button className="next-button next-case-button" onClick={handleNextCase}>
 								Next ECG →
 							</button>
+							
+							<button 
+								className="continue-learning-button" 
+								onClick={() => {
+									const recommendation = getFallbackRecommendation();
+									if (recommendation.recommended_ids && recommendation.recommended_ids.length > 0) {
+										const nextCase = cases.find(c => c.id === recommendation.recommended_ids[0]);
+										if (nextCase) {
+											startQuiz(nextCase);
+										}
+									} else {
+										// If no recommendations, just pick next unlocked case
+										const nextUnlockedCase = cases.find(c => unlockedDifficulties.includes(c.difficulty));
+										if (nextUnlockedCase) startQuiz(nextUnlockedCase);
+									}
+								}}
+								title="Get recommended ECG based on your performance"
+							>
+								🎯 Continue Learning Path
+							</button>
 						</div>
+					</div>
 						)}
 					</div>
 				</div>

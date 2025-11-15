@@ -721,7 +721,6 @@
 }
 
 .next-button {
-	width: 100%;
 	background: #3498db;
 	color: white;
 	border: none;
@@ -730,11 +729,38 @@
 	cursor: pointer;
 	font-size: 1.1rem;
 	font-weight: 600;
-	margin-top: 30px;
+	flex: 1;
 }
 
 .next-button:hover {
 	background: #2980b9;
+}
+
+/* Phase 8 M3: Quiz actions button group */
+.quiz-actions {
+	display: flex;
+	gap: 15px;
+	margin-top: 30px;
+	width: 100%;
+}
+
+.continue-learning-button {
+	flex: 1;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border: none;
+	padding: 15px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 1.1rem;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.continue-learning-button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .loading {
@@ -747,6 +773,42 @@
 /* ========================================
    Phase 8 M2.3: Micro-Logic Polish Styles
    ======================================== */
+
+/* Phase 8 M3: Compact Header Banner */
+.ecg-compact-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 20px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border-radius: 8px 8px 0 0;
+	margin-bottom: 15px;
+}
+
+.mode-badge {
+	font-weight: 600;
+	font-size: 0.95rem;
+	letter-spacing: 0.5px;
+}
+
+.version-badge {
+	background: rgba(255, 255, 255, 0.25);
+	padding: 4px 12px;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+/* Phase 8 M3: Footer */
+.ecg-footer {
+	text-align: center;
+	padding: 15px;
+	margin-top: 30px;
+	color: #95a5a6;
+	font-size: 0.9rem;
+	border-top: 1px solid #ecf0f1;
+}
 
 /* ECG Tip of the Day */
 .ecg-tip-of-day {
@@ -881,4 +943,142 @@
 
 .info-tooltip:hover {
 	opacity: 1;
+}
+
+/* Phase 8 M3: Module Completion Features */
+
+/* Header Actions */
+.header-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.header-btn {
+	background: rgba(255, 255, 255, 0.25);
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 0.85rem;
+	font-weight: 600;
+	transition: background 0.2s ease;
+}
+
+.header-btn:hover {
+	background: rgba(255, 255, 255, 0.35);
+}
+
+.header-btn.danger:hover {
+	background: rgba(231, 76, 60, 0.8);
+}
+
+/* XP Popup Animation */
+.xp-popup {
+	position: fixed;
+	top: 20%;
+	left: 50%;
+	transform: translateX(-50%);
+	background: linear-gradient(135deg, #2ecc71, #27ae60);
+	color: white;
+	padding: 20px 40px;
+	border-radius: 12px;
+	font-size: 1.5rem;
+	font-weight: bold;
+	z-index: 1000;
+	box-shadow: 0 8px 24px rgba(46, 204, 113, 0.5);
+	animation: xpPopup 2s ease-out;
+}
+
+@keyframes xpPopup {
+	0% {
+		opacity: 0;
+		transform: translate(-50%, -30px) scale(0.8);
+	}
+	20% {
+		opacity: 1;
+		transform: translate(-50%, 0) scale(1.1);
+	}
+	80% {
+		opacity: 1;
+		transform: translate(-50%, 0) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, 10px) scale(0.9);
+	}
+}
+
+/* Color-Blind Mode */
+.result-banner.colorblind.correct {
+	background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+	border-left-color: #3498db !important;
+}
+
+.result-banner.colorblind.incorrect {
+	background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+	border-left-color: #f39c12 !important;
+}
+
+/* Review Screen */
+.review-screen {
+	padding: 20px;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 60px 20px;
+	color: #7f8c8d;
+}
+
+.empty-state p {
+	font-size: 1.1rem;
+}
+
+.review-list {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+}
+
+.review-item {
+	display: flex;
+	gap: 15px;
+	padding: 20px;
+	background: white;
+	border-radius: 12px;
+	border-left: 4px solid #3498db;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-item.correct {
+	border-left-color: #2ecc71;
+}
+
+.review-item.incorrect {
+	border-left-color: #e74c3c;
+}
+
+.review-icon {
+	font-size: 2rem;
+}
+
+.review-details {
+	flex: 1;
+}
+
+.review-details h4 {
+	margin: 0 0 5px 0;
+	color: #2c3e50;
+}
+
+.review-details p {
+	margin: 0 0 8px 0;
+	color: #7f8c8d;
+	font-size: 0.95rem;
+}
+
+.review-time {
+	font-size: 0.85rem;
+	color: #95a5a6;
 }
