@@ -1,9 +1,9 @@
 # 🚀 MedPlat Phase 8: ECG Clinical Imaging Module
 
-**Version:** v8.0.0-m1 (M1 ✅ COMPLETE)  
+**Version:** v8.0.0-m3 (M3 ✅ COMPLETE - PRODUCTION READY)  
 **Base:** v7.0.0-m5 (Phase 7 complete)  
 **Timeline:** 2 weeks (Nov 14-28, 2025)  
-**Status:** ✅ DEPLOYED (Backend + Frontend)  
+**Status:** ✅ PRODUCTION DEPLOYED (Backend + Frontend)  
 **Priority:** HIGH
 
 ---
@@ -39,8 +39,8 @@ Phase 8 introduces an **ECG interpretation module** using a **library-based educ
 | # | Milestone | Duration | Status | Priority |
 |---|-----------|----------|--------|----------|
 | 1 | ECG Interpretation Modules | 2 weeks | ✅ DEPLOYED | CRITICAL |
-| 2 | ECG Mastery Upgrade | Future | 📋 PLANNED | HIGH |
-| 3 | ECG Clinical Integration | Future | 📋 PLANNED | HIGH |
+| 2 | ECG Mastery Upgrade (M2) | 1 week | ✅ DEPLOYED | HIGH |
+| 3 | ECG Complete Polish (M3) | 1 day | ✅ DEPLOYED | HIGH |
 
 ---
 
@@ -439,9 +439,127 @@ git push origin --tags
 
 ---
 
+## Phase 8 M2: ECG Mastery Upgrade (Nov 15, 2025) ✅ DEPLOYED
+
+**Status:** ✅ COMPLETE (Nov 15, 2025)  
+**Tag:** v8.0.0-m2
+
+### Features Implemented
+
+#### Adaptive Difficulty System
+- 4 difficulty levels: Beginner, Intermediate, Advanced, Expert
+- Progressive unlocking based on user XP level
+- Visual unlock badges with progress indicators
+
+#### Weak Area Detection
+- Tracks performance by ECG category
+- Identifies categories with <40% accuracy
+- Prioritizes weak areas in next question selection (60/40 split)
+
+#### Enhanced Analytics
+- Real-time confidence meter (Building/Confident/Expert)
+- Streak tracking (consecutive correct answers)
+- XP-based leveling system
+- Performance heatmap by category
+
+#### Recommendation Engine
+- Backend `/api/ecg/recommend` endpoint
+- Returns recommended difficulty, category, reason
+- Suggests 3 next case IDs based on performance
+
+#### Micro-Logic Polish
+- Timer for each question (displays elapsed time)
+- ECG Tip of the Day (10 clinical tips, daily rotation)
+- Enhanced UI feedback (streak, confidence, progress bars)
+
+---
+
+## Phase 8 M3: Complete ECG Polish (Nov 15, 2025) ✅ DEPLOYED
+
+**Status:** ✅ COMPLETE (Nov 15, 2025)  
+**Tag:** v8.0.0-m3  
+**Revisions:**
+- Backend: medplat-backend-01074-5dl
+- Frontend: medplat-frontend-00363-llf
+
+### Master Order Features (10 Steps)
+
+#### 1. Stability Sweep ✅
+- No console.log statements
+- Clean imports
+- Null-check hardening (timer logic)
+
+#### 2. Performance Optimization ✅
+- React `useMemo` for Tip of Day
+- React `useCallback` for image preloading
+- React `useCallback` for fallback recommendations
+
+#### 3. Frontend Finishing Touches ✅
+- Compact header: "ECG Mastery Mode · v8"
+- Footer: "MedPlat · adaptive ECG engine"
+- Smooth scroll to top on new questions
+- FadeIn animation for pattern mapping
+
+#### 4. Global Hardening ✅
+- Image error fallback (SVG placeholder)
+- localStorage try/catch protection
+- Privacy mode safeguards
+
+#### 5. ECG Module Completion ✅
+**A) Review Last 5 ECGs Screen**
+- localStorage-based history
+- Color-coded results (green/red borders)
+- Timestamp tracking
+- Empty state handling
+
+**B) Reset All Progress**
+- Two-step confirmation dialog
+- Clears all localStorage data
+- Resets state to defaults
+- Error handling with user feedback
+
+**C) Color-Blind Friendly Mode**
+- Blue/orange palette (instead of green/red)
+- Toggle button in header
+- High contrast maintained
+
+**D) XP Popup Animation**
+- 2-second fade animation
+- Shows on correct answer
+- "+{xp} XP! 🎉" display
+- Auto-dismisses
+
+#### 6. Adaptive Engine M2 ✅
+- Backend `/recommend` endpoint robust
+- Frontend fallback recommendation generator
+- Returns 3 case IDs when available
+- 60/40 weak area split
+
+#### 7. UI Polish M2.4 ✅
+**A) Enhanced Unlock Badge Tooltips**
+- Shows progress percentage
+- "Level X required (Y% progress)"
+- Dynamic calculation
+
+**B) Clinical Correlation Microcard**
+- Combines first 2 key features
+- Adds clinical context (first 100 chars)
+- Purple gradient styling
+- "💡 What This Pattern Often Means"
+
+**C) Continue Learning Path Button**
+- Positioned next to "Next ECG →"
+- Uses fallback recommendation logic
+- Loads recommended case
+- 🎯 icon with gradient styling
+
+---
+
 ## Related Documentation
 
-- `PHASE8_DEPLOYMENT.md` - Comprehensive deployment report (434 lines)
+- `PHASE8_M3_DEPLOYMENT.md` - M3 deployment report (Nov 15, 2025)
+- `RELEASE_NOTES_v8.0.0-m3.md` - Complete release notes
+- `PHASE8_DEPLOYMENT.md` - M1 deployment report (Nov 14, 2025)
 - `PHASE7_PLAN.md` - Clinical reasoning, translation, voice, glossary (Phase 7)
 - `PHASE4_PLAN.md` - AI Mentor, Curriculum Builder, Analytics (Phase 4)
 - `COPILOT_PHASE4_GUIDE.md` - Development operational guide
@@ -449,12 +567,17 @@ git push origin --tags
 
 ---
 
-**Phase 8 M1 Status:** ✅ **COMPLETE & DEPLOYED**  
-**Next Milestone:** Phase 8 M2 (Radiology Basics) - January 2026  
+**Phase 8 Status:** ✅ **COMPLETE & PRODUCTION READY**  
+**Current Version:** v8.0.0-m3  
+**Next Phase:** Phase 9 (AI Mentor Integration with ECG Module)  
 **Production URLs:**
 - Backend: https://medplat-backend-139218747785.europe-west1.run.app
 - Frontend: https://medplat-frontend-139218747785.europe-west1.run.app
 
+**Deployed Revisions (v8.0.0-m3):**
+- Backend: medplat-backend-01074-5dl
+- Frontend: medplat-frontend-00363-llf
+
 ---
 
-*Last Updated: November 14, 2025*
+*Last Updated: November 15, 2025 - Phase 8 M3 Complete*
