@@ -255,4 +255,71 @@ function getCategoryDescription(category) {
 	return descriptions[category] || category;
 }
 
+/**
+ * POST /api/ecg/exam
+ * Generate certification exam (20 mixed-difficulty questions, 20-minute timer)
+ * Phase 11: Certification Mode
+ * Body: { user_level?, include_all_categories? }
+ */
+router.post('/exam', async (req, res) => {
+	try {
+		const { user_level = 5, include_all_categories = true } = req.body;
+		
+		// Mix of difficulties based on user level
+		const difficultyDistribution = {
+			beginner: user_level < 5 ? 8 : 4,
+			intermediate: user_level < 10 ? 8 : 6,
+			advanced: user_level < 15 ? 4 : 6,
+			expert: user_level >= 15 ? 2 : 4
+		};
+		
+		const exam_questions = [];
+		
+		// Generate questions for each difficulty level
+		for (const [difficulty, count] of Object.entries(difficultyDistribution)) {
+			if (count > 0) {
+				const quiz = await generateECGQuiz({
+					num_questions: count,
+					difficulty: difficulty,
+					include_explanations: true,
+					category: null // Mix all categories
+				});
+				
+				exam_questions.push(...quiz.questions);
+			}
+		}
+		
+		// Shuffle exam questions
+		const shuffled_exam = exam_questions.sort(() => 0.5 - Math.random());
+		const final_exam = shuffled_exam.slice(0, 20); // Exactly 20 questions
+		
+		res.json({
+			success: true,
+			exam: {
+				id: `exam_${Date.now()}`,
+				total_questions: final_exam.length,
+				time_limit_minutes: 20,
+				passing_score: 70,
+				questions: final_exam,
+				difficulty_breakdown: difficultyDistribution,
+				instructions: [
+					'Answer all 20 questions within 20 minutes',
+					'Each question is worth 5 points (100 points total)',
+					'Passing score: 70% (14/20 correct)',
+					'No backward navigation allowed',
+					'Certificate available upon passing'
+				]
+			},
+			meta: {
+				user_level,
+				exam_type: 'ecg_certification',
+				created_at: new Date().toISOString()
+			}
+		});
+	} catch (error) {
+		console.error('❌ /api/ecg/exam error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
 export default router;
