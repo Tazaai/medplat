@@ -10,6 +10,7 @@ import topicsRouter from './routes/topics_api.mjs';
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
 import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Development Panel
+import ecgImageRouter from './routes/ecg_image_routes.mjs'; // Phase B: ECG Image Pipeline
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -46,6 +47,10 @@ console.log('✅ Mounted /api/expert-panel (static import)');
 // Mount internal panel API (invisible auto-review before user sees case)
 app.use('/api/internal-panel', internalPanelApi);
 console.log('✅ Mounted /api/internal-panel (static import)');
+
+// Mount ECG Image Pipeline API (Phase B - v15.0.0)
+app.use('/api/ecg-images', ecgImageRouter);
+console.log('✅ Mounted /api/ecg-images (static import)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set
