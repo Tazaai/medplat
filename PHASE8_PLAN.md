@@ -14,7 +14,7 @@ Phase 8 introduces an **ECG interpretation module** using a **library-based educ
 
 ### Strategic Goals
 
-1. **Clinical Skills Training** - ECG and ultrasound interpretation are core medical competencies
+1. **Clinical Skills Training** - ECG interpretation is a core medical competency
 2. **Safety First** - NO user-uploaded ECG interpretation (AI vision models unreliable for diagnosis)
 3. **Cost Efficiency** - Zero storage cost using public educational image URLs
 4. **Maximum Reliability** - Pre-validated diagnoses from trusted educational resources
@@ -28,7 +28,7 @@ Phase 8 introduces an **ECG interpretation module** using a **library-based educ
 ❌ **NO Stripe/payment system** (deferred to Phase 9)  
 ❌ **NO enterprise dashboards** (deferred to Phase 10)  
 ❌ **NO advanced social duels** (Phase 7 M5 already covers core social)  
-❌ **NO radiology DICOM viewer** (out of scope)
+❌ **NO radiology/imaging modules** (MedPlat = ECG-only for imaging)
 
 **Focus:** Educational ECG libraries with AI-enhanced explanations ONLY.
 
@@ -39,8 +39,8 @@ Phase 8 introduces an **ECG interpretation module** using a **library-based educ
 | # | Milestone | Duration | Status | Priority |
 |---|-----------|----------|--------|----------|
 | 1 | ECG Interpretation Modules | 2 weeks | ✅ DEPLOYED | CRITICAL |
-| 2 | Radiology Basics (CXR + CT) | Future | 📋 PLANNED | MEDIUM |
-| 3 | Clinical Reasoning Integration | Future | 📋 PLANNED | HIGH |
+| 2 | ECG Mastery Upgrade | Future | 📋 PLANNED | HIGH |
+| 3 | ECG Clinical Integration | Future | 📋 PLANNED | HIGH |
 
 ---
 
@@ -355,28 +355,24 @@ curl https://medplat-backend-139218747785.europe-west1.run.app/api/ecg/health
 
 ## Future Roadmap
 
-### Phase 8 M2: Radiology Basics (Planned - 3 weeks)
+### Phase 8 M2: ECG Mastery Upgrade (Planned - 3 weeks)
 
-**Chest X-Ray Interpretation:**
-- 20 validated CXR cases (pneumonia, pneumothorax, CHF, pleural effusion, lung mass)
-- Categories: Normal, Infection, Fluid, Air, Masses, Bones
-- Source: Radiopaedia educational library
+**Difficulty Progression:**
+- Adaptive quiz system (beginner → expert)
+- Score-based unlocking of harder ECG cases
+- Personalized weak-area targeting
 
-**CT Fundamentals:**
-- 10 validated CT cases (stroke, PE, AAA, trauma)
-- Categories: Head, Chest, Abdomen, Emergency
-- Source: Radiopaedia educational library
+**ECG Pattern Mapping:**
+- Multi-step ECG reasoning (rhythm → axis → intervals → ST/T)
+- Pattern recognition training (STEMI patterns, arrhythmia families)
+- Clinical correlation exercises
 
-**API Endpoints:**
-```
-GET  /api/radiology/health
-GET  /api/radiology/stats
-GET  /api/radiology/list
-GET  /api/radiology/case/:id
-POST /api/radiology/mcq/generate
-POST /api/radiology/quiz/generate
-POST /api/radiology/grade
-```
+**Curriculum Integration:**
+- Link ECG cases to AI Mentor study plans
+- Add ECG mastery to Certification tracks
+- Integrate ECG XP with global gamification system
+
+**No new API endpoints needed** - uses existing ECG API infrastructure
 
 **Timeline:** 3 weeks (January 2026)
 

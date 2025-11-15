@@ -359,10 +359,11 @@ What is the most likely diagnosis?
 
 ### Medium-Term (Next Month)
 
-**Option A: Phase 8 M2 (Radiology Basics)**
-- Implement CXR interpretation module (20 cases)
-- Implement CT fundamentals module (10 cases)
-- Reuse ECG UI patterns (key features, context, progress bar)
+**Option A: Phase 8 M2 (ECG Mastery Upgrade)**
+- Implement adaptive difficulty progression
+- Add ECG pattern mapping training
+- Integrate with AI Mentor and Curriculum Builder
+- Score-based unlocking of harder cases
 
 **Option B: ECG Integration**
 - Link ECG module to AI Mentor (personalized ECG study plans)

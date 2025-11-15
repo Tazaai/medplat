@@ -100,50 +100,6 @@ curl -X POST https://medplat-backend-139218747785.europe-west1.run.app/api/ecg/m
 
 ---
 
-
-### Data Source
-- Standard views and protocols (FAST, lung, cardiac, vascular)
-
-### Library Statistics
-- **Total Cases:** 15 (capacity for 30)
-- **Categories:** 5 (FAST, lung, cardiac, vascular, procedural)
-- **Difficulty Levels:** 3 (beginner, intermediate, advanced)
-- **XP Rewards:** 15-40 XP based on difficulty
-
-1. **FAST (Focused Assessment with Sonography for Trauma):**
-   - Negative FAST (beginner, 15 XP)
-   - Positive FAST - Hemoperitoneum (intermediate, 25 XP)
-
-2. **Lung Ultrasound:**
-   - Normal Lung - A-Lines (beginner, 15 XP)
-   - B-Lines (Pulmonary Edema) (intermediate, 25 XP)
-   - Pneumothorax (intermediate, 25 XP)
-   - Pleural Effusion (beginner, 15 XP)
-
-   - Normal Cardiac Function (beginner, 15 XP)
-   - Pericardial Effusion with Tamponade (advanced, 40 XP)
-   - Severe LV Dysfunction (intermediate, 25 XP)
-   - Massive PE with RV Strain (advanced, 40 XP)
-
-4. **Vascular Ultrasound:**
-   - Deep Vein Thrombosis (DVT) (intermediate, 25 XP)
-   - Abdominal Aortic Aneurysm (AAA) (advanced, 40 XP)
-
-5. **Procedural/Other:**
-   - IVC Assessment (Plethoric) (intermediate, 25 XP)
-   - IVC Assessment (Collapsed) (intermediate, 25 XP)
-   - Hydronephrosis (beginner, 15 XP)
-
-
-```bash
-
-
-# Generate MCQ for Negative FAST
-  -H "Content-Type: application/json" \
-```
-
----
-
 ## 🤖 AI Enhancement
 
 ### OpenAI GPT-4o-mini Integration
@@ -154,12 +110,12 @@ curl -X POST https://medplat-backend-139218747785.europe-west1.run.app/api/ecg/m
 
 ### AI-Generated Explanations
 Each MCQ includes AI-enhanced educational content:
-1. **What the image shows** (ECG features or ultrasound findings)
+1. **What the ECG shows** (ECG features and rhythm analysis)
 2. **Clinical significance** (why it matters for patient care)
 3. **Key learning point** (take-home message for education)
 
 ### Safety Guardrails
-- AI does NOT interpret ECG/ultrasound images directly
+- AI does NOT interpret ECG images directly
 - AI generates explanations based on pre-validated diagnoses
 - Fallback to manual explanations if AI fails
 - Zero medical liability risk
@@ -184,16 +140,8 @@ Each MCQ includes AI-enhanced educational content:
 4. System shows full ECG image + MCQ question
 5. User answers, system grades and shows explanation
 
-**Features:**
-- Similar structure to ECG module
-- Category selection (FAST, lung, cardiac, vascular, procedural)
-- Case list with ultrasound preview images
-- Video link support (some cases have educational videos)
-- Standard views display (e.g., RUQ, LUQ, Pelvis for FAST)
-- Purple color scheme (vs. blue for ECG)
-
 ### Styling
-- **ECGModule.css (412 lines):** Blue theme, grid layouts, hover effects
+- **ECGModule.css (580+ lines):** Blue theme, grid layouts, hover effects, animations
 
 ---
 
@@ -238,11 +186,6 @@ frontend/
   "module": "ecg",
   "phase": "8-m1"
 }
-
-{
-  "status": "operational",
-  "phase": "8-m1"
-}
 ```
 
 ### Library Statistics
@@ -252,12 +195,6 @@ frontend/
   "total_cases": 15,
   "categories": ["arrhythmias", "blocks", "ischemia", "electrolyte", "congenital"],
   "difficulty_levels": ["beginner", "intermediate", "advanced", "expert"]
-}
-
-{
-  "total_cases": 15,
-  "categories": ["FAST", "lung", "cardiac", "vascular", "procedural"],
-  "difficulty_levels": ["beginner", "intermediate", "advanced"]
 }
 ```
 
@@ -275,7 +212,7 @@ frontend/
 ## 🚀 User Impact
 
 ### Educational Value
-- **Clinical Skills Training:** ECG and ultrasound interpretation are core medical skills
+- **Clinical Skills Training:** ECG interpretation is a core medical skill
 - **Spaced Repetition:** Library-based approach enables repeated practice
 - **Evidence-Based:** All cases linked to validated diagnoses and management guidelines
 - **Progressive Difficulty:** Beginner → Expert tracks for personalized learning
@@ -295,12 +232,12 @@ frontend/
 
 ## 📈 Future Expansion
 
-### Phase 8 M2: Radiology Basics (Planned)
-- Chest X-ray interpretation library (20 cases)
-- CT fundamentals (10 cases)
-- Integration with clinical reasoning engine
+### Phase 8 M2: ECG Mastery Upgrade (Planned)
+- Adaptive difficulty progression (beginner → expert)
+- ECG pattern mapping and multi-step reasoning
+- Integration with AI Mentor and Curriculum Builder
 
-### Phase 8 M3: Clinical Reasoning Integration (Planned)
+### Phase 8 M3: ECG Clinical Integration (Planned)
 - Link ECG findings to differential diagnosis
 - Multi-modal case studies (ECG + clinical data)
 
@@ -313,7 +250,7 @@ frontend/
 ## 🔒 Safety & Compliance
 
 ### Medical Liability Mitigation
-- ✅ NO user-uploaded ECG/ultrasound interpretation
+- ✅ NO user-uploaded ECG interpretation
 - ✅ NO AI diagnosis of medical images
 - ✅ Library-based only (pre-validated diagnoses)
 - ✅ AI generates educational explanations ONLY (not diagnosis)
@@ -385,4 +322,4 @@ Phase 8 aligns with MedPlat's core principles:
 ---
 
 **Deployment Status:** ✅ **PRODUCTION READY**  
-**Next Steps:** User testing, feedback collection, library expansion (M2: Radiology Basics)
+**Next Steps:** User testing, feedback collection, ECG mastery features (M2: Difficulty progression)

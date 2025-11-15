@@ -3,7 +3,7 @@
 **Last Updated:** November 14, 2025  
 **Current Version:** v8.0.0-m1 (Production)  
 **Previous Version:** v7.0.0-m5 (Phase 7 complete)  
-**Next Version:** v8.0.0-m2 (Radiology Basics - Planned)  
+**Next Version:** v8.0.0-m2 (ECG Mastery - Planned)  
 **Status:** ✅ LIVE — Phase 8 M1 DEPLOYED
 
 ---
@@ -37,9 +37,9 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 **Features:** ECG interpretation module (15 cases)  
 **Architecture:** Library-based (LITFL), AI-enhanced explanations, zero storage cost
 
-### 📋 Phase 8 M2-M3: RADIOLOGY + INTEGRATION (Planned)
+### 📋 Phase 8 M2-M3: ECG MASTERY + INTEGRATION (Planned)
 **Target:** January-February 2026  
-**Features:** Chest X-ray (20 cases), CT fundamentals (10 cases), clinical reasoning integration
+**Features:** ECG difficulty progression, pattern mapping, curriculum integration
 
 ### ⏸️ Phase 9: MOBILE & OFFLINE (Future)
 **Features:** PWA offline mode, React Native iOS/Android apps
@@ -58,7 +58,7 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 - [x] Advanced AI reasoning — ✅ ACHIEVED (Phase 7 M1)
 - [x] Medical glossary — ✅ ACHIEVED (Phase 7 M4)
 - [x] Clinical imaging (ECG) — ✅ ACHIEVED (Phase 8 M1)
-- [ ] Radiology basics (CXR + CT) — 📋 Phase 8 M2 (Planned)
+- [ ] ECG mastery features — 📋 Phase 8 M2 (Planned)
 - [ ] Payment system — ⏸️ Phase 10
 - [ ] Mobile apps — ⏸️ Phase 9
 
@@ -177,31 +177,35 @@ MedPlat is a **global, AI-powered medical education platform** that generates re
 
 ## 📋 CURRENT FOCUS: PHASE 8 M2-M3 (Planned - Jan-Feb 2026)
 
-### Phase 8 M2: Radiology Basics (Planned - 3 weeks, January 2026)
+### Phase 8 M2: ECG Mastery Upgrade (Planned - 3 weeks, January 2026)
 
-**Chest X-Ray Interpretation:**
-- 20 validated CXR cases (pneumonia, pneumothorax, CHF, pleural effusion, lung mass)
-- Categories: Normal, Infection, Fluid, Air, Masses, Bones
-- Source: Radiopaedia educational library
-- Same library-based approach as ECG (zero storage cost)
+**Difficulty Progression:**
+- Adaptive quiz system (beginner → expert)
+- Score-based unlocking of harder ECG cases
+- Personalized weak-area targeting based on AI Mentor data
 
-**CT Fundamentals:**
-- 10 validated CT cases (stroke, PE, AAA, trauma)
-- Categories: Head, Chest, Abdomen, Emergency
-- Source: Radiopaedia educational library
+**ECG Pattern Mapping:**
+- Multi-step ECG reasoning (rhythm → axis → intervals → ST/T changes)
+- Pattern recognition training (STEMI patterns, arrhythmia families)
+- Clinical correlation exercises
 
-**API Endpoints (7 new):**
+**No new API endpoints needed** - extends existing ECG API:
 ```
-GET  /api/radiology/health
-GET  /api/radiology/stats
-GET  /api/radiology/list
-GET  /api/radiology/case/:id
-POST /api/radiology/mcq/generate
-POST /api/radiology/quiz/generate
-POST /api/radiology/grade
+GET  /api/ecg/health
+GET  /api/ecg/stats  
+GET  /api/ecg/list
+GET  /api/ecg/case/:id
+POST /api/ecg/mcq/generate
+POST /api/ecg/quiz/generate
+POST /api/ecg/grade
 ```
 
-### Phase 8 M3: Clinical Reasoning Integration (Planned - 2 weeks, February 2026)
+### Phase 8 M3: ECG Clinical Integration (Planned - 2 weeks, February 2026)
+
+**Curriculum Integration:**
+- Link ECG cases to AI Mentor personalized study plans
+- Add ECG mastery tracks to Curriculum Builder
+- Integrate ECG XP with global gamification system
 
 **Multi-Modal Cases:**
 - Combine ECG + clinical presentation + lab values
