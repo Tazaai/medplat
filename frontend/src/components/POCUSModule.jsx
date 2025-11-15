@@ -1,4 +1,4 @@
-// frontend/src/components/POCUSModule.jsx — Phase 8 M1: POCUS/Ultrasound Interpretation Module
+// frontend/src/components/POCUSModule.jsx — Phase 8 M1: POCUS Interpretation Module
 import { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import './POCUSModule.css';
@@ -11,6 +11,7 @@ export default function POCUSModule({ user }) {
 	const [quiz, setQuiz] = useState(null);
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [selectedAnswer, setSelectedAnswer] = useState(null);
+	const [answered, setAnswered] = useState(false);
 	const [showExplanation, setShowExplanation] = useState(false);
 	const [score, setScore] = useState(0);
 	const [xpEarned, setXpEarned] = useState(0);
@@ -61,6 +62,7 @@ export default function POCUSModule({ user }) {
 			setQuiz(mcq);
 			setCurrentQuestionIndex(0);
 			setSelectedAnswer(null);
+			setAnswered(false);
 			setShowExplanation(false);
 		} catch (error) {
 			console.error('Failed to generate POCUS quiz:', error);
@@ -70,17 +72,19 @@ export default function POCUSModule({ user }) {
 	}
 
 	function handleAnswerSelect(optionLabel) {
+		if (answered) return; // Lock after answer submitted
+		
 		setSelectedAnswer(optionLabel);
-	}
-
-	function handleSubmitAnswer() {
-		if (!selectedAnswer || !quiz) return;
-
-		const isCorrect = selectedAnswer === quiz.correct_answer;
+		setAnswered(true);
+		
+		// Immediate scoring (3 points correct, 0 wrong - matches Level2 pattern)
+		const isCorrect = optionLabel === quiz.correct_answer;
 		if (isCorrect) {
-			setScore(score + 1);
+			setScore(score + 3);
 			setXpEarned(xpEarned + quiz.xp_reward);
 		}
+		
+		// Show explanation immediately
 		setShowExplanation(true);
 	}
 
@@ -89,6 +93,7 @@ export default function POCUSModule({ user }) {
 		setQuiz(null);
 		setCurrentQuestionIndex(0);
 		setSelectedAnswer(null);
+		setAnswered(false);
 		setShowExplanation(false);
 	}
 
@@ -104,8 +109,8 @@ export default function POCUSModule({ user }) {
 		return (
 			<div className="pocus-module">
 				<div className="pocus-header">
-					<h1>🔊 POCUS Interpretation Module</h1>
-					<p>Point-of-Care Ultrasound training with validated cases (FAST, Lung, Cardiac, Vascular)</p>
+					<h1>📊 POCUS Interpretation Module</h1>
+					<p>Master POCUS interpretation with validated cases from LITFL and educational resources</p>
 				</div>
 
 				<div className="pocus-stats">
@@ -143,7 +148,7 @@ export default function POCUSModule({ user }) {
 					← Back to Categories
 				</button>
 
-				<h2>{selectedCategory.toUpperCase()} Ultrasound Cases</h2>
+				<h2>{selectedCategory.toUpperCase()} POCUSs</h2>
 
 				{loading ? (
 					<div className="loading">Loading POCUS cases...</div>
@@ -173,117 +178,97 @@ export default function POCUSModule({ user }) {
 		);
 	}
 
-	// Render quiz view
-	if (quiz && !showExplanation) {
+	// Render quiz view (with immediate feedback)
+	if (quiz) {
+		const isCorrect = selectedAnswer === quiz.correct_answer;
+		
 		return (
 			<div className="pocus-module">
 				<div className="quiz-container">
-					<h2>POCUS Interpretation Quiz</h2>
-					<div className="pocus-image-container">
-						<img src={quiz.image_url} alt="Ultrasound" className="pocus-full" />
-						{quiz.video_url && (
-							<a href={quiz.video_url} target="_blank" rel="noopener noreferrer" className="video-link">
-								📹 View Video Clip
-							</a>
-						)}
+					<div className="quiz-header">
+						<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+						<div className="quiz-stats">
+							<span className="stat">Score: <strong>{score}</strong></span>
+							<span className="stat">XP: <strong>{xpEarned}</strong></span>
+						</div>
 					</div>
-
-					<div className="question-section">
-						<p className="question-stem">{quiz.question_stem}</p>
+					
+\t\t\t\t\t{/* POCUS Image/Video - Prominent Display */}\n\t\t\t\t\t<div className=\"pocus-image-container\">\n\t\t\t\t\t\t<img src={quiz.image_url} alt=\"Ultrasound\" className=\"pocus-full\" />\n\t\t\t\t\t\t{quiz.video_url && (\n\t\t\t\t\t\t\t<a href={quiz.video_url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"video-link\">\n\t\t\t\t\t\t\t\t📹 View Video Clip\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t)}\n\t\t\t\t\t</div>					<div className="question-section">
+						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
 
 						<div className="options-grid">
-							{quiz.options.map(opt => (
-								<button
-									key={opt.label}
-									className={`option-button ${selectedAnswer === opt.label ? 'selected' : ''}`}
-									onClick={() => handleAnswerSelect(opt.label)}
-								>
-									<span className="option-label">{opt.label}</span>
-									<span className="option-text">{opt.text}</span>
+							{quiz.options.map(opt => {
+								const isSelected = selectedAnswer === opt.label;
+								const isCorrectOption = opt.label === quiz.correct_answer;
+								
+								return (
+									<button
+										key={opt.label}
+										className={`option-button ${
+											isSelected && answered
+												? isCorrectOption ? 'correct' : 'incorrect'
+												: isSelected ? 'selected' : ''
+										} ${answered && isCorrectOption ? 'show-correct' : ''}`}
+										onClick={() => handleAnswerSelect(opt.label)}
+										disabled={answered}
+									>
+										<span className="option-label">{opt.label}</span>
+										<span className="option-text">{opt.text}</span>
+										{answered && isCorrectOption && <span className="checkmark">✓</span>}
+									</button>
+								);
+							})}
+						</div>
+						
+						{/* Immediate Feedback - Show after answer selected */}
+						{showExplanation && (
+							<div className="explanation-section">
+								<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'}`}>
+									{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
+									{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
+								</div>
+
+								<div className="correct-answer-section">
+									<h4>✓ Correct Answer:</h4>
+									<p className="diagnosis-highlight">{selectedCase.diagnosis}</p>
+								</div>
+
+								<div className="explanation-text">
+									<h4>📖 Explanation:</h4>
+									<p>{quiz.explanation}</p>
+								</div>
+
+								<div className="key-features">
+									<h4>🔑 Key POCUS Features:</h4>
+									<ul>
+										{quiz.key_features?.map((feature, idx) => (
+											<li key={idx}>{feature}</li>
+										)) || []}
+									</ul>
+								</div>
+
+								<div className="clinical-info">
+									<h4>🏥 Clinical Context:</h4>
+									<p>{quiz.clinical_context}</p>
+								</div>
+
+								<div className="management-info">
+									<h4>💊 Management:</h4>
+									<p>{quiz.management}</p>
+								</div>
+
+								<button className="next-button" onClick={handleNextCase}>
+									Next POCUS →
 								</button>
-							))}
-						</div>
-
-						<button
-							className="submit-button"
-							onClick={handleSubmitAnswer}
-							disabled={!selectedAnswer}
-						>
-							Submit Answer
-						</button>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	// Render explanation view
-	if (showExplanation) {
-		const isCorrect = selectedAnswer === quiz.correct_answer;
-
-		return (
-			<div className="pocus-module">
-				<div className="explanation-container">
-					<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'}`}>
-						{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
-						{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
-					</div>
-
-					<div className="pocus-image-container">
-						<img src={quiz.image_url} alt="Ultrasound" className="pocus-full" />
-						{quiz.video_url && (
-							<a href={quiz.video_url} target="_blank" rel="noopener noreferrer" className="video-link">
-								📹 View Video Clip
-							</a>
-						)}
-					</div>
-
-					<div className="explanation-section">
-						<h3>Diagnosis: {selectedCase.diagnosis}</h3>
-
-						<div className="explanation-text">
-							<h4>Explanation:</h4>
-							<p>{quiz.explanation}</p>
-						</div>
-
-						<div className="key-features">
-							<h4>Key Ultrasound Features:</h4>
-							<ul>
-								{quiz.key_features.map((feature, idx) => (
-									<li key={idx}>{feature}</li>
-								))}
-							</ul>
-						</div>
-
-						{quiz.views && (
-							<div className="views-info">
-								<h4>Standard Views:</h4>
-								<ul>
-									{quiz.views.map((view, idx) => (
-										<li key={idx}>{view}</li>
-									))}
-								</ul>
 							</div>
 						)}
-
-						<div className="clinical-info">
-							<h4>Clinical Context:</h4>
-							<p>{quiz.clinical_context}</p>
-						</div>
-
-						<div className="management-info">
-							<h4>Management:</h4>
-							<p>{quiz.management}</p>
-						</div>
-
-						<button className="next-button" onClick={handleNextCase}>
-							Next Case →
-						</button>
 					</div>
 				</div>
 			</div>
 		);
 	}
+
+
 
 	return <div className="pocus-module">Loading...</div>;
 }

@@ -11,6 +11,7 @@ export default function ECGModule({ user }) {
 	const [quiz, setQuiz] = useState(null);
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [selectedAnswer, setSelectedAnswer] = useState(null);
+	const [answered, setAnswered] = useState(false);
 	const [showExplanation, setShowExplanation] = useState(false);
 	const [score, setScore] = useState(0);
 	const [xpEarned, setXpEarned] = useState(0);
@@ -61,6 +62,7 @@ export default function ECGModule({ user }) {
 			setQuiz(mcq);
 			setCurrentQuestionIndex(0);
 			setSelectedAnswer(null);
+			setAnswered(false);
 			setShowExplanation(false);
 		} catch (error) {
 			console.error('Failed to generate ECG quiz:', error);
@@ -70,17 +72,19 @@ export default function ECGModule({ user }) {
 	}
 
 	function handleAnswerSelect(optionLabel) {
+		if (answered) return; // Lock after answer submitted
+		
 		setSelectedAnswer(optionLabel);
-	}
-
-	function handleSubmitAnswer() {
-		if (!selectedAnswer || !quiz) return;
-
-		const isCorrect = selectedAnswer === quiz.correct_answer;
+		setAnswered(true);
+		
+		// Immediate scoring (3 points correct, 0 wrong - matches Level2 pattern)
+		const isCorrect = optionLabel === quiz.correct_answer;
 		if (isCorrect) {
-			setScore(score + 1);
+			setScore(score + 3);
 			setXpEarned(xpEarned + quiz.xp_reward);
 		}
+		
+		// Show explanation immediately
 		setShowExplanation(true);
 	}
 
@@ -89,6 +93,7 @@ export default function ECGModule({ user }) {
 		setQuiz(null);
 		setCurrentQuestionIndex(0);
 		setSelectedAnswer(null);
+		setAnswered(false);
 		setShowExplanation(false);
 	}
 
@@ -173,96 +178,102 @@ export default function ECGModule({ user }) {
 		);
 	}
 
-	// Render quiz view
-	if (quiz && !showExplanation) {
+	// Render quiz view (with immediate feedback)
+	if (quiz) {
+		const isCorrect = selectedAnswer === quiz.correct_answer;
+		
 		return (
 			<div className="ecg-module">
 				<div className="quiz-container">
-					<h2>ECG Interpretation Quiz</h2>
+					<div className="quiz-header">
+						<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+						<div className="quiz-stats">
+							<span className="stat">Score: <strong>{score}</strong></span>
+							<span className="stat">XP: <strong>{xpEarned}</strong></span>
+						</div>
+					</div>
+					
+					{/* ECG Image - Prominent Display */}
 					<div className="ecg-image-container">
 						<img src={quiz.image_url} alt="ECG" className="ecg-full" />
 					</div>
 
 					<div className="question-section">
-						<p className="question-stem">{quiz.question_stem}</p>
+						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
 
 						<div className="options-grid">
-							{quiz.options.map(opt => (
-								<button
-									key={opt.label}
-									className={`option-button ${selectedAnswer === opt.label ? 'selected' : ''}`}
-									onClick={() => handleAnswerSelect(opt.label)}
-								>
-									<span className="option-label">{opt.label}</span>
-									<span className="option-text">{opt.text}</span>
+							{quiz.options.map(opt => {
+								const isSelected = selectedAnswer === opt.label;
+								const isCorrectOption = opt.label === quiz.correct_answer;
+								
+								return (
+									<button
+										key={opt.label}
+										className={`option-button ${
+											isSelected && answered
+												? isCorrectOption ? 'correct' : 'incorrect'
+												: isSelected ? 'selected' : ''
+										} ${answered && isCorrectOption ? 'show-correct' : ''}`}
+										onClick={() => handleAnswerSelect(opt.label)}
+										disabled={answered}
+									>
+										<span className="option-label">{opt.label}</span>
+										<span className="option-text">{opt.text}</span>
+										{answered && isCorrectOption && <span className="checkmark">✓</span>}
+									</button>
+								);
+							})}
+						</div>
+						
+						{/* Immediate Feedback - Show after answer selected */}
+						{showExplanation && (
+							<div className="explanation-section">
+								<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'}`}>
+									{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
+									{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
+								</div>
+
+								<div className="correct-answer-section">
+									<h4>✓ Correct Answer:</h4>
+									<p className="diagnosis-highlight">{selectedCase.diagnosis}</p>
+								</div>
+
+								<div className="explanation-text">
+									<h4>📖 Explanation:</h4>
+									<p>{quiz.explanation}</p>
+								</div>
+
+								<div className="key-features">
+									<h4>🔑 Key ECG Features:</h4>
+									<ul>
+										{quiz.key_features?.map((feature, idx) => (
+											<li key={idx}>{feature}</li>
+										)) || []}
+									</ul>
+								</div>
+
+								<div className="clinical-info">
+									<h4>🏥 Clinical Context:</h4>
+									<p>{quiz.clinical_context}</p>
+								</div>
+
+								<div className="management-info">
+									<h4>💊 Management:</h4>
+									<p>{quiz.management}</p>
+								</div>
+
+								<button className="next-button" onClick={handleNextCase}>
+									Next ECG →
 								</button>
-							))}
-						</div>
-
-						<button
-							className="submit-button"
-							onClick={handleSubmitAnswer}
-							disabled={!selectedAnswer}
-						>
-							Submit Answer
-						</button>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
 		);
 	}
 
-	// Render explanation view
-	if (showExplanation) {
-		const isCorrect = selectedAnswer === quiz.correct_answer;
 
-		return (
-			<div className="ecg-module">
-				<div className="explanation-container">
-					<div className={`result-banner ${isCorrect ? 'correct' : 'incorrect'}`}>
-						{isCorrect ? '✅ Correct!' : '❌ Incorrect'}
-						{isCorrect && <span className="xp-badge">+{quiz.xp_reward} XP</span>}
-					</div>
-
-					<div className="ecg-image-container">
-						<img src={quiz.image_url} alt="ECG" className="ecg-full" />
-					</div>
-
-					<div className="explanation-section">
-						<h3>Diagnosis: {selectedCase.diagnosis}</h3>
-
-						<div className="explanation-text">
-							<h4>Explanation:</h4>
-							<p>{quiz.explanation}</p>
-						</div>
-
-						<div className="key-features">
-							<h4>Key ECG Features:</h4>
-							<ul>
-								{quiz.key_features.map((feature, idx) => (
-									<li key={idx}>{feature}</li>
-								))}
-							</ul>
-						</div>
-
-						<div className="clinical-info">
-							<h4>Clinical Context:</h4>
-							<p>{quiz.clinical_context}</p>
-						</div>
-
-						<div className="management-info">
-							<h4>Management:</h4>
-							<p>{quiz.management}</p>
-						</div>
-
-						<button className="next-button" onClick={handleNextCase}>
-							Next ECG →
-						</button>
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	return <div className="ecg-module">Loading...</div>;
 }
