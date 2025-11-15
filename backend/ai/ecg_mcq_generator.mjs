@@ -108,8 +108,11 @@ export async function generateECGMCQ(caseId, options = {}) {
 	
 	const distractors = generateDistractors(ecgCase.diagnosis, candidateCases, num_distractors);
 	
+	console.log(`DEBUG MCQ: case=${caseId}, correct="${ecgCase.diagnosis}", distractors=${JSON.stringify(distractors)}, count=${distractors.length}`);
+	
 	// Create answer options (correct + distractors)
 	const allOptions = [ecgCase.diagnosis, ...distractors];
+	console.log(`DEBUG MCQ: allOptions=${JSON.stringify(allOptions)}, count=${allOptions.length}`);
 	const shuffled = allOptions.sort(() => 0.5 - Math.random());
 	
 	const correctIndex = shuffled.indexOf(ecgCase.diagnosis);
