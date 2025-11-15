@@ -104,6 +104,11 @@ export async function generateECGMCQ(caseId, options = {}) {
 	let candidateCases = library.cases;
 	if (difficulty_match) {
 		candidateCases = candidateCases.filter(c => c.difficulty === ecgCase.difficulty);
+		// If not enough cases at same difficulty, fall back to all cases
+		if (candidateCases.length <= num_distractors) {
+			console.log(`⚠️ Not enough ${ecgCase.difficulty} cases (${candidateCases.length}), using all difficulty levels`);
+			candidateCases = library.cases;
+		}
 	}
 	
 	const distractors = generateDistractors(ecgCase.diagnosis, candidateCases, num_distractors);
