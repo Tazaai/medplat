@@ -6,6 +6,7 @@ import './ECGModule.css';
 export default function ECGModule({ user }) {
 	const [categories, setCategories] = useState([]);
 	const [selectedCategory, setSelectedCategory] = useState(null);
+	const [categoryFilter, setCategoryFilter] = useState(null);
 	const [cases, setCases] = useState([]);
 	const [selectedCase, setSelectedCase] = useState(null);
 	const [quiz, setQuiz] = useState(null);
@@ -14,6 +15,7 @@ export default function ECGModule({ user }) {
 	const [answered, setAnswered] = useState(false);
 	const [showExplanation, setShowExplanation] = useState(false);
 	const [score, setScore] = useState(0);
+	const [wrongCount, setWrongCount] = useState(0);
 	const [xpEarned, setXpEarned] = useState(0);
 	const [loading, setLoading] = useState(false);
 
@@ -82,6 +84,8 @@ export default function ECGModule({ user }) {
 		if (isCorrect) {
 			setScore(score + 3);
 			setXpEarned(xpEarned + quiz.xp_reward);
+		} else {
+			setWrongCount(wrongCount + 1);
 		}
 		
 		// Show explanation immediately
@@ -142,6 +146,11 @@ export default function ECGModule({ user }) {
 
 	// Render case list
 	if (!selectedCase) {
+		// Client-side category filter
+		const filteredCases = categoryFilter 
+			? cases.filter(c => c.category === categoryFilter)
+			: cases;
+		
 		return (
 			<div className="ecg-module">
 				<button className="back-button" onClick={handleBackToCategories}>
@@ -149,16 +158,56 @@ export default function ECGModule({ user }) {
 				</button>
 
 				<h2>{selectedCategory.toUpperCase()} ECGs</h2>
+				
+				{/* Category Filter Bar */}
+				<div className="category-filter-bar">
+					<button 
+						className={`filter-button ${!categoryFilter ? 'active' : ''}`}
+						onClick={() => setCategoryFilter(null)}
+					>
+						All
+					</button>
+					<button 
+						className={`filter-button ${categoryFilter === 'arrhythmias' ? 'active' : ''}`}
+						onClick={() => setCategoryFilter('arrhythmias')}
+					>
+						Arrhythmias
+					</button>
+					<button 
+						className={`filter-button ${categoryFilter === 'blocks' ? 'active' : ''}`}
+						onClick={() => setCategoryFilter('blocks')}
+					>
+						Blocks
+					</button>
+					<button 
+						className={`filter-button ${categoryFilter === 'ischemia' ? 'active' : ''}`}
+						onClick={() => setCategoryFilter('ischemia')}
+					>
+						Ischemia
+					</button>
+					<button 
+						className={`filter-button ${categoryFilter === 'electrolyte' ? 'active' : ''}`}
+						onClick={() => setCategoryFilter('electrolyte')}
+					>
+						Electrolyte
+					</button>
+					<button 
+						className={`filter-button ${categoryFilter === 'congenital' ? 'active' : ''}`}
+						onClick={() => setCategoryFilter('congenital')}
+					>
+						Congenital
+					</button>
+				</div>
 
-				{loading ? (
-					<div className="loading">Loading ECG cases...</div>
-				) : (
-					<div className="case-grid">
-						{cases.map(c => (
-							<div key={c.id} className="ecg-case-card">
-								<img src={c.image_url} alt={c.title} className="ecg-preview" />
-								<h3>{c.title}</h3>
-								<div className="case-meta">
+			{loading ? (
+				<div className="loading">Loading ECG cases...</div>
+			) : (
+				<div className="case-grid">
+					{filteredCases.map(c => (
+						<div key={c.id} className="ecg-case-card">
+							<img src={c.image_url} alt={c.title} className="ecg-preview" />
+							<h3>{c.title}</h3>
+							<div className="case-meta">
 									<span className={`difficulty difficulty-${c.difficulty}`}>
 										{c.difficulty}
 									</span>
@@ -185,20 +234,19 @@ export default function ECGModule({ user }) {
 		return (
 			<div className="ecg-module">
 				<div className="quiz-container">
-					<div className="quiz-header">
-						<button className="back-button" onClick={handleBackToCategories}>← Back</button>
-						<div className="quiz-stats">
-							<span className="stat">Score: <strong>{score}</strong></span>
-							<span className="stat">XP: <strong>{xpEarned}</strong></span>
-						</div>
+				<div className="quiz-header">
+					<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+					<div className="quiz-stats">
+						<span className="stat">Score: <strong>{score} XP ⭐</strong></span>
+						<span className="stat">Correct: <strong>{Math.floor(score / 3)}</strong> | Wrong: <strong>{wrongCount}</strong></span>
 					</div>
-					
-					{/* ECG Image - Prominent Display */}
-					<div className="ecg-image-container">
-						<img src={quiz.image_url} alt="ECG" className="ecg-full" />
+				</div>				{/* ECG Image - Prominent Display */}
+				<div className="ecg-image-container">
+					<img src={quiz.image_url} alt="ECG" className="ecg-full" />
+					<div className="ecg-quality-indicator">
+						Normal quality | Good P waves visible
 					</div>
-
-					<div className="question-section">
+				</div>					<div className="question-section">
 						<p className="question-stem">{quiz.question_stem || 'What is the most likely diagnosis?'}</p>
 
 						<div className="options-grid">
@@ -257,15 +305,15 @@ export default function ECGModule({ user }) {
 									<p>{quiz.clinical_context}</p>
 								</div>
 
-								<div className="management-info">
-									<h4>💊 Management:</h4>
-									<p>{quiz.management}</p>
-								</div>
-
-								<button className="next-button" onClick={handleNextCase}>
-									Next ECG →
-								</button>
+							<div className="management-info">
+								<h4>💊 Management:</h4>
+								<p>{quiz.management}</p>
 							</div>
+
+							<button className="next-button next-case-button" onClick={handleNextCase}>
+								Next ECG →
+							</button>
+						</div>
 						)}
 					</div>
 				</div>
