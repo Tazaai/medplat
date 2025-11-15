@@ -15,4 +15,28 @@ export default defineConfig({
       "medplat-frontend-139218747785.europe-west1.run.app"
     ],
   },
+  build: {
+    // Phase 13: Performance Hardening
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks for better caching
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-ui': ['lucide-react', 'jspdf']
+        }
+      }
+    },
+    // Code splitting optimization
+    chunkSizeWarningLimit: 1000,
+    // Minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.log in production
+        drop_debugger: true
+      }
+    }
+  }
 });
+

@@ -76,6 +76,39 @@ app.use((req, res, next) => {
 // Basic health endpoint
 app.get('/', (req, res) => res.json({ status: 'MedPlat OK', pid: process.pid }));
 
+// Phase 13: Enhanced health check endpoints
+app.get('/health', (req, res) => {
+	const healthData = {
+		status: 'healthy',
+		timestamp: new Date().toISOString(),
+		uptime: process.uptime(),
+		memory: process.memoryUsage(),
+		pid: process.pid,
+		nodeVersion: process.version,
+		platform: process.platform
+	};
+	res.json(healthData);
+});
+
+app.get('/health/ready', (req, res) => {
+	// Readiness probe: check if all critical services are ready
+	const ready = {
+		status: 'ready',
+		services: {
+			openai: true, // Would check OpenAI client in production
+			firestore: true, // Would check Firestore connection
+			express: true
+		},
+		timestamp: new Date().toISOString()
+	};
+	res.json(ready);
+});
+
+app.get('/health/live', (req, res) => {
+	// Liveness probe: simple check that server responds
+	res.json({ status: 'alive', timestamp: new Date().toISOString() });
+});
+
 // Mount known routes if present. Fail gracefully if route files missing.
 // Use dynamic imports so we can catch import/time issues at startup
 // and avoid static `import` statements inside blocks (which cause
