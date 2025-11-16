@@ -20,6 +20,11 @@ export default function ECGModule({ user }) {
 	const [xpEarned, setXpEarned] = useState(0);
 	const [loading, setLoading] = useState(false);
 	
+	// v15.0.2: ECG Image Pipeline State
+	const [ecgImages, setEcgImages] = useState({});
+	const [imageLoading, setImageLoading] = useState(false);
+	const [imageError, setImageError] = useState(null);
+	
 	// Phase 8 M2: Adaptive difficulty tracking
 	const [userLevel, setUserLevel] = useState(1);
 	const [unlockedDifficulties, setUnlockedDifficulties] = useState(['beginner']);
@@ -76,6 +81,47 @@ export default function ECGModule({ user }) {
 			setCategories(data.categories || []);
 		} catch (error) {
 			console.error('Failed to load ECG categories:', error);
+		}
+	}
+
+	// v15.0.2: Enhanced ECG Image Fetching
+	async function fetchECGImage(category = 'normal', diagnosis = null) {
+		setImageLoading(true);
+		setImageError(null);
+		
+		try {
+			const params = new URLSearchParams({ category });
+			if (diagnosis) params.append('diagnosis', diagnosis);
+			
+			const response = await fetch(`${API_BASE}/api/ecg/images?${params}`);
+			
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+			
+			const result = await response.json();
+			
+			if (result.success && result.data) {
+				setEcgImages(prev => ({
+					...prev,
+					[category]: result.data
+				}));
+				return result.data;
+			} else {
+				throw new Error(result.error || 'Failed to fetch ECG image');
+			}
+		} catch (error) {
+			console.error('ECG Image fetch error:', error);
+			setImageError(error.message);
+			
+			// Return fallback image data
+			return {
+				image_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjZWNmMGYxIiB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y4YzhkIiBmb250LXNpemU9IjIwIj5FQ0cgSW1hZ2UgVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+Cg==',
+				diagnosis: 'ECG Image Unavailable',
+				description: 'Fallback ECG placeholder - backend connection issue'
+			};
+		} finally {
+			setImageLoading(false);
 		}
 	}
 	
@@ -180,18 +226,29 @@ export default function ECGModule({ user }) {
 					include_explanation: true
 				})
 			});
-		const mcq = await res.json();
-		setSelectedCase(caseItem);
-		setQuiz(mcq);
-		setCurrentQuestionIndex(0);
-		setSelectedAnswer(null);
-		setAnswered(false);
-		setShowExplanation(false);
-		setQuestionStartTime(Date.now()); // Start timer
-		setElapsedTime(0);
-		
-		// Phase 8 M3: Scroll to top on new question
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+			const mcq = await res.json();
+			
+			// v15.0.2: Fetch ECG image for the case
+			const ecgImageData = await fetchECGImage(caseItem.category || 'normal', mcq.diagnosis);
+			
+			// Enhance quiz with ECG image data
+			const enhancedMcq = {
+				...mcq,
+				image_url: ecgImageData.image_url,
+				ecg_metadata: ecgImageData
+			};
+			
+			setSelectedCase(caseItem);
+			setQuiz(enhancedMcq);
+			setCurrentQuestionIndex(0);
+			setSelectedAnswer(null);
+			setAnswered(false);
+			setShowExplanation(false);
+			setQuestionStartTime(Date.now()); // Start timer
+			setElapsedTime(0);
+			
+			// Phase 8 M3: Scroll to top on new question
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (error) {
 			console.error('Failed to generate ECG quiz:', error);
 		} finally {
@@ -684,18 +741,32 @@ export default function ECGModule({ user }) {
 					</div>
 			</div>				{/* ECG Image - Prominent Display */}
 			<div className="ecg-image-container">
-				<img 
-					src={quiz.image_url || `${API_BASE}/api/ecg/images?category=${quiz.category || 'normal'}`} 
-					alt="ECG" 
-					className="ecg-full"
-					onError={(e) => {
-						e.target.onerror = null;
-						// Enhanced fallback with actual ECG placeholder
-						e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjZWNmMGYxIiB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y4YzhkIiBmb250LXNpemU9IjIwIj5FQ0cgSW1hZ2UgVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+Cg==';
-					}}
-				/>
+				{imageLoading ? (
+					<div className="ecg-image-loading">
+						<div className="loading-spinner"></div>
+						<p>Loading ECG image...</p>
+					</div>
+				) : (
+					<>
+						<img 
+							src={quiz.image_url || `${API_BASE}/api/ecg/images?category=${quiz.category || 'normal'}`} 
+							alt={quiz.ecg_metadata?.diagnosis || "ECG"} 
+							className="ecg-full"
+							onError={(e) => {
+								e.target.onerror = null;
+								// Enhanced fallback with actual ECG placeholder
+								e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjZWNmMGYxIiB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y4YzhkIiBmb250LXNpemU9IjIwIj5FQ0cgSW1hZ2UgVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+Cg==';
+							}}
+						/>
+						{imageError && (
+							<div className="image-error-banner">
+								⚠️ Image loading error: {imageError}
+							</div>
+						)}
+					</>
+				)}
 				<div className="ecg-quality-indicator">
-					Normal quality | Good P waves visible
+					{quiz.ecg_metadata?.description || "Normal quality | Good P waves visible"}
 				</div>
 				
 				{/* Key Features from Library */}
