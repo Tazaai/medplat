@@ -420,6 +420,23 @@ export default function ECGModule({ user }) {
 		}
 	}
 
+	// v15.0.3: Show loading state for mastery session
+	if (sessionLoading) {
+		return (
+			<div className="ecg-module">
+				<div className="ecg-compact-header">
+					<span className="mode-badge">ECG Mastery Mode</span>
+					<span className="version-badge">v15.0.3</span>
+				</div>
+				<div className="ecg-loading-state">
+					<div className="loading-spinner"></div>
+					<h3>Loading ECG Mastery Session...</h3>
+					<p>Preparing 8 ECG cases with AI-generated questions and explanations</p>
+				</div>
+			</div>
+		);
+	}
+
 	// Phase 8 M3: Render review screen
 	if (showReviewScreen) {
 		return (
@@ -427,7 +444,7 @@ export default function ECGModule({ user }) {
 				<div className="ecg-compact-header">
 					<span className="mode-badge">Review Last 5 ECGs</span>
 					<button className="header-btn" onClick={() => setShowReviewScreen(false)}>← Back</button>
-					<span className="version-badge">v8</span>
+					<span className="version-badge">v15.0.3</span>
 				</div>
 				
 				<div className="review-screen">
@@ -496,7 +513,7 @@ export default function ECGModule({ user }) {
 						🔄 Reset
 					</button>
 				</div>
-				<span className="version-badge">v8</span>
+				<span className="version-badge">v15.0.3</span>
 			</div>				<div className="ecg-header">
 					<h1>📊 ECG Interpretation Module</h1>
 					<p>Master ECG interpretation with validated cases from LITFL and educational resources</p>
@@ -565,9 +582,9 @@ export default function ECGModule({ user }) {
 					))}
 				</div>
 				
-				{/* Phase 8 M3: Footer */}
+				{/* v15.0.3: Footer */}
 				<div className="ecg-footer">
-					<span>MedPlat · adaptive ECG engine</span>
+					<span>MedPlat · AI-powered ECG mastery training</span>
 				</div>
 			</div>
 		);
@@ -689,7 +706,20 @@ export default function ECGModule({ user }) {
 			)}
 			
 			<div className="quiz-header">
-				<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+				{/* v15.0.3: Mastery Session Progress */}
+				{masterSession && (
+					<div className="mastery-session-header">
+						<span className="session-badge">📊 ECG Mastery Session</span>
+						<span className="case-progress">Case {currentCaseIndex + 1} of {masterSession.cases.length}</span>
+						<button className="new-session-btn" onClick={() => loadMasterySession()} title="Start New Session">
+							🔄 New Session
+						</button>
+					</div>
+				)}
+				
+				{!masterSession && (
+					<button className="back-button" onClick={handleBackToCategories}>← Back</button>
+				)}
 				
 				{/* Mini Progress Bar - Phase 8 M1.5 */}
 					<div className="mini-progress-bar">
