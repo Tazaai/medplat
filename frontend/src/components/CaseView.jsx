@@ -20,6 +20,7 @@ import ECGMentorPlan from "./ECGMentorPlan"; // Phase 9: AI ECG Study Plan
 import CurriculumECG from "./CurriculumECG"; // Phase 10: Curriculum Builder
 import ECGExamMode from "./ECGExamMode"; // Phase 11: Certification Mode
 import AdminECGAnalytics from "./AdminECGAnalytics"; // Phase 12: Analytics & Admin
+import ECGAcademyDropdown from "./ECGAcademyDropdown"; // v15.0.1: Unified ECG Interface
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -146,6 +147,7 @@ export default function CaseView() {
 
   // Phase 4 M2/M3/M4: Multi-tab state (case | mentor | curriculum | analytics)
   const [activeTab, setActiveTab] = useState("case");
+  const [activeECGTab, setActiveECGTab] = useState("mastery"); // v15.0.1: ECG Academy state
   const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     return localStorage.getItem('medplat_language') || 'en';
@@ -618,56 +620,15 @@ export default function CaseView() {
         >
           🧠 Reasoning
         </button>
-        <button
-          onClick={() => setActiveTab("ecg")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "ecg"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📊 ECG Mastery
-        </button>
-        <button
-          onClick={() => setActiveTab("ecg_mentor")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "ecg_mentor"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🧠 ECG Study Plan
-        </button>
-        <button
-          onClick={() => setActiveTab("curriculum_ecg")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "curriculum_ecg"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📚 ECG Curriculum
-        </button>
-        <button
-          onClick={() => setActiveTab("ecg_exam")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "ecg_exam"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🎓 ECG Certification
-        </button>
-        <button
-          onClick={() => setActiveTab("ecg_analytics")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "ecg_analytics"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📊 ECG Analytics
-        </button>
+        
+        {/* v15.0.1: ECG Academy Unified Dropdown */}
+        <ECGAcademyDropdown
+          activeECGTab={activeECGTab}
+          onECGTabChange={(ecgTab) => {
+            setActiveECGTab(ecgTab);
+            setActiveTab("ecg_academy"); // Set main tab to ECG Academy
+          }}
+        />
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -715,29 +676,15 @@ export default function CaseView() {
         <SocialTab uid={userUid} />
       )}
 
-      {/* Show ECG Module when active (Phase 8) */}
-      {activeTab === "ecg" && (
-        <ECGModule />
-      )}
-
-      {/* Show ECG Mentor Plan when active (Phase 9) */}
-      {activeTab === "ecg_mentor" && (
-        <ECGMentorPlan />
-      )}
-
-      {/* Show ECG Curriculum when active (Phase 10) */}
-      {activeTab === "curriculum_ecg" && (
-        <CurriculumECG />
-      )}
-
-      {/* Show ECG Exam Mode when active (Phase 11) */}
-      {activeTab === "ecg_exam" && (
-        <ECGExamMode />
-      )}
-
-      {/* Show ECG Analytics when active (Phase 12) */}
-      {activeTab === "ecg_analytics" && (
-        <AdminECGAnalytics />
+      {/* v15.0.1: ECG Academy Unified Content Routing */}
+      {activeTab === "ecg_academy" && (
+        <>
+          {activeECGTab === "mastery" && <ECGModule />}
+          {activeECGTab === "study_plan" && <ECGMentorPlan />}
+          {activeECGTab === "curriculum" && <CurriculumECG />}
+          {activeECGTab === "certification" && <ECGExamMode />}
+          {activeECGTab === "analytics" && <AdminECGAnalytics />}
+        </>
       )}
 
       {/* Show Reasoning Tab when active (Phase 7 M1) */}

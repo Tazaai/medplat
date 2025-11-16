@@ -49,8 +49,8 @@ app.use('/api/internal-panel', internalPanelApi);
 console.log('✅ Mounted /api/internal-panel (static import)');
 
 // Mount ECG Image Pipeline API (Phase B - v15.0.0)
-app.use('/api/ecg-images', ecgImageRouter);
-console.log('✅ Mounted /api/ecg-images (static import)');
+app.use('/api/ecg', ecgImageRouter);
+console.log('✅ Mounted /api/ecg (static import)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set

@@ -14,13 +14,17 @@ import {
 const router = express.Router();
 
 /**
- * GET /api/ecg/image
+ * GET /api/ecg/images
  * Fetch ECG image by category or diagnosis
  * Query params:
  * - category: ECG category (normal, arrhythmia, acute_coronary, etc.)
  * - diagnosis: Specific diagnosis filter (optional)
  */
-router.get('/image', async (req, res) => {
+router.get('/images', async (req, res) => {
+  // CORS headers for frontend access
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
   try {
     const { category = 'normal', diagnosis } = req.query;
     
@@ -28,9 +32,16 @@ router.get('/image', async (req, res) => {
     
     const result = fetchECGImageUrl(category, diagnosis);
     
+    // Ensure we have proper fallback
+    const ecgData = result.data || result.fallback || {
+      image_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8dGV4dCB4PSIyMDAiIHk9IjEwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxNiI+RUNHIEltYWdlIFBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K',
+      diagnosis: 'ECG Image Unavailable',
+      description: 'Placeholder ECG image for educational purposes'
+    };
+
     res.json({
       success: true,
-      data: result.data || result.fallback,
+      data: ecgData,
       database_info: {
         total_images: ECG_DATABASE_COUNT,
         requested_category: category,
@@ -49,10 +60,72 @@ router.get('/image', async (req, res) => {
 });
 
 /**
+ * GET /api/ecg/image/:id
+ * Fetch specific ECG image by ID
+ */
+router.get('/image/:id', async (req, res) => {
+  // CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const { id } = req.params;
+    console.log(`ECG Image ID Request: ${id}`);
+    
+    // Import the database to search by ID
+    const { ECG_IMAGE_DATABASE } = await import('../utils/ecg_image_pipeline.mjs');
+    const ecgImage = ECG_IMAGE_DATABASE.find(ecg => ecg.id === id);
+    
+    if (!ecgImage) {
+      return res.status(404).json({
+        success: false,
+        error: 'ECG image not found',
+        id: id
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        image_url: ecgImage.url,
+        diagnosis: ecgImage.diagnosis,
+        description: ecgImage.description,
+        measurements: {
+          heart_rate: ecgImage.heart_rate,
+          pr_interval: ecgImage.pr_interval,
+          qrs_duration: ecgImage.qrs_duration,
+          qt_interval: ecgImage.qt_interval
+        },
+        metadata: {
+          category: ecgImage.category,
+          license: ecgImage.license,
+          source: ecgImage.source,
+          ecg_id: ecgImage.id
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('ECG Image ID API Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch ECG image by ID',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /api/ecg/categories
  * Get all available ECG categories with counts
  */
 router.get('/categories', async (req, res) => {
+  // CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
   try {
     const categories = getECGCategories();
     
@@ -82,6 +155,11 @@ router.get('/categories', async (req, res) => {
  * - q: Search query string
  */
 router.get('/search', async (req, res) => {
+  // CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
   try {
     const { q: query } = req.query;
     

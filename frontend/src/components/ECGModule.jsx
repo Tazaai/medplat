@@ -584,7 +584,15 @@ export default function ECGModule({ user }) {
 						
 						return (
 							<div key={c.id} className={`ecg-case-card ${isLocked ? 'locked' : ''}`}>
-								<img src={c.image_url} alt={c.title} className="ecg-preview" />
+								<img 
+					src={c.image_url || `${API_BASE}/api/ecg/images?category=${c.category || 'normal'}`}
+					alt={c.title} 
+					className="ecg-preview"
+					onError={(e) => {
+						e.target.onerror = null;
+						e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxMDAiIHk9IjUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEyIj5FQ0cgUHJldmlldyBVbmF2YWlsYWJsZTwvdGV4dD48L3N2Zz4K';
+					}}
+				/>
 								{isLocked && <div className="lock-overlay">🔒 Level {reqLevel}</div>}
 								<h3>{c.title}</h3>
 								<div className="case-meta">
@@ -677,12 +685,13 @@ export default function ECGModule({ user }) {
 			</div>				{/* ECG Image - Prominent Display */}
 			<div className="ecg-image-container">
 				<img 
-					src={quiz.image_url} 
+					src={quiz.image_url || `${API_BASE}/api/ecg/images?category=${quiz.category || 'normal'}`} 
 					alt="ECG" 
 					className="ecg-full"
 					onError={(e) => {
 						e.target.onerror = null;
-						e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23ecf0f1" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%237f8c8d" font-size="20"%3EECG Image Unavailable%3C/text%3E%3C/svg%3E';
+						// Enhanced fallback with actual ECG placeholder
+						e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjZWNmMGYxIiB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y4YzhkIiBmb250LXNpemU9IjIwIj5FQ0cgSW1hZ2UgVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+Cg==';
 					}}
 				/>
 				<div className="ecg-quality-indicator">
