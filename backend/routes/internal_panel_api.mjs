@@ -4,7 +4,7 @@ import { getPanelRoles, getRoleExpertise } from '../utils/panelRoles.mjs';
 import { validateReferences, getFallbackReferences } from '../utils/validateReferences.mjs';
 
 const router = express.Router();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = getOpenAIClient();
 
 /**
  * Dynamic expert role selection based on topic/category

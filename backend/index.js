@@ -10,7 +10,7 @@ import topicsRouter from './routes/topics_api.mjs';
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
 import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Development Panel
-import ecgImageRouter from './routes/ecg_image_routes.mjs'; // Phase B: ECG Image Pipeline
+import ecgRouter from './routes/ecg_api.mjs'; // Real ECG Academy API
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -48,9 +48,9 @@ console.log('✅ Mounted /api/expert-panel (static import)');
 app.use('/api/internal-panel', internalPanelApi);
 console.log('✅ Mounted /api/internal-panel (static import)');
 
-// Mount ECG Image Pipeline API (Phase B - v15.0.0)
-app.use('/api/ecg', ecgImageRouter);
-console.log('✅ Mounted /api/ecg (static import)');
+// Mount Real ECG Academy API (v15.2.1)
+app.use('/api/ecg', ecgRouter);
+console.log('✅ Mounted /api/ecg (real ECG Academy)');
 
 // CORS middleware: allow requests from the frontend origin(s).
 // By default allow all origins for simplicity in Cloud Run; set

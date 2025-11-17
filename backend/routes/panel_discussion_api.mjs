@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'caseData is required' });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const client = getOpenAIClient();
 
     // Extract relevant case information
     const topic = caseData.meta?.topic || caseData.Topic || 'Unknown';

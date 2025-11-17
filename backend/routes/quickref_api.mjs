@@ -3,7 +3,7 @@ import { getOpenAIClient } from '../openaiClient.js';
 
 export default function quickrefApi() {
   const router = express.Router();
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = getOpenAIClient();
 
   /**
    * Quick Reference API - Tooltip definitions for medical terms

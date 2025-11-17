@@ -21,7 +21,7 @@ import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import { registerTelemetry } from '../engagement/engagement_core.mjs';
 
 const router = express.Router();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = getOpenAIClient();
 
 /**
  * POST /api/mentor/session

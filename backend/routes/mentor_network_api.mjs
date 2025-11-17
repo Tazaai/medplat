@@ -35,9 +35,7 @@ const router = Router();
 const FieldValue = admin.firestore.FieldValue;
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const openai = getOpenAIClient();
 
 // ========================================
 // CONFIGURATION: XP & Gamification

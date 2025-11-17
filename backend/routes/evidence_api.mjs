@@ -3,7 +3,7 @@ import { getOpenAIClient } from '../openaiClient.js';
 
 export default function evidenceApi() {
   const router = express.Router();
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = getOpenAIClient();
 
   /**
    * Evidence Comparison API - Test performance data

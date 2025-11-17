@@ -6,7 +6,7 @@ import { registerTelemetry } from '../engagement/engagement_core.mjs';
 
 export default function gamifyApi() {
   const router = express.Router();
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = getOpenAIClient();
 
   // POST /api/gamify - generate 12 adaptive MCQs for a clinical case
   router.post('/', async (req, res) => {
