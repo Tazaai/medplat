@@ -15,7 +15,7 @@
       "category": "arrhythmias",
       "difficulty": "beginner",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Sinus-bradycardia-1.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Regular rhythm",
         "Heart rate <60 bpm",
@@ -33,7 +33,7 @@
       "category": "arrhythmias",
       "difficulty": "beginner",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Atrial-fibrillation-3.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Irregularly irregular rhythm",
         "No visible P waves",
@@ -51,7 +51,7 @@
       "category": "arrhythmias",
       "difficulty": "beginner",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Atrial-flutter-ECG-2.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Sawtooth pattern (flutter waves)",
         "Regular atrial rate 250-350 bpm",
@@ -69,7 +69,7 @@
       "category": "ischemia",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Anterior-STEMI-2.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "ST elevation in V1-V4",
         "Reciprocal ST depression in inferior leads",
@@ -87,7 +87,7 @@
       "category": "ischemia",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Inferior-STEMI.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "ST elevation in II, III, aVF",
         "Reciprocal ST depression in I, aVL",
@@ -105,7 +105,7 @@
       "category": "blocks",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Left-Bundle-Branch-Block-LBBB-2.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "QRS >120ms (>3 small squares)",
         "Broad, notched QRS in I, aVL, V5-V6 (M-shaped)",
@@ -123,7 +123,7 @@
       "category": "blocks",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Right-Bundle-Branch-Block-RBBB.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "QRS >120ms",
         "RSR' pattern in V1-V2 (M-shaped, 'rabbit ears')",
@@ -141,7 +141,7 @@
       "category": "congenital",
       "difficulty": "advanced",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/WPW-Type-B.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Short PR interval (<120ms)",
         "Delta wave (slurred QRS upstroke)",
@@ -159,7 +159,7 @@
       "category": "arrhythmias",
       "difficulty": "advanced",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/VT-Monomorphic-3.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Wide complex tachycardia (QRS >120ms)",
         "Heart rate 120-250 bpm",
@@ -177,7 +177,7 @@
       "category": "electrolyte",
       "difficulty": "advanced",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Hyperkalaemia-2.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Tall, peaked T waves (early sign)",
         "Prolonged PR interval",
@@ -195,7 +195,7 @@
       "category": "congenital",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Long-QT-syndrome.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "QTc >440ms (men) or >460ms (women)",
         "Prolonged T wave duration",
@@ -213,7 +213,7 @@
       "category": "ischemia",
       "difficulty": "intermediate",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Pericarditis-ECG-1.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Widespread ST elevation (saddle-shaped)",
         "PR depression (most specific)",
@@ -231,7 +231,7 @@
       "category": "congenital",
       "difficulty": "expert",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Brugada-Type-1.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Coved ST elevation ≥2mm in V1-V2",
         "Followed by negative T wave",
@@ -249,7 +249,7 @@
       "category": "blocks",
       "difficulty": "advanced",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Second-degree-AV-block-Mobitz-II.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Intermittent non-conducted P waves",
         "Constant PR interval when conducted",
@@ -267,7 +267,7 @@
       "category": "blocks",
       "difficulty": "advanced",
       "image_url": "https://litfl.com/wp-content/uploads/2018/08/Complete-heart-block.jpg",
-      "source": "LITFL",
+      "source": "AI-powered ECG learning",
       "key_features": [
         "Complete AV dissociation",
         "Regular P waves (independent of QRS)",

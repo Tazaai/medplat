@@ -11,14 +11,23 @@ export default function useLevel2CaseEngine(initialQuestions = []) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { questionId: chosenIndex }
   const [score, setScore] = useState(0);
+  const [isAnswering, setIsAnswering] = useState(false); // Prevent double-click
 
   /**
    * Record user's answer for the current question
    * @param {number} choiceIndex - Index of the chosen answer (0-based)
    */
   const answerQuestion = (choiceIndex) => {
+    // Prevent double-click or rapid clicking
+    if (isAnswering) return;
+    
     const currentQuestion = questions[currentIndex];
     if (!currentQuestion) return;
+    
+    // Check if already answered this question
+    if (answers[currentQuestion.id] !== undefined) return;
+
+    setIsAnswering(true);
 
     const isCorrect = choiceIndex === currentQuestion.correct;
     const points = isCorrect ? 3 : 0;
@@ -32,8 +41,11 @@ export default function useLevel2CaseEngine(initialQuestions = []) {
     // Update score
     setScore((prev) => prev + points);
 
-    // Move to next question
-    setCurrentIndex((prev) => prev + 1);
+    // Move to next question after a brief delay for UX feedback
+    setTimeout(() => {
+      setCurrentIndex((prev) => prev + 1);
+      setIsAnswering(false);
+    }, 500);
   };
 
   /**
@@ -43,6 +55,7 @@ export default function useLevel2CaseEngine(initialQuestions = []) {
     setCurrentIndex(0);
     setAnswers({});
     setScore(0);
+    setIsAnswering(false);
   };
 
   /**
@@ -68,5 +81,6 @@ export default function useLevel2CaseEngine(initialQuestions = []) {
     isComplete,
     progress,
     totalQuestions: questions.length,
+    isAnswering, // Expose for UI feedback
   };
 }

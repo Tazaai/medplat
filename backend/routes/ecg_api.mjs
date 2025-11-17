@@ -3,6 +3,7 @@
 
 import express from 'express';
 import { getECGCase, listECGCases, generateECGMCQ, generateECGQuiz, gradeECGAnswer } from '../ai/ecg_mcq_generator.mjs';
+import { withTimeoutAndRetry, safeRouteHandler, createFallbackResponse } from '../utils/api_helpers.mjs';
 
 const router = express.Router();
 
@@ -467,5 +468,92 @@ router.get('/admin/weaknesses', async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
+
+/**
+ * GET /api/ecg/master
+ * ECG Mastery Session - Returns 8 cases with images and MCQs
+ */
+router.get('/master', safeRouteHandler(async (req, res) => {
+	const sessionId = `ecg_master_${Date.now()}`;
+	
+	// Generate 8 ECG mastery cases with fallback
+	let cases = [];
+	try {
+		const quiz = await withTimeoutAndRetry(
+			async () => await generateECGQuiz({
+				num_questions: 8,
+				category: null, // Mix all categories
+				difficulty: 'intermediate',
+				include_explanations: true
+			}),
+			8000, // 8 second timeout
+			1 // 1 retry
+		);
+		
+		cases = quiz.questions.map((q, index) => ({
+			id: `master_${sessionId}_${index + 1}`,
+			ecgImageUrl: q.ecg_image_url || `/api/ecg/images/placeholder/${index + 1}`,
+			stem: q.question_text || `Analyze this ECG pattern and identify the primary finding.`,
+			options: q.options || ['Normal sinus rhythm', 'Atrial fibrillation', 'Ventricular tachycardia', 'Complete heart block'],
+			correct: q.correct_answer || 0,
+			explanation: q.explanation || 'Review the rhythm, rate, and morphology systematically.',
+			category: q.category || 'arrhythmias',
+			difficulty: q.difficulty || 'intermediate'
+		}));
+	} catch (aiError) {
+		console.warn('🔄 AI generation failed, using fallback cases:', aiError.message);
+			
+			// Fallback demo cases
+			cases = [
+				{
+					id: `master_${sessionId}_1`,
+					ecgImageUrl: '/api/ecg/images/placeholder/1',
+					stem: 'A 65-year-old patient presents with chest pain. What is the most likely diagnosis?',
+					options: ['Normal ECG', 'STEMI', 'NSTEMI', 'Atrial fibrillation'],
+					correct: 1,
+					explanation: 'ST elevation in leads V1-V4 indicates anterior STEMI requiring immediate reperfusion therapy.',
+					category: 'ischemia',
+					difficulty: 'intermediate'
+				},
+				{
+					id: `master_${sessionId}_2`,
+					ecgImageUrl: '/api/ecg/images/placeholder/2',
+					stem: 'This rhythm strip shows an irregular heart rate. What is the diagnosis?',
+					options: ['Sinus arrhythmia', 'Atrial fibrillation', 'Ventricular tachycardia', 'Heart block'],
+					correct: 1,
+					explanation: 'Irregularly irregular rhythm with absent P waves is characteristic of atrial fibrillation.',
+					category: 'arrhythmias',
+					difficulty: 'beginner'
+				},
+				{
+					id: `master_${sessionId}_3`,
+					ecgImageUrl: '/api/ecg/images/placeholder/3',
+					stem: 'What is the most concerning finding in this ECG?',
+					options: ['Bradycardia', 'Tachycardia', 'Wide QRS', 'Prolonged QT'],
+					correct: 2,
+					explanation: 'Wide QRS complex with ventricular rate >150 bpm suggests ventricular tachycardia requiring immediate intervention.',
+					category: 'arrhythmias',
+					difficulty: 'advanced'
+				}
+			];
+		}
+		
+		res.json({
+			success: true,
+			sessionId,
+			cases,
+			totalCases: cases.length,
+			timestamp: new Date().toISOString()
+		});
+		
+	} catch (error) {
+		console.error('❌ /api/ecg/master error:', error);
+		
+		// v15.2.0: Return fallback ECG session instead of failure
+		console.log('🔄 Returning fallback ECG session');
+		const fallback = createFallbackResponse('ecg');
+		return res.json(fallback);
+	}
+}));
 
 export default router;

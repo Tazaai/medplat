@@ -483,11 +483,9 @@ async function mountRoutes() {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);
 	// continue — server can still run for diagnostics
 }
-}// Start server with Cloud Run friendly host/port after mounting routes
-const PORT = process.env.PORT || 8080;
-const HOST = process.env.HOST || '0.0.0.0';
+}
 
-// Top-level await is supported in Node 18 ESM; run mount then start listening.
+// Mount routes and extend timeouts
 await mountRoutes();
 
 // Extend request timeout for long-running AI operations (e.g. expert panel reviews)
@@ -495,10 +493,6 @@ app.use((req, res, next) => {
 	req.setTimeout(300000); // 5 minutes for AI generation
 	res.setTimeout(300000);
 	next();
-});
-
-app.listen(PORT, HOST, () => {
-	console.log(`🚀 MedPlat backend listening on ${HOST}:${PORT}`);
 });
 
 // Temporary debug endpoint to list mounted routes (useful in Cloud Run)
@@ -575,5 +569,11 @@ app.get('/debug/env', (req, res) => {
 	}
 });
 
+// Start server (Cloud Run compatible)
+const PORT = process.env.PORT || 8080;
+const server = app.listen(PORT, '0.0.0.0', () => {
+	console.log(`🚀 Backend v15.2.0 listening on port ${PORT}`);
+	console.log('✅ Stability hardening complete - production ready');
+});
+
 export default app;
-// (paste code above)

@@ -15,7 +15,7 @@
  */
 
 import express from 'express';
-import OpenAI from 'openai';
+import { getOpenAIClient } from '../openaiClient.js';
 import { db } from '../firebaseClient.js';
 import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import { registerTelemetry } from '../engagement/engagement_core.mjs';

@@ -44,10 +44,13 @@ export default function ECGModule({ user }) {
 	const [colorBlindMode, setColorBlindMode] = useState(false);
 	const [showXPPopup, setShowXPPopup] = useState(false);
 
-	// Load categories on mount
+	// Load categories on mount and auto-start mastery session
 	useEffect(() => {
 		loadCategories();
 		loadUserProgress();
+		
+		// v15.1.0: Auto-start ECG mastery session on load
+		loadMasterySession();
 	}, []);
 	
 	// Phase 8 M2: Calculate user level based on score
@@ -84,16 +87,27 @@ export default function ECGModule({ user }) {
 		}
 	}
 
-	// v15.0.2: Enhanced ECG Image Fetching
-	async function fetchECGImage(category = 'normal', diagnosis = null) {
+	// v15.2.0: Enhanced ECG Image Fetching with retry and timeout
+	async function fetchECGImage(category = 'arrhythmias', diagnosis = null, retryCount = 0) {
 		setImageLoading(true);
 		setImageError(null);
 		
+		const maxRetries = 2;
+		const timeoutMs = 5000;
+		
 		try {
-			const params = new URLSearchParams({ category });
+			const params = new URLSearchParams({ category, limit: 1 });
 			if (diagnosis) params.append('diagnosis', diagnosis);
 			
-			const response = await fetch(`${API_BASE}/api/ecg/images?${params}`);
+			// Add timeout to prevent hanging
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+			
+			const response = await fetch(`${API_BASE}/api/ecg/images?${params}`, {
+				signal: controller.signal
+			});
+			
+			clearTimeout(timeoutId);
 			
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -101,23 +115,38 @@ export default function ECGModule({ user }) {
 			
 			const result = await response.json();
 			
-			if (result.success && result.data) {
+			if (result.success && result.images && result.images.length > 0) {
+				const imageData = {
+					image_url: result.images[0].url,
+					diagnosis: result.images[0].title,
+					description: result.images[0].description,
+					category: result.images[0].category
+				};
+				
 				setEcgImages(prev => ({
 					...prev,
-					[category]: result.data
+					[category]: imageData
 				}));
-				return result.data;
+				return imageData;
 			} else {
-				throw new Error(result.error || 'Failed to fetch ECG image');
+				throw new Error(result.error || 'No ECG images available');
 			}
 		} catch (error) {
 			console.error('ECG Image fetch error:', error);
+			
+			// Retry logic
+			if (retryCount < maxRetries && error.name !== 'AbortError') {
+				console.log(`🔄 Retrying ECG image fetch (attempt ${retryCount + 1}/${maxRetries})`);
+				await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+				return fetchECGImage(category, diagnosis, retryCount + 1);
+			}
+			
 			setImageError(error.message);
 			
-			// Return fallback image data
-			return {
-				image_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjZWNmMGYxIiB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y4YzhkIiBmb250LXNpemU9IjIwIj5FQ0cgSW1hZ2UgVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+Cg==',
-				diagnosis: 'ECG Image Unavailable',
+			// Return reliable fallback image data
+			const fallbackData = {
+				image_url: `${API_BASE}/api/ecg/images/placeholder/${Math.floor(Math.random() * 3) + 1}`,
+				diagnosis: 'AI-powered ECG learning',
 				description: 'Fallback ECG placeholder - backend connection issue'
 			};
 		} finally {
@@ -215,6 +244,76 @@ export default function ECGModule({ user }) {
 		}
 	}
 
+	// v15.2.0: Load ECG Mastery Session with enhanced error handling
+	async function loadMasterySession(retryCount = 0) {
+		setLoading(true);
+		setQuiz(null);
+		setSelectedCase(null);
+		
+		const maxRetries = 2;
+		
+		try {
+			// Add timeout for reliability
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 8000);
+			
+			const response = await fetch(`${API_BASE}/api/ecg/master`, {
+				signal: controller.signal
+			});
+			
+			clearTimeout(timeoutId);
+			
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ECG service unavailable`);
+			}
+			
+			const result = await response.json();
+			
+			if (result.success && result.cases && result.cases.length > 0) {
+				// Set up mastery quiz with cases
+				const masteryQuiz = {
+					questions: result.cases,
+					total_questions: result.cases.length,
+					session_id: result.sessionId,
+					quiz_type: 'mastery_session',
+					fallback: result.fallback || false
+				};
+				
+				setQuiz(masteryQuiz);
+				setCurrentQuestionIndex(0);
+				setSelectedAnswer(null);
+				setAnswered(false);
+				setShowExplanation(false);
+				setQuestionStartTime(Date.now());
+				setElapsedTime(0);
+				
+				console.log(`✅ ECG Mastery session loaded: ${result.cases.length} cases`);
+			} else {
+				throw new Error(result.error || 'No ECG cases received');
+			}
+		} catch (error) {
+			console.error('Error loading mastery session:', error);
+			
+			// Retry logic
+			if (retryCount < maxRetries && error.name !== 'AbortError') {
+				console.log(`🔄 Retrying mastery session (attempt ${retryCount + 1}/${maxRetries})`);
+				setTimeout(() => {
+					loadMasterySession(retryCount + 1);
+				}, 2000 * (retryCount + 1));
+				return;
+			}
+			
+			// Show user-friendly error with manual retry option
+			setQuiz({
+				error: true,
+				message: 'ECG mastery session temporarily unavailable. Please try again.',
+				retry: () => loadMasterySession(0)
+			});
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	async function startQuiz(caseItem) {
 		setLoading(true);
 		try {
@@ -256,10 +355,10 @@ export default function ECGModule({ user }) {
 		}
 	}
 
-	function handleAnswerSelect(optionLabel) {
+	function handleAnswerSelect(optionIndex) {
 		if (answered) return; // Lock after answer submitted
 		
-		setSelectedAnswer(optionLabel);
+		setSelectedAnswer(optionIndex);
 		setAnswered(true);
 		
 		// Calculate time taken
@@ -268,11 +367,25 @@ export default function ECGModule({ user }) {
 			setElapsedTime(timeTaken);
 		}
 		
+		// v15.1.0: Handle both regular quiz and mastery session
+		let isCorrect = false;
+		let xpReward = 3;
+		
+		if (quiz.quiz_type === 'mastery_session') {
+			// Mastery session: check against current question
+			const currentQuestion = quiz.questions[currentQuestionIndex];
+			isCorrect = optionIndex === currentQuestion.correct;
+		} else {
+			// Regular quiz: check against quiz correct_answer
+			isCorrect = optionIndex === quiz.correct_answer_index || 
+			           (typeof quiz.correct_answer === 'string' && optionIndex === quiz.correct_answer);
+			xpReward = quiz.xp_reward || 3;
+		}
+		
 		// Immediate scoring (3 points correct, 0 wrong - matches Level2 pattern)
-		const isCorrect = optionLabel === quiz.correct_answer;
 		if (isCorrect) {
 			setScore(score + 3);
-			setXpEarned(xpEarned + quiz.xp_reward);
+			setXpEarned(xpEarned + xpReward);
 			const newStreak = currentStreak + 1;
 			setCurrentStreak(newStreak);
 			
@@ -290,31 +403,62 @@ export default function ECGModule({ user }) {
 			setConfidenceLevel('building');
 			
 			// Track repeated mistakes (same case ID)
-			const caseId = selectedCase?.id;
+			const caseId = selectedCase?.id || (quiz.questions && quiz.questions[currentQuestionIndex]?.id);
 			if (caseId && !repeatedMistakes.includes(caseId)) {
 				setRepeatedMistakes([...repeatedMistakes, caseId]);
 			}
 		}
 		
 		// Phase 8 M2: Track category performance for weak-area targeting
-		const category = quiz.category || selectedCase?.category || 'unknown';
+		let category = 'unknown';
+		if (quiz.quiz_type === 'mastery_session') {
+			category = quiz.questions[currentQuestionIndex]?.category || 'arrhythmias';
+		} else {
+			category = quiz.category || selectedCase?.category || 'unknown';
+		}
+		
 		updateCategoryPerformance(category, isCorrect);
 		saveUserProgress();
 		
 		// Phase 8 M3: Add to recent ECGs for review
-		addToRecentECGs(selectedCase, isCorrect);
+		if (quiz.quiz_type === 'mastery_session') {
+			addToRecentECGs(quiz.questions[currentQuestionIndex], isCorrect);
+		} else {
+			addToRecentECGs(selectedCase, isCorrect);
+		}
 		
 		// Show explanation immediately
 		setShowExplanation(true);
 	}
 
 	function handleNextCase() {
-		setSelectedCase(null);
-		setQuiz(null);
-		setCurrentQuestionIndex(0);
-		setSelectedAnswer(null);
-		setAnswered(false);
-		setShowExplanation(false);
+		// v15.1.0: Handle mastery session progression
+		if (quiz && quiz.quiz_type === 'mastery_session') {
+			if (currentQuestionIndex < quiz.questions.length - 1) {
+				// Move to next question in mastery session
+				setCurrentQuestionIndex(currentQuestionIndex + 1);
+				setSelectedAnswer(null);
+				setAnswered(false);
+				setShowExplanation(false);
+				setQuestionStartTime(Date.now());
+				setElapsedTime(0);
+			} else {
+				// Session complete - show completion screen or restart
+				setShowExplanation(false);
+				setTimeout(() => {
+					// Auto-restart mastery session after completion
+					loadMasterySession();
+				}, 2000);
+			}
+		} else {
+			// Regular quiz: back to category selection
+			setSelectedCase(null);
+			setQuiz(null);
+			setCurrentQuestionIndex(0);
+			setSelectedAnswer(null);
+			setAnswered(false);
+			setShowExplanation(false);
+		}
 	}
 
 	function handleBackToCategories() {
@@ -420,8 +564,8 @@ export default function ECGModule({ user }) {
 		}
 	}
 
-	// v15.0.3: Show loading state for mastery session
-	if (sessionLoading) {
+	// v15.2.0: Enhanced loading state for mastery session
+	if (loading) {
 		return (
 			<div className="ecg-module">
 				<div className="ecg-compact-header">
@@ -432,6 +576,32 @@ export default function ECGModule({ user }) {
 					<div className="loading-spinner"></div>
 					<h3>Loading ECG Mastery Session...</h3>
 					<p>Preparing 8 ECG cases with AI-generated questions and explanations</p>
+				</div>
+			</div>
+		);
+	}
+
+	// v15.2.0: Show error state for mastery session failures
+	if (quiz && quiz.error) {
+		return (
+			<div className="ecg-module">
+				<div className="ecg-compact-header">
+					<span className="mode-badge">ECG Mastery Mode</span>
+					<span className="version-badge">v15.2.0</span>
+				</div>
+				<div className="ecg-error-state">
+					<div className="error-icon">⚠️</div>
+					<h3>Service Temporarily Unavailable</h3>
+					<p>{quiz.message}</p>
+					<button 
+						className="retry-button"
+						onClick={quiz.retry}
+					>
+						🔄 Try Again
+					</button>
+					<p className="error-note">
+						If the issue persists, try refreshing the page or contact support.
+					</p>
 				</div>
 			</div>
 		);
@@ -516,7 +686,7 @@ export default function ECGModule({ user }) {
 				<span className="version-badge">v15.0.3</span>
 			</div>				<div className="ecg-header">
 					<h1>📊 ECG Interpretation Module</h1>
-					<p>Master ECG interpretation with validated cases from LITFL and educational resources</p>
+					<p>Master ECG interpretation with AI-powered ECG learning and educational resources</p>
 				</div>
 
 				<div className="ecg-stats">

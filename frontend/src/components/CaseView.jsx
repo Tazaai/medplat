@@ -146,8 +146,17 @@ export default function CaseView() {
   const caseRef = useRef(null);
 
   // Phase 4 M2/M3/M4: Multi-tab state (case | mentor | curriculum | analytics)
-  const [activeTab, setActiveTab] = useState("case");
-  const [activeECGTab, setActiveECGTab] = useState("mastery"); // v15.0.1: ECG Academy state
+  const validTabs = ["case", "mentor", "curriculum", "analytics", "mentor_hub", "certifications", "leaderboard", "exam_prep", "admin_analytics", "social", "reasoning", "ecg_academy"];
+  const validECGTabs = ["mastery", "study_plan", "curriculum", "certification", "analytics"];
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = localStorage.getItem('medplat_active_tab');
+    return validTabs.includes(saved) ? saved : "case";
+  });
+  const [activeECGTab, setActiveECGTab] = useState(() => {
+    const saved = localStorage.getItem('medplat_active_ecg_tab');
+    return validECGTabs.includes(saved) ? saved : "mastery";
+  });
   const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     return localStorage.getItem('medplat_language') || 'en';
@@ -156,14 +165,28 @@ export default function CaseView() {
   // Phase 9: Listen for tab switch events from child components (e.g., ECGModule)
   useEffect(() => {
     const handleTabSwitch = (event) => {
-      if (event.detail) {
+      if (event.detail && validTabs.includes(event.detail)) {
         setActiveTab(event.detail);
+        localStorage.setItem('medplat_active_tab', event.detail);
       }
     };
     
     window.addEventListener('switchToTab', handleTabSwitch);
     return () => window.removeEventListener('switchToTab', handleTabSwitch);
-  }, []);
+  }, [validTabs]);
+
+  // Save tab state changes
+  useEffect(() => {
+    if (validTabs.includes(activeTab)) {
+      localStorage.setItem('medplat_active_tab', activeTab);
+    }
+  }, [activeTab, validTabs]);
+
+  useEffect(() => {
+    if (validECGTabs.includes(activeECGTab)) {
+      localStorage.setItem('medplat_active_ecg_tab', activeECGTab);
+    }
+  }, [activeECGTab, validECGTabs]);
 
   // 🌍 detect location
   useEffect(() => {
@@ -225,9 +248,12 @@ export default function CaseView() {
 
   const generateCase = async () => {
     const chosenTopic = customTopic.trim() || topic;
-    if (!chosenTopic) return alert("Please select or enter a topic");
+    if (!chosenTopic) {
+      alert("Please select or enter a topic");
+      return;
+    }
 
-    console.log(`🔍 DEBUG: generateCase called with gamify=${gamify}`);
+    console.info(`🎯 Case generation: gamify=${gamify}`);
     setLoading(true);
     setCaseData(null);
     
@@ -235,9 +261,15 @@ export default function CaseView() {
       // 🎯 OPTIMIZATION: If gamify mode, use direct MCQ generation (faster, cheaper - 1 API call instead of 2)
       if (gamify) {
         console.log("🎮 Direct gamification mode - generating MCQs directly");
+        
+        // Add timeout and abort controller
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        
         const res = await fetch(`${API_BASE}/api/gamify-direct`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({
             topic: chosenTopic,
             language: getLanguage(),
@@ -246,7 +278,13 @@ export default function CaseView() {
             model,
           }),
         });
-        if (!res.ok) throw new Error(res.statusText || 'Quiz generation failed');
+        
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText || 'Quiz generation failed'}`);
+        }
+        
         const data = await res.json();
         console.log("✅ Direct gamification response:", data);
         
@@ -502,10 +540,24 @@ export default function CaseView() {
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
-        <LanguageSelector 
-          currentLanguage={currentLanguage} 
-          onLanguageChange={setCurrentLanguage} 
-        />
+        {/* Language selector with fallback */}
+        {(() => {
+          try {
+            return (
+              <LanguageSelector 
+                currentLanguage={currentLanguage} 
+                onLanguageChange={setCurrentLanguage} 
+              />
+            );
+          } catch (error) {
+            console.error('LanguageSelector error:', error);
+            return (
+              <div className="text-sm text-gray-500">
+                Language: {currentLanguage}
+              </div>
+            );
+          }
+        })()}
       </div>
 
       {/* Phase 4: Tab Navigation */}

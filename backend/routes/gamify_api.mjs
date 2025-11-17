@@ -1,6 +1,6 @@
 // ~/medplat/backend/routes/gamify_api.mjs
 import express from 'express';
-import OpenAI from 'openai';
+import { getOpenAIClient } from '../openaiClient.js';
 import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import { registerTelemetry } from '../engagement/engagement_core.mjs';
 

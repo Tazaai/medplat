@@ -6,32 +6,59 @@ import './LanguageSelector.css';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
 export default function LanguageSelector({ currentLanguage, onLanguageChange }) {
-	const [languages, setLanguages] = useState([]);
+	// Static high-quality language list - API is optional enhancement only
+	const [languages, setLanguages] = useState([
+		{ code: 'en', name: 'English', native: 'English', rtl: false, region: 'Global' },
+		{ code: 'es', name: 'Spanish', native: 'Español', rtl: false, region: 'EU/LATAM' },
+		{ code: 'fr', name: 'French', native: 'Français', rtl: false, region: 'EU/Africa' },
+		{ code: 'de', name: 'German', native: 'Deutsch', rtl: false, region: 'EU' },
+		{ code: 'it', name: 'Italian', native: 'Italiano', rtl: false, region: 'EU' },
+		{ code: 'pt', name: 'Portuguese', native: 'Português', rtl: false, region: 'EU/LATAM' },
+		{ code: 'ar', name: 'Arabic', native: 'العربية', rtl: true, region: 'MENA' },
+		{ code: 'zh', name: 'Chinese', native: '中文', rtl: false, region: 'Asia' },
+		{ code: 'ja', name: 'Japanese', native: '日本語', rtl: false, region: 'Asia' },
+		{ code: 'ko', name: 'Korean', native: '한국어', rtl: false, region: 'Asia' },
+		{ code: 'hi', name: 'Hindi', native: 'हिन्दी', rtl: false, region: 'Asia' },
+		{ code: 'ru', name: 'Russian', native: 'Русский', rtl: false, region: 'EU/Asia' }
+	]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 
 	useEffect(() => {
-		fetchLanguages();
+		// API fetch is optional enhancement - UI works without it
+		const timer = setTimeout(() => {
+			fetchLanguages();
+		}, 500); // Delay to prioritize critical rendering
+		
+		return () => clearTimeout(timer);
 	}, []);
 
 	const fetchLanguages = async () => {
 		try {
-			const response = await fetch(`${BACKEND_URL}/api/translation/languages`);
+			// Add timeout to prevent hanging
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 3000);
+			
+			const response = await fetch(`${BACKEND_URL}/api/translation/languages`, {
+				signal: controller.signal
+			});
+			
+			clearTimeout(timeoutId);
+			
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+			
 			const data = await response.json();
 
-			if (data.success) {
+			if (data.success && data.languages) {
 				setLanguages(data.languages);
+			} else {
+				throw new Error('Invalid response format');
 			}
 		} catch (error) {
-			console.error('Failed to fetch languages:', error);
-			// Fallback to basic list
-			setLanguages([
-				{ code: 'en', name: 'English', native: 'English', rtl: false },
-				{ code: 'es', name: 'Spanish', native: 'Español', rtl: false },
-				{ code: 'fr', name: 'French', native: 'Français', rtl: false },
-				{ code: 'ar', name: 'Arabic', native: 'العربية', rtl: true },
-				{ code: 'zh', name: 'Chinese (Simplified)', native: '简体中文', rtl: false },
-			]);
+			console.warn('Language API unavailable, using static languages:', error.message);
+			// Static languages already loaded, no need to update
 		}
 	};
 

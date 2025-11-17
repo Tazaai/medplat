@@ -1,5 +1,5 @@
 import express from "express";
-import OpenAI from "openai";
+import { getOpenAIClient } from '../openaiClient.js';
 
 export default function quickrefApi() {
   const router = express.Router();

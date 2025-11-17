@@ -48,6 +48,7 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     resetQuiz,
     score,
     isComplete,
+    isAnswering,
   } = useLevel2CaseEngine([]);
 
   // Fetch MCQs for this case (or use pre-generated MCQs from direct gamification)
@@ -278,7 +279,9 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
               
               <div className="p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
                 <p className="text-sm font-medium text-blue-900">💡 Expert Explanation:</p>
-                <p className="text-sm text-blue-800 mt-1">{q.explanation}</p>
+                <p className="text-sm text-blue-800 mt-1">
+                  {q.explanation || 'Explanation temporarily unavailable. Review the correct answer and underlying medical principles.'}
+                </p>
               </div>
             </div>
           );
@@ -358,16 +361,30 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         <p className="text-xl font-semibold mb-6">{q.question}</p>
         
         <ul className="space-y-3">
-          {q.choices.map((c, i) => (
-            <li key={i}>
-              <button
-                className="w-full text-left px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onClick={() => answerQuestion(i)}
-              >
-                <span className="font-medium">{c}</span>
-              </button>
-            </li>
-          ))}
+          {q.choices.map((c, i) => {
+            const isSelected = answers[q.id] === i;
+            const buttonClass = `w-full text-left px-4 py-3 border-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              isAnswering 
+                ? 'cursor-wait opacity-50' 
+                : isSelected
+                ? 'bg-blue-100 border-blue-500 text-blue-800'
+                : 'border-gray-300 hover:bg-blue-50 hover:border-blue-400'
+            }`;
+            
+            return (
+              <li key={i}>
+                <button
+                  className={buttonClass}
+                  onClick={() => answerQuestion(i)}
+                  disabled={isAnswering || isSelected}
+                >
+                  <span className="font-medium">
+                    {isSelected ? '✓ ' : ''}{c}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
       

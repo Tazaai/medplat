@@ -35,19 +35,19 @@
  * }
  */
 import express from 'express';
-import OpenAI from 'openai';
+import { getOpenAIClient } from '../openaiClient.js';
+import { withTimeoutAndRetry, safeRouteHandler, createFallbackResponse } from '../utils/api_helpers.mjs';
 
 export default function gamifyDirectApi() {
   const router = express.Router();
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = getOpenAIClient();
 
   // POST /api/gamify-direct - generate 12 MCQs directly from topic (no case generation step)
-  router.post('/', async (req, res) => {
-    try {
-      const { 
-        topic = 'Acute Coronary Syndrome', 
-        language = 'en',
-        region = 'global',
+  router.post('/', safeRouteHandler(async (req, res) => {
+    const { 
+      topic = 'Acute Coronary Syndrome', 
+      language = 'en',
+      region = 'global',
         level = 'intermediate',
         model = 'gpt-4o-mini'
       } = req.body || {};
@@ -168,16 +168,20 @@ Requirements:
 
 Return ONLY valid JSON with "mcqs" array (no markdown, no commentary).`;
 
-      // Call OpenAI
-      const completion = await client.chat.completions.create({
-        model: model || 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.8,
-        max_tokens: 4000,
-      });
+      // Call OpenAI with timeout protection
+      const completion = await withTimeoutAndRetry(
+        async () => await client.chat.completions.create({
+          model: model || 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.8,
+          max_tokens: 4000,
+        }),
+        8000, // 8 second timeout
+        1 // 1 retry
+      );
 
       const rawText = completion.choices[0]?.message?.content || '';
       console.log('📦 Raw MCQ response length:', rawText.length);
@@ -260,12 +264,22 @@ Return ONLY valid JSON with "mcqs" array (no markdown, no commentary).`;
 
     } catch (err) {
       console.error('❌ Direct gamification error:', err);
-      res.status(500).json({
-        ok: false,
-        error: err.message || 'MCQ generation failed',
-      });
+      
+      // v15.2.0: Return fallback MCQs instead of complete failure
+      console.log('🔄 Returning fallback MCQs due to generation error');
+      const fallback = createFallbackResponse('mcq', { topic, category: extractCategory(topic) });
+      return res.json(fallback);
     }
-  });
+  }));
+
+  // Helper: extract category from topic
+  function extractCategory(topic) {
+    const t = topic.toLowerCase();
+    if (t.includes('heart') || t.includes('cardiac') || t.includes('mi')) return 'cardiology';
+    if (t.includes('stroke') || t.includes('neuro')) return 'neurology';
+    if (t.includes('lung') || t.includes('asthma')) return 'pulmonology';
+    return 'general';
+  }
 
   return router;
 }

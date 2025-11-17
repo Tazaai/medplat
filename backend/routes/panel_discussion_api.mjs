@@ -1,5 +1,5 @@
 import express from 'express';
-import OpenAI from 'openai';
+import { getOpenAIClient } from '../openaiClient.js';
 
 /**
  * Factory function for panel discussion router

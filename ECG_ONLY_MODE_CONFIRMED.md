@@ -185,7 +185,7 @@
 ### Phase 8 M1: ECG Interpretation ✅ DEPLOYED
 **Status:** ✅ COMPLETE (v8.0.0-m1, v8.0.0-m1.5)  
 **Features:**
-- ECG library (15 cases from LITFL)
+- ECG library (15 cases from AI-powered ECG learning)
 - AI-enhanced MCQ generation (GPT-4o-mini)
 - 7 ECG API endpoints
 - ECG Module UI (category filter, progress bar, key features, clinical context)

@@ -1,5 +1,5 @@
 import express from "express";
-import OpenAI from "openai";
+import { getOpenAIClient } from '../openaiClient.js';
 import { getPanelRoles, getRoleExpertise } from '../utils/panelRoles.mjs';
 import { validateReferences, getFallbackReferences } from '../utils/validateReferences.mjs';
 

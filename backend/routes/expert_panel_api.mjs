@@ -1,7 +1,7 @@
 import express from "express";
-import OpenAI from "openai";
+import { getOpenAIClient } from "../openaiClient.js";
 const router = express.Router();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = getOpenAIClient();
 
 router.post("/", async (req, res) => {
   try {

@@ -26,22 +26,57 @@ router.get('/images', async (req, res) => {
   res.header('Access-Control-Allow-Methods', 'GET');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   try {
-    const { category = 'normal', diagnosis } = req.query;
+    const { category = 'arrhythmias', diagnosis, limit = 6 } = req.query;
     
-    console.log(`ECG Image Request: category=${category}, diagnosis=${diagnosis}`);
+    console.log(`ECG Images Request: category=${category}, diagnosis=${diagnosis}, limit=${limit}`);
     
-    const result = fetchECGImageUrl(category, diagnosis);
+    // Import the database to get multiple images
+    const { ECG_IMAGE_DATABASE } = await import('../utils/ecg_image_pipeline.mjs');
     
-    // Ensure we have proper fallback
-    const ecgData = result.data || result.fallback || {
-      image_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8dGV4dCB4PSIyMDAiIHk9IjEwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxNiI+RUNHIEltYWdlIFBsYWNlaG9sZGVyPC90ZXh0Pgo8L3N2Zz4K',
-      diagnosis: 'ECG Image Unavailable',
-      description: 'Placeholder ECG image for educational purposes'
-    };
+    let filteredImages = ECG_IMAGE_DATABASE;
+    
+    // Filter by category if specified
+    if (category && category !== 'all') {
+      filteredImages = filteredImages.filter(ecg => ecg.category === category);
+    }
+    
+    // Filter by diagnosis if specified
+    if (diagnosis) {
+      filteredImages = filteredImages.filter(ecg => 
+        ecg.diagnosis.toLowerCase().includes(diagnosis.toLowerCase())
+      );
+    }
+    
+    // Limit results
+    const limitNum = Math.min(parseInt(limit) || 6, 20); // Max 20 images
+    const selectedImages = filteredImages.slice(0, limitNum);
+    
+    // Format images for frontend
+    const images = selectedImages.map(ecg => ({
+      id: ecg.id,
+      url: ecg.url,
+      title: ecg.diagnosis,
+      category: ecg.category,
+      description: ecg.description
+    }));
+    
+    // Add fallback images if we don't have enough
+    while (images.length < 3) {
+      const fallbackIndex = images.length + 1;
+      images.push({
+        id: `fallback_${fallbackIndex}`,
+        url: `/api/ecg/images/placeholder/${fallbackIndex}`,
+        title: `AI-powered ECG learning #${fallbackIndex}`,
+        category: category,
+        description: 'Educational ECG example for learning purposes'
+      });
+    }
 
     res.json({
       success: true,
-      data: ecgData,
+      images,
+      total: images.length,
+      category: category,
       database_info: {
         total_images: ECG_DATABASE_COUNT,
         requested_category: category,
@@ -215,6 +250,54 @@ router.get('/random', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch random ECG image',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/ecg/images/placeholder/:id
+ * Returns placeholder SVG ECG images for fallback
+ */
+router.get('/images/placeholder/:id', async (req, res) => {
+  // CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const { id } = req.params;
+    
+    // Generate simple ECG placeholder SVG
+    const placeholderSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <g stroke="#6c757d" stroke-width="1" fill="none">
+    <!-- Grid lines -->
+    <defs>
+      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" stroke="#e9ecef" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="600" height="400" fill="url(#grid)"/>
+    
+    <!-- ECG rhythm line -->
+    <path d="M50 200 L100 200 L105 180 L110 220 L115 160 L120 200 L170 200 L175 180 L180 220 L185 160 L190 200 L240 200 L245 180 L250 220 L255 160 L260 200 L310 200 L315 180 L320 220 L325 160 L330 200 L380 200 L385 180 L390 220 L395 160 L400 200 L450 200 L455 180 L460 220 L465 160 L470 200 L520 200 L525 180 L530 220 L535 160 L540 200 L590 200" stroke="#dc3545" stroke-width="2"/>
+  </g>
+  
+  <!-- Labels -->
+  <text x="300" y="50" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#495057">ECG Placeholder #${id}</text>
+  <text x="300" y="380" text-anchor="middle" font-family="Arial" font-size="12" fill="#6c757d">AI-powered ECG learning - Educational use only</text>
+</svg>`;
+
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(placeholderSvg);
+    
+  } catch (error) {
+    console.error('ECG Placeholder API Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate placeholder ECG',
       details: error.message
     });
   }

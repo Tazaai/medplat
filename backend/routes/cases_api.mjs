@@ -5,6 +5,8 @@ import { initFirebase } from '../firebaseClient.js';
 import generateCase from '../generate_case_clinical.mjs';
 // Phase C: ECG Image Integration (v15.0.0)
 import { fetchECGImageUrl } from '../utils/ecg_image_pipeline.mjs';
+// v15.2.0: Stability helpers
+import { withTimeoutAndRetry, safeRouteHandler, createFallbackResponse } from '../utils/api_helpers.mjs';
 
 export default function casesApi() {
   const router = express.Router();
@@ -12,14 +14,18 @@ export default function casesApi() {
   const firestore = fb && fb.firestore;
   const collectionName = process.env.CASES_COLLECTION || 'cases';
 
-  // POST /api/cases - generate a new case dynamically
-  router.post('/', async (req, res) => {
-    try {
-      const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini', category } = req.body || {};
-      if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
+  // POST /api/cases - generate a new case dynamically (with timeout protection)
+  router.post('/', safeRouteHandler(async (req, res) => {
+    const { topic, language = 'en', region = 'EU/DK', level = 'intermediate', model = 'gpt-4o-mini', category } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'Missing topic' });
 
-      // Step 1: Generate draft case (STAGE 1: Professor-Level Generator)
-      const draftResult = await generateCase({ topic, model, lang: language, region });
+    try {
+      // Step 1: Generate draft case with timeout (STAGE 1: Professor-Level Generator)
+      const draftResult = await withTimeoutAndRetry(
+        async (signal) => await generateCase({ topic, model, lang: language, region, signal }),
+        8000, // 8 second timeout
+        1 // 1 retry
+      );
       
       // Step 2: Send draft to internal panel for auto-review (STAGE 2: Expert Panel Validation)
       let reviewedResult = draftResult;
@@ -152,9 +158,13 @@ export default function casesApi() {
       return res.json({ ok: true, topic, case: transformed });
     } catch (err) {
       console.error('❌ /api/cases generation error:', err && err.stack ? err.stack : err);
-      return res.status(500).json({ ok: false, error: String(err && err.message ? err.message : err) });
+      
+      // v15.2.0: Return fallback case instead of complete failure
+      console.log('🔄 Returning fallback case due to generation error');
+      const fallback = createFallbackResponse('case', { topic, language, region });
+      return res.json(fallback);
     }
-  });
+  }));
 
   // Helper: extract category from topic (simple keyword matching)
   function extractCategory(topic) {

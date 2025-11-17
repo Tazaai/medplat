@@ -27,7 +27,7 @@
 
 import { Router } from 'express';
 import { db } from '../firebaseClient.js';
-import OpenAI from 'openai';
+import { getOpenAIClient } from '../openaiClient.js';
 import { logEngagementEvent, logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import admin from 'firebase-admin';
 
