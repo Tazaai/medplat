@@ -1,8 +1,25 @@
 // backend/routes/topics_api.mjs
 import express from "express";
 import { initFirebase } from "../firebaseClient.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+
+// Load fallback topics data
+let fallbackTopics = [];
+try {
+  const fallbackPath = path.join(__dirname, '../data/new_topics_global.json');
+  const fallbackContent = fs.readFileSync(fallbackPath, 'utf8');
+  fallbackTopics = JSON.parse(fallbackContent);
+  console.log(`✅ Loaded ${fallbackTopics.length} fallback topics`);
+} catch (error) {
+  console.warn('⚠️ Could not load fallback topics:', error.message);
+}
 
 router.get("/", async (req, res) => {
   const fb = initFirebase();
@@ -11,28 +28,44 @@ router.get("/", async (req, res) => {
   let topics = [];
 
   try {
-    const snapshot = await firestore.collection(collectionName).get();
-
-    topics = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    if (fb.initialized) {
+      const snapshot = await firestore.collection(collectionName).get();
+      topics = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    }
+    
+    // Use fallback if Firestore not available or empty
+    if (!fb.initialized || topics.length === 0) {
+      topics = fallbackTopics.map((topic, index) => ({
+        id: `fallback_${index}`,
+        ...topic
+      }));
+    }
 
     res.json({
       ok: true,
       firestore_initialized: fb.initialized,
       count: topics.length,
       topics,
-      collection_used: collectionName,
+      collection_used: fb.initialized ? collectionName : 'fallback_data',
     });
   } catch (err) {
     console.error("🔥 Error fetching topics:", err.message);
-    res.status(500).json({
-      ok: false,
-      firestore_initialized: fb.initialized,
+    // Return fallback data on error
+    const fallbackTopicsWithId = fallbackTopics.map((topic, index) => ({
+      id: `fallback_${index}`,
+      ...topic
+    }));
+    
+    res.json({
+      ok: true,
+      firestore_initialized: false,
       error: err.message,
-      topics: [],
-      collection_used: collectionName,
+      topics: fallbackTopicsWithId,
+      count: fallbackTopicsWithId.length,
+      collection_used: 'fallback_data',
     });
   }
 });
@@ -42,13 +75,23 @@ router.post("/categories", async (req, res) => {
   const fb = initFirebase();
   const firestore = fb.firestore;
   const collectionName = process.env.TOPICS_COLLECTION || "topics2";
+  const categoriesSet = new Set();
 
   try {
-    const snapshot = await firestore.collection(collectionName).get();
-    const categoriesSet = new Set();
+    let topics = [];
+    
+    if (fb.initialized) {
+      const snapshot = await firestore.collection(collectionName).get();
+      topics = snapshot.docs.map(doc => doc.data());
+    }
+    
+    // Use fallback if Firestore not available or empty
+    if (!fb.initialized || topics.length === 0) {
+      topics = fallbackTopics;
+    }
 
-    snapshot.docs.forEach((doc) => {
-      const category = doc.data().category;
+    topics.forEach((topic) => {
+      const category = topic.category;
       if (category) categoriesSet.add(category);
     });
 
@@ -58,13 +101,23 @@ router.post("/categories", async (req, res) => {
       ok: true,
       categories,
       count: categories.length,
+      source: fb.initialized ? 'firestore' : 'fallback',
     });
   } catch (err) {
     console.error("🔥 Error fetching categories:", err.message);
-    res.status(500).json({
-      ok: false,
+    // Extract categories from fallback data
+    fallbackTopics.forEach((topic) => {
+      if (topic.category) categoriesSet.add(topic.category);
+    });
+    
+    const categories = Array.from(categoriesSet).sort();
+    
+    res.json({
+      ok: true,
+      categories,
+      count: categories.length,
+      source: 'fallback',
       error: err.message,
-      categories: [],
     });
   }
 });

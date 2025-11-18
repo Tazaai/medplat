@@ -47,7 +47,13 @@ export default function ECGModule({ user }) {
       }
     } catch (err) {
       console.error('Failed to load ECG data:', err);
-      setError('Failed to load ECG Academy. Please try again.');
+      setError('Failed to load ECG Academy. Please check your connection.');
+      // Set fallback mastery levels even on error
+      setMasteryLevels([
+        { level: 1, name: 'Basic Rhythms', description: 'Normal sinus rhythm and basic arrhythmias' },
+        { level: 2, name: 'Ischemia & Blocks', description: 'MI recognition and conduction abnormalities' },
+        { level: 3, name: 'Advanced Arrhythmias', description: 'Life-threatening rhythms and management' }
+      ]);
     } finally {
       setLoading(false);
     }
