@@ -5,11 +5,11 @@ FROM node:18
 WORKDIR /usr/src/app
 
 # Copy package files and install only production deps
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm install --production
 
 # Copy backend source
-COPY backend/ .
+COPY . .
 
 # Expose Cloud Run port
 EXPOSE 8080

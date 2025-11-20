@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import './LanguageSelector.css';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
 
 export default function LanguageSelector({ currentLanguage, onLanguageChange }) {
 	// Static high-quality language list - API is optional enhancement only
@@ -34,32 +34,34 @@ export default function LanguageSelector({ currentLanguage, onLanguageChange }) 
 	}, []);
 
 	const fetchLanguages = async () => {
-		try {
-			// Add timeout to prevent hanging
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 3000);
-			
-			const response = await fetch(`${BACKEND_URL}/api/translation/languages`, {
-				signal: controller.signal
-			});
-			
-			clearTimeout(timeoutId);
-			
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-			}
-			
-			const data = await response.json();
+		// DISABLED: Translation API not available
+		// try {
+		// 	// Add timeout to prevent hanging
+		// 	const controller = new AbortController();
+		// 	const timeoutId = setTimeout(() => controller.abort(), 3000);
+		// 	
+		// 	const response = await fetch(`${BACKEND_URL}/api/translation/languages`, {
+		// 		signal: controller.signal
+		// 	});
+		// 	
+		// 	clearTimeout(timeoutId);
+		// 	
+		// 	if (!response.ok) {
+		// 		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		// 	}
+		// 	
+		// 	const data = await response.json();
 
-			if (data.success && data.languages) {
-				setLanguages(data.languages);
-			} else {
-				throw new Error('Invalid response format');
-			}
-		} catch (error) {
-			console.warn('Language API unavailable, using static languages:', error.message);
-			// Static languages already loaded, no need to update
-		}
+		// 	if (data.success && data.languages) {
+		// 		setLanguages(data.languages);
+		// 	} else {
+		// 		throw new Error('Invalid response format');
+		// 	}
+		// } catch (error) {
+		// 	console.warn('Language API unavailable, using static languages:', error.message);
+		// 	// Static languages already loaded, no need to update
+		// }
+		console.log('Using static language list - Translation API disabled');
 	};
 
 	const getCurrentLanguageInfo = () => {

@@ -15,12 +15,7 @@ import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Anal
 import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
 import ReasoningTab from "./ReasoningTab"; // Phase 7 M1: AI Reasoning Engine
 import LanguageSelector from "./LanguageSelector"; // Phase 7 M2: Multi-Language
-import ECGModule from "./ECGModule"; // Phase 8: ECG Mastery Module
-import ECGMentorPlan from "./ECGMentorPlan"; // Phase 9: AI ECG Study Plan
-import CurriculumECG from "./CurriculumECG"; // Phase 10: Curriculum Builder
-import ECGExamMode from "./ECGExamMode"; // Phase 11: Certification Mode
-import AdminECGAnalytics from "./AdminECGAnalytics"; // Phase 12: Analytics & Admin
-import ECGAcademyDropdown from "./ECGAcademyDropdown"; // v15.0.1: Unified ECG Interface
+// ECG Academy moved to separate repository: https://github.com/Tazaai/Medplat_ECG
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -146,23 +141,17 @@ export default function CaseView() {
   const caseRef = useRef(null);
 
   // Phase 4 M2/M3/M4: Multi-tab state (case | mentor | curriculum | analytics)
-  const validTabs = ["case", "mentor", "curriculum", "analytics", "mentor_hub", "certifications", "leaderboard", "exam_prep", "admin_analytics", "social", "reasoning", "ecg_academy"];
-  const validECGTabs = ["mastery", "study_plan", "curriculum", "certification", "analytics"];
-  
+  const validTabs = ["case", "mentor", "curriculum", "analytics", "mentor_hub", "certifications", "leaderboard", "exam_prep", "admin_analytics", "social", "reasoning"];
   const [activeTab, setActiveTab] = useState(() => {
     const saved = localStorage.getItem('medplat_active_tab');
     return validTabs.includes(saved) ? saved : "case";
-  });
-  const [activeECGTab, setActiveECGTab] = useState(() => {
-    const saved = localStorage.getItem('medplat_active_ecg_tab');
-    return validECGTabs.includes(saved) ? saved : "mastery";
   });
   const [userUid, setUserUid] = useState("demo_user_001"); // TODO: Get from auth context
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     return localStorage.getItem('medplat_language') || 'en';
   });
 
-  // Phase 9: Listen for tab switch events from child components (e.g., ECGModule)
+  // Listen for tab switch events from child components
   useEffect(() => {
     const handleTabSwitch = (event) => {
       if (event.detail && validTabs.includes(event.detail)) {
@@ -182,30 +171,27 @@ export default function CaseView() {
     }
   }, [activeTab, validTabs]);
 
-  useEffect(() => {
-    if (validECGTabs.includes(activeECGTab)) {
-      localStorage.setItem('medplat_active_ecg_tab', activeECGTab);
-    }
-  }, [activeECGTab, validECGTabs]);
+  // ECG Academy functionality moved to separate repository
 
-  // 🌍 detect location
+  // 🌍 detect location - DISABLED (API not available)
   useEffect(() => {
-    fetch(`${API_BASE}/api/location`)
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText || 'HTTP error');
-        return res.json();
-      })
-      .then((d) => {
-        if (d?.country_name) setUserLocation(d.country_name);
-        else if (d?.country) setUserLocation(d.country);
-        else if (d?.ip) setUserLocation(`ip:${d.ip}`);
-      })
-      .catch(() => setUserLocation("unspecified"));
+    // fetch(`${API_BASE}/api/location`)
+    //   .then((res) => {
+    //     if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+    //     return res.json();
+    //   })
+    //   .then((d) => {
+    //     if (d?.country_name) setUserLocation(d.country_name);
+    //     else if (d?.country) setUserLocation(d.country);
+    //     else if (d?.ip) setUserLocation(`ip:${d.ip}`);
+    //   })
+    //   .catch(() => setUserLocation("unspecified"));
+    setUserLocation("unspecified"); // Default fallback
   }, []);
 
   // load categories
   useEffect(() => {
-    fetch(`${API_BASE}/api/topics/categories`, {
+    fetch(`${API_BASE}/api/topics2/categories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
@@ -221,7 +207,7 @@ export default function CaseView() {
   // load topics (use the read-only advanced search endpoint)
   useEffect(() => {
     if (!area) return;
-    fetch(`${API_BASE}/api/topics/search`, {
+    fetch(`${API_BASE}/api/topics2/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ area }),
@@ -673,14 +659,7 @@ export default function CaseView() {
           🧠 Reasoning
         </button>
         
-        {/* v15.0.1: ECG Academy Unified Dropdown */}
-        <ECGAcademyDropdown
-          activeECGTab={activeECGTab}
-          onECGTabChange={(ecgTab) => {
-            setActiveECGTab(ecgTab);
-            setActiveTab("ecg_academy"); // Set main tab to ECG Academy
-          }}
-        />
+        {/* ECG Academy moved to separate repository: https://github.com/Tazaai/Medplat_ECG */}
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -728,16 +707,7 @@ export default function CaseView() {
         <SocialTab uid={userUid} />
       )}
 
-      {/* v15.0.1: ECG Academy Unified Content Routing */}
-      {activeTab === "ecg_academy" && (
-        <>
-          {activeECGTab === "mastery" && <ECGModule />}
-          {activeECGTab === "study_plan" && <ECGMentorPlan />}
-          {activeECGTab === "curriculum" && <CurriculumECG />}
-          {activeECGTab === "certification" && <ECGExamMode />}
-          {activeECGTab === "analytics" && <AdminECGAnalytics />}
-        </>
-      )}
+      {/* ECG Academy functionality moved to separate repository */}
 
       {/* Show Reasoning Tab when active (Phase 7 M1) */}
       {activeTab === "reasoning" && (
