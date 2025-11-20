@@ -10,7 +10,6 @@ import topicsRouter from './routes/topics_api.mjs';
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
 import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Development Panel
-// ECG Academy API moved to separate repository
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
@@ -58,7 +57,6 @@ console.log('✅ Mounted /api/expert-panel (static import)');
 app.use('/api/internal-panel', internalPanelApi);
 console.log('✅ Mounted /api/internal-panel (static import)');
 
-// ECG Academy API moved to separate repository: medplat-ecg
 
 // ✅ CORS already configured above - removed duplicate middleware
 
@@ -450,7 +448,6 @@ async function mountRoutes() {
 		console.error('❌ Could not mount ./routes/glossary_api.mjs:', e && e.stack ? e.stack : e);
 	}
 
-	// ECG Academy moved to separate repository: medplat-ecg
 } catch (err) {
 	console.error('Route import failed:', err && err.stack ? err.stack : err);
 	// continue — server can still run for diagnostics

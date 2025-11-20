@@ -15,7 +15,6 @@ import AnalyticsDashboardTab from "./AnalyticsDashboardTab"; // Phase 6 M4: Anal
 import SocialTab from "./SocialTab"; // Phase 6 M5: Social Features
 import ReasoningTab from "./ReasoningTab"; // Phase 7 M1: AI Reasoning Engine
 import LanguageSelector from "./LanguageSelector"; // Phase 7 M2: Multi-Language
-// ECG Academy moved to separate repository: https://github.com/Tazaai/Medplat_ECG
 import { Save, Copy, Share2, FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
@@ -171,7 +170,6 @@ export default function CaseView() {
     }
   }, [activeTab, validTabs]);
 
-  // ECG Academy functionality moved to separate repository
 
   // 🌍 detect location - DISABLED (API not available)
   useEffect(() => {
@@ -659,7 +657,6 @@ export default function CaseView() {
           🧠 Reasoning
         </button>
         
-        {/* ECG Academy moved to separate repository: https://github.com/Tazaai/Medplat_ECG */}
       </div>
 
       {/* Show Mentor Tab when active */}
@@ -707,7 +704,6 @@ export default function CaseView() {
         <SocialTab uid={userUid} />
       )}
 
-      {/* ECG Academy functionality moved to separate repository */}
 
       {/* Show Reasoning Tab when active (Phase 7 M1) */}
       {activeTab === "reasoning" && (
