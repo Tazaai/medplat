@@ -1,5 +1,7 @@
 // ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect, useRef } from "react";
+import CategoryCard from "./CategoryCard";
+import TopicCard from "./TopicCard";
 import Level2CaseLogic from "./Level2CaseLogic";
 import CaseDisplay from "./CaseDisplay";
 import ProfessionalCaseDisplay from "./ProfessionalCaseDisplay";
@@ -126,6 +128,19 @@ export default function CaseView() {
   const [topics, setTopics] = useState([]);
   const [topic, setTopic] = useState("");
   const [customTopic, setCustomTopic] = useState("");
+  const [step, setStep] = useState(0); // 0: category, 1: topic, 2: controls
+
+  // Category color/icon map (customize as needed)
+  const categoryMeta = {
+    "Infectious Diseases": { color: "#34d399", icon: "🦠", description: "Infections, outbreaks, and antimicrobials" },
+    "Public Health": { color: "#60a5fa", icon: "🌍", description: "Population health, prevention, policy" },
+    "Psychiatry": { color: "#f472b6", icon: "🧠", description: "Mental health, wellness, psychiatry" },
+    "Radiology": { color: "#a78bfa", icon: "🩻", description: "Imaging, diagnostics, radiology" },
+    "Addiction Medicine": { color: "#fbbf24", icon: "💊", description: "Addiction, substance use, harm reduction" },
+    "Endocrinology": { color: "#f59e42", icon: "🦋", description: "Hormones, metabolism, endocrinology" },
+    "Education": { color: "#38bdf8", icon: "📚", description: "Medical education, teaching, simulation" },
+    "Telemedicine": { color: "#818cf8", icon: "💻", description: "Virtual care, telehealth, digital health" },
+  };
   const [lang, setLang] = useState("en");
   const [customLang, setCustomLang] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
@@ -187,28 +202,30 @@ export default function CaseView() {
     setUserLocation("unspecified"); // Default fallback
   }, []);
 
-  // load categories
+
+  // load categories (GET, always sorted, hide placeholders, refresh on area/topic change)
   useEffect(() => {
-    fetch(`${API_BASE}/api/topics2/categories`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    })
+    fetch(`${API_BASE}/api/topics2/categories`)
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText || 'HTTP error');
         return res.json();
       })
-      .then((data) => setAreas((data.categories || []).sort()))
+      .then((data) => {
+        const cats = (data.categories || [])
+          .filter(cat => !/placeholder/i.test(cat))
+          .sort((a, b) => a.localeCompare(b));
+        setAreas(cats);
+      })
       .catch(() => setAreas([]));
-  }, []);
+  }, [area, topic]);
 
-  // load topics (use the read-only advanced search endpoint)
+  // load topics (POST, with { category })
   useEffect(() => {
     if (!area) return;
     fetch(`${API_BASE}/api/topics2/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ area }),
+      body: JSON.stringify({ category: area }),
     })
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText || 'HTTP error');
@@ -217,6 +234,21 @@ export default function CaseView() {
       .then((data) => setTopics(data.topics || []))
       .catch(() => setTopics([]));
   }, [area]);
+
+  // UI handlers for new card-based flow
+  const handleCategorySelect = (cat) => {
+    setArea(cat);
+    setStep(1);
+    setTopic("");
+  };
+  const handleTopicSelect = (t) => {
+    setTopic(t);
+    setStep(2);
+  };
+  const handleBack = () => {
+    if (step === 2) setStep(1);
+    else if (step === 1) setStep(0);
+  };
 
   const getLanguage = () => {
     if (lang !== "custom") return lang;
@@ -521,342 +553,151 @@ export default function CaseView() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">🩺 MedPlat Case Generator</h1>
-        {/* Language selector with fallback */}
-        {(() => {
-          try {
-            return (
-              <LanguageSelector 
-                currentLanguage={currentLanguage} 
-                onLanguageChange={setCurrentLanguage} 
-              />
-            );
-          } catch (error) {
-            console.error('LanguageSelector error:', error);
-            return (
-              <div className="text-sm text-gray-500">
-                Language: {currentLanguage}
-              </div>
-            );
-          }
-        })()}
-      </div>
+    <div className="max-w-6xl mx-auto pt-8 px-2 fade-in">
+      <h2 className="font-bold text-3xl mb-4 text-center">Case Generator</h2>
+      <div className="mb-8 text-center text-gray-500">Select a category to begin</div>
 
-      {/* Phase 4: Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-300 mb-4">
-        <button
-          onClick={() => setActiveTab("case")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "case"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📋 Case Generator
-        </button>
-        <button
-          onClick={() => setActiveTab("mentor")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "mentor"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🧠 AI Mentor
-        </button>
-        <button
-          onClick={() => setActiveTab("curriculum")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "curriculum"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📚 Curriculum
-        </button>
-        <button
-          onClick={() => setActiveTab("analytics")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "analytics"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📊 Analytics
-        </button>
-        <button
-          onClick={() => setActiveTab("mentor_hub")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "mentor_hub"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🌍 Mentor Hub
-        </button>
-        <button
-          onClick={() => setActiveTab("certifications")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "certifications"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🏆 Certifications
-        </button>
-        <button
-          onClick={() => setActiveTab("leaderboard")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "leaderboard"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🥇 Leaderboard
-        </button>
-        <button
-          onClick={() => setActiveTab("exam_prep")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "exam_prep"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📝 Exam Prep
-        </button>
-        <button
-          onClick={() => setActiveTab("admin_analytics")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "admin_analytics"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          📈 Admin
-        </button>
-        <button
-          onClick={() => setActiveTab("social")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "social"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          👥 Social
-        </button>
-        <button
-          onClick={() => setActiveTab("reasoning")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "reasoning"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600 hover:text-gray-800"
-          }`}
-        >
-          🧠 Reasoning
-        </button>
-        
-      </div>
-
-      {/* Show Mentor Tab when active */}
-      {activeTab === "mentor" && (
-        <MentorTab uid={userUid} currentTopic={topic || "General"} />
-      )}
-
-      {/* Show Curriculum Tab when active */}
-      {activeTab === "curriculum" && (
-        <CurriculumTab uid={userUid} currentTopic={topic || "General"} />
-      )}
-
-      {/* Show Analytics Dashboard when active (admin-only) */}
-      {activeTab === "analytics" && (
-        <AnalyticsDashboard user={{ uid: userUid }} />
-      )}
-
-      {/* Show Global Mentor Hub when active (Phase 5) */}
-      {activeTab === "mentor_hub" && (
-        <GlobalMentorHub user={{ uid: userUid }} />
-      )}
-
-      {/* Show Certifications Tab when active (Phase 6 M1) */}
-      {activeTab === "certifications" && (
-        <CertificationTab uid={userUid} />
-      )}
-
-      {/* Show Leaderboard Tab when active (Phase 6 M2) */}
-      {activeTab === "leaderboard" && (
-        <LeaderboardTab uid={userUid} />
-      )}
-
-      {/* Show Exam Prep Tab when active (Phase 6 M3) */}
-      {activeTab === "exam_prep" && (
-        <ExamPrepTab uid={userUid} />
-      )}
-
-      {/* Show Admin Analytics Dashboard when active (Phase 6 M4) */}
-      {activeTab === "admin_analytics" && (
-        <AnalyticsDashboardTab uid={userUid} isAdmin={true} />
-      )}
-
-      {/* Show Social Tab when active (Phase 6 M5) */}
-      {activeTab === "social" && (
-        <SocialTab uid={userUid} />
-      )}
-
-
-      {/* Show Reasoning Tab when active (Phase 7 M1) */}
-      {activeTab === "reasoning" && (
-        <ReasoningTab caseData={caseData} />
-      )}
-
-      {/* Case Generator Content (show only when case tab is active) */}
-      {activeTab === "case" && (
-        <>
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2 items-center">
-        {/* Custom search banner */}
-        {customTopic.trim() && (
-          <div className="w-full bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-2">
-            <p className="text-sm text-blue-800">
-              🔍 <strong>Custom search active</strong> — area and topic selectors disabled
-            </p>
-          </div>
-        )}
-
-        {/* area */}
-        <select 
-          value={area} 
-          onChange={(e) => setArea(e.target.value)} 
-          className="border p-2 rounded"
-          disabled={customTopic.trim().length > 0}
-          style={customTopic.trim() ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
-        >
-          <option value="">Choose area</option>
-          {areas.map((a) => (
-            <option key={a} value={a}>{a}</option>
+      {/* Step 0: Category grid */}
+      {step === 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {areas.map((cat) => (
+            <CategoryCard
+              key={cat}
+              title={cat}
+              description={categoryMeta[cat]?.description || ""}
+              icon={categoryMeta[cat]?.icon || "📚"}
+              color={categoryMeta[cat]?.color || "#60a5fa"}
+              onClick={() => handleCategorySelect(cat)}
+              selected={area === cat}
+            />
           ))}
-        </select>
+        </div>
+      )}
 
-        {/* topic */}
-        <select 
-          value={topic} 
-          onChange={(e) => setTopic(e.target.value)} 
-          className="border p-2 rounded"
-          disabled={customTopic.trim().length > 0}
-          style={customTopic.trim() ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
-        >
-          <option value="">Choose topic</option>
+      {/* Step 1: Topic grid */}
+      {step === 1 && (
+        <>
+          <button className="mb-4 text-blue-500 hover:underline" onClick={handleBack}>&larr; Back to categories</button>
+          <div className="font-bold text-xl mb-2 text-center">{area}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-8">
             {topics.map((t) => (
-              <option key={t.id || t.topic} value={t.topic}>{t.topic}</option>
+              <TopicCard
+                key={t.topic}
+                title={t.topic}
+                description={t.keywords?.join(", ") || ""}
+                icon={categoryMeta[area]?.icon || "📚"}
+                color={categoryMeta[area]?.color || "#60a5fa"}
+                onClick={() => handleTopicSelect(t.topic)}
+                selected={topic === t.topic}
+              />
             ))}
-        </select>
-
-        <input 
-          type="text" 
-          value={customTopic} 
-          onChange={(e) => setCustomTopic(e.target.value)} 
-          placeholder="Custom search (e.g., 'IBD and pregnancy')" 
-          className="border p-2 rounded w-80" 
-        />
-
-        {/* language */}
-        <select value={lang} onChange={(e) => setLang(e.target.value)} className="border p-2 rounded">
-          <option value="en">English</option>
-          <option value="da">Dansk</option>
-          <option value="fa">Farsi</option>
-          <option value="ar">Arabic</option>
-          <option value="ur">Urdu</option>
-          <option value="es">Spanish</option>
-          <option value="de">German</option>
-          <option value="custom">Other…</option>
-        </select>
-        {lang === "custom" && (
-          <input type="text" value={customLang} onChange={(e) => setCustomLang(e.target.value)} placeholder="ISO code (e.g. fr)" className="border p-2 rounded" />
-        )}
-
-        {/* model */}
-        <select value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded">
-          <option value="gpt-4o-mini">GPT-4o-mini</option>
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4">GPT-4</option>
-        </select>
-
-        {/* region */}
-        <select value={manualRegion} onChange={(e) => setManualRegion(e.target.value)} className="border p-2 rounded">
-          <option value="">Auto ({userLocation})</option>
-          <option value="Denmark">Denmark</option>
-          <option value="United States">United States</option>
-          <option value="United Kingdom">United Kingdom</option>
-          <option value="Germany">Germany</option>
-          <option value="Canada">Canada</option>
-          <option value="Australia">Australia</option>
-          <option value="WHO">WHO (global)</option>
-          <option value="custom">Other…</option>
-        </select>
-        {manualRegion === "custom" && (
-          <input 
-            type="text" 
-            value={customRegion} 
-            onChange={(e) => setCustomRegion(e.target.value)} 
-            placeholder="Country name (e.g. Sweden)" 
-            className="border p-2 rounded" 
-          />
-        )}
-
-        {/* gamify */}
-        <label className="flex items-center gap-1">
-          <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
-        </label>
-
-        <button type="button" onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded">
-          {loading ? (gamify ? "Generating Quiz..." : "Generating Case...") : (gamify ? "Generate Quiz" : "Generate Case")}
-        </button>
-      </div>
-
-      {/* Loading message with educational context */}
-      {loading && (
-        <div className="flex flex-col items-center justify-center mt-10 text-gray-600">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-          <p className="mt-3 text-sm font-semibold text-blue-800">
-            {gamify ? "🎮 Generating 12 interactive quiz questions..." : "📋 Generating professor-level case..."}
-          </p>
-          <p className="mt-1 text-xs text-blue-600">
-            {gamify 
-              ? "✨ Expert-crafted clinical reasoning questions with guideline citations"
-              : "✨ Expert panel review in progress — high-quality cases may take 1-2 minutes"
-            }
-          </p>
-          <p className="mt-1 text-xs text-gray-500 italic">
-            {gamify
-              ? "Faster generation: direct quiz mode optimized for speed"
-              : "Quality over speed: guideline validation, reference verification, multi-expert consensus"
-            }
-          </p>
-        </div>
+          </div>
+        </>
       )}
 
-      {/* Case rendering */}
-      {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
-      {caseData && !gamify && <ProfessionalCaseDisplay caseData={caseData} />}
+      {/* Step 2: Controls and case generation (existing UI) */}
+      {step === 2 && (
+        <>
+          <button className="mb-4 text-blue-500 hover:underline" onClick={handleBack}>&larr; Back to topics</button>
+          {/* ...existing controls and case generation UI... */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* language */}
+            <select value={lang} onChange={(e) => setLang(e.target.value)} className="border p-2 rounded">
+              <option value="en">English</option>
+              <option value="da">Dansk</option>
+              <option value="fa">Farsi</option>
+              <option value="ar">Arabic</option>
+              <option value="ur">Urdu</option>
+              <option value="es">Spanish</option>
+              <option value="de">German</option>
+              <option value="custom">Other…</option>
+            </select>
+            {lang === "custom" && (
+              <input type="text" value={customLang} onChange={(e) => setCustomLang(e.target.value)} placeholder="ISO code (e.g. fr)" className="border p-2 rounded" />
+            )}
 
-      {/* Actions */}
-      {caseData && (
-        <div className="flex gap-2 mt-4">
-          <button type="button" onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
-            <Save size={16} /> Save
-          </button>
-          <button type="button" onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
-            <Copy size={16} /> Copy
-          </button>
-          <button type="button" onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
-            <FileDown size={16} /> PDF
-          </button>
-          <button type="button" onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
-            <Share2 size={16} /> Share
-          </button>
-        </div>
-      )}
+            {/* model */}
+            <select value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded">
+              <option value="gpt-4o-mini">GPT-4o-mini</option>
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="gpt-4">GPT-4</option>
+            </select>
+
+            {/* region */}
+            <select value={manualRegion} onChange={(e) => setManualRegion(e.target.value)} className="border p-2 rounded">
+              <option value="">Auto ({userLocation})</option>
+              <option value="Denmark">Denmark</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Germany">Germany</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="WHO">WHO (global)</option>
+              <option value="custom">Other…</option>
+            </select>
+            {manualRegion === "custom" && (
+              <input 
+                type="text" 
+                value={customRegion} 
+                onChange={(e) => setCustomRegion(e.target.value)} 
+                placeholder="Country name (e.g. Sweden)" 
+                className="border p-2 rounded" 
+              />
+            )}
+
+            {/* gamify */}
+            <label className="flex items-center gap-1">
+              <input type="checkbox" checked={gamify} onChange={(e) => setGamify(e.target.checked)} /> Gamify
+            </label>
+
+            <button type="button" onClick={generateCase} disabled={loading || (!topic && !customTopic)} className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow-md hover:bg-blue-700 transition">
+              {loading ? (gamify ? "Generating Quiz..." : "Generating Case...") : (gamify ? "Generate Quiz" : "Generate Case")}
+            </button>
+          </div>
+
+          {/* Loading message with educational context */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center mt-10 text-gray-600">
+              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+              <p className="mt-3 text-sm font-semibold text-blue-800">
+                {gamify ? "🎮 Generating 12 interactive quiz questions..." : "📋 Generating professor-level case..."}
+              </p>
+              <p className="mt-1 text-xs text-blue-600">
+                {gamify 
+                  ? "✨ Expert-crafted clinical reasoning questions with guideline citations"
+                  : "✨ Expert panel review in progress — high-quality cases may take 1-2 minutes"
+                }
+              </p>
+              <p className="mt-1 text-xs text-gray-500 italic">
+                {gamify
+                  ? "Faster generation: direct quiz mode optimized for speed"
+                  : "Quality over speed: guideline validation, reference verification, multi-expert consensus"
+                }
+              </p>
+            </div>
+          )}
+
+          {/* Case rendering */}
+          {caseData && gamify && <Level2CaseLogic caseData={caseData} />}
+          {caseData && !gamify && <ProfessionalCaseDisplay caseData={caseData} />}
+
+          {/* Actions */}
+          {caseData && (
+            <div className="flex gap-2 mt-4">
+              <button type="button" onClick={saveCase} className="px-3 py-1 bg-green-200 rounded text-sm">
+                <Save size={16} /> Save
+              </button>
+              <button type="button" onClick={copyToClipboard} className="px-3 py-1 bg-gray-200 rounded text-sm">
+                <Copy size={16} /> Copy
+              </button>
+              <button type="button" onClick={downloadPDF} className="px-3 py-1 bg-gray-200 rounded text-sm">
+                <FileDown size={16} /> PDF
+              </button>
+              <button type="button" onClick={() => alert("🔗 Share link feature coming soon!")} className="px-3 py-1 bg-gray-200 rounded text-sm">
+                <Share2 size={16} /> Share
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
