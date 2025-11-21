@@ -232,15 +232,6 @@ function sanitizeTopic(doc, approvedCategories) {
       res.status(500).json({ ok: false, message: 'Failed to preview changes', details: { error: err.message } });
     }
   });
-      categories: categoriesFound,
-      categoriesFound,
-      categoriesMissing,
-      categoriesWithNoTopics
-    });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
 
 // Admin delete topic by id
 router.post('/admin/topics2/delete', async (req, res) => {
