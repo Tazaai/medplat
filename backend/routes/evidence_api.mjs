@@ -14,7 +14,11 @@ export default function evidenceApi() {
   const { condition, tests, context } = req.body;
 
   if (!condition) {
-    return res.status(400).json({ ok: false, error: "Missing condition parameter" });
+    return res.status(400).json({
+      ok: false,
+      message: "Missing condition parameter",
+      details: {}
+    });
   }
 
   try {
@@ -71,20 +75,24 @@ Return ONLY valid JSON.`;
 
     res.json({
       ok: true,
-      condition,
-      evidence
+      message: "Evidence comparison generated",
+      details: {
+        condition,
+        evidence
+      }
     });
 
   } catch (error) {
     console.error("❌ Evidence API error:", error);
     res.status(500).json({
       ok: false,
-      error: "Failed to generate evidence comparison",
-      fallback: {
+      message: "Failed to generate evidence comparison",
+      details: {
         condition,
         tests: [],
         guidelines: [],
-        clinical_pearls: "Consult evidence-based guidelines for test selection"
+        clinical_pearls: "Consult evidence-based guidelines for test selection",
+        error: error.message
       }
     });
   }

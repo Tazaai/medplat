@@ -14,7 +14,11 @@ export default function gamifyApi() {
       const { text, caseId = 'unknown', index = 0 } = req.body || {};
       
       if (!text) {
-        return res.status(400).json({ ok: false, error: 'Missing case text' });
+        return res.status(400).json({
+          ok: false,
+          message: 'Missing case text',
+          details: {}
+        });
       }
 
       // Parse case data
@@ -192,8 +196,8 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
         console.error('Invalid MCQ response structure:', rawText.substring(0, 200));
         return res.status(500).json({
           ok: false,
-          error: 'Failed to generate valid MCQ structure',
-          raw: rawText.substring(0, 500),
+          message: 'Failed to generate valid MCQ structure',
+          details: { raw: rawText.substring(0, 500) }
         });
       }
 
@@ -267,16 +271,20 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
 
       res.json({
         ok: true,
-        mcqs,
-        caseId,
-        count: mcqs.length,
+        message: 'MCQs generated',
+        details: {
+          mcqs,
+          caseId,
+          count: mcqs.length
+        }
       });
 
     } catch (error) {
       console.error('❌ Gamify API error:', error);
       res.status(500).json({
         ok: false,
-        error: error.message || 'Internal server error',
+        message: error.message || 'Internal server error',
+        details: {}
       });
     }
   });

@@ -52,7 +52,8 @@ router.post('/session', async (req, res) => {
     if (!uid || !topic) {
       return res.status(400).json({
         ok: false,
-        error: 'Missing required fields: uid, topic',
+        message: 'Missing required fields: uid, topic',
+        details: {}
       });
     }
 
@@ -153,18 +154,21 @@ Keep responses concise (2-3 paragraphs), conversational, and clinically relevant
 
     return res.json({
       ok: true,
-      mentorResponse,
-      remediationPlan,
-      suggestedTopics: generateSuggestedTopics(topic, userWeakAreas),
-      sessionLatency: latencyMs,
+      message: 'Mentor session generated',
+      details: {
+        mentorResponse,
+        remediationPlan,
+        suggestedTopics: generateSuggestedTopics(topic, userWeakAreas),
+        sessionLatency: latencyMs
+      }
     });
 
   } catch (error) {
     console.error('❌ /api/mentor/session error:', error);
     return res.status(500).json({
       ok: false,
-      error: 'Failed to generate mentor response',
-      details: error.message,
+      message: 'Failed to generate mentor response',
+      details: { error: error.message }
     });
   }
 });
@@ -184,7 +188,8 @@ router.get('/plan/:uid', async (req, res) => {
     if (!uid) {
       return res.status(400).json({
         ok: false,
-        error: 'Missing uid parameter',
+        message: 'Missing uid parameter',
+        details: {}
       });
     }
 
@@ -194,10 +199,12 @@ router.get('/plan/:uid', async (req, res) => {
     if (!weakAreasDoc.exists) {
       return res.json({
         ok: true,
-        plan: {
-          message: 'No weak areas identified yet. Complete some quizzes to get a personalized plan!',
-          remediationSteps: [],
-        },
+        message: 'No weak areas identified yet. Complete some quizzes to get a personalized plan!',
+        details: {
+          plan: {
+            remediationSteps: [],
+          }
+        }
       });
     }
 
@@ -223,21 +230,24 @@ router.get('/plan/:uid', async (req, res) => {
 
     return res.json({
       ok: true,
-      plan: {
-        topic: targetTopic,
-        weakAreas,
-        remediationSteps: plan,
-        recentSessions: recentSessions.length,
-        lastSessionDate: recentSessions[0]?.timestamp || null,
-      },
+      message: 'Remediation plan generated',
+      details: {
+        plan: {
+          topic: targetTopic,
+          weakAreas,
+          remediationSteps: plan,
+          recentSessions: recentSessions.length,
+          lastSessionDate: recentSessions[0]?.timestamp || null
+        }
+      }
     });
 
   } catch (error) {
     console.error('❌ /api/mentor/plan error:', error);
     return res.status(500).json({
       ok: false,
-      error: 'Failed to generate remediation plan',
-      details: error.message,
+      message: 'Failed to generate remediation plan',
+      details: { error: error.message }
     });
   }
 });
@@ -270,23 +280,26 @@ router.get('/progress/:uid', async (req, res) => {
 
     return res.json({
       ok: true,
-      progress: {
-        uid,
-        totalSessions,
-        topicsStudied: Object.keys(topicCounts).length,
-        topicBreakdown: topicCounts,
-        mostStudiedTopic: Object.keys(topicCounts).reduce((a, b) => 
-          topicCounts[a] > topicCounts[b] ? a : b, Object.keys(topicCounts)[0] || 'None'
-        ),
-      },
+      message: 'Mentor progress fetched',
+      details: {
+        progress: {
+          uid,
+          totalSessions,
+          topicsStudied: Object.keys(topicCounts).length,
+          topicBreakdown: topicCounts,
+          mostStudiedTopic: Object.keys(topicCounts).reduce((a, b) => 
+            topicCounts[a] > topicCounts[b] ? a : b, Object.keys(topicCounts)[0] || 'None'
+          )
+        }
+      }
     });
 
   } catch (error) {
     console.error('❌ /api/mentor/progress error:', error);
     return res.status(500).json({
       ok: false,
-      error: 'Failed to retrieve mentor progress',
-      details: error.message,
+      message: 'Failed to retrieve mentor progress',
+      details: { error: error.message }
     });
   }
 });
@@ -298,10 +311,13 @@ router.get('/progress/:uid', async (req, res) => {
 router.get('/health', (req, res) => {
   res.json({
     ok: true,
-    service: 'ai_mentor',
-    status: 'operational',
-    model: process.env.MENTOR_MODEL || 'gpt-4o-mini',
-    timestamp: new Date().toISOString(),
+    message: 'Mentor health check',
+    details: {
+      service: 'ai_mentor',
+      status: 'operational',
+      model: process.env.MENTOR_MODEL || 'gpt-4o-mini',
+      timestamp: new Date().toISOString()
+    }
   });
 });
 
@@ -469,14 +485,21 @@ ${Object.entries(performanceByCategory).map(([cat, stats]) => {
     }
 
     res.json({
-      success: true,
-      data: studyPlan,
-      meta: {
-        currentLevel: level,
-        currentStreak: streak,
-        accuracy: parseFloat(accuracy),
-        totalAttempts,
-        weakCategories
+      ok: true,
+      message: 'ECG study plan generated',
+      details: {
+        plan: studyPlan.plan,
+        summary: studyPlan.summary,
+        weakAreaFocus: studyPlan.weakAreaFocus,
+        weeklyXpGoal: studyPlan.weeklyXpGoal,
+        encouragement: studyPlan.encouragement,
+        meta: {
+          currentLevel: level,
+          currentStreak: streak,
+          accuracy: parseFloat(accuracy),
+          totalAttempts,
+          weakCategories
+        }
       }
     });
 
@@ -491,11 +514,18 @@ ${Object.entries(performanceByCategory).map(([cat, stats]) => {
     );
 
     res.json({
-      success: true,
-      data: fallbackPlan,
-      meta: {
-        fallback: true,
-        reason: 'AI service unavailable - using template plan'
+      ok: true,
+      message: 'Fallback ECG study plan generated',
+      details: {
+        plan: fallbackPlan.plan,
+        summary: fallbackPlan.summary,
+        weakAreaFocus: fallbackPlan.weakAreaFocus,
+        weeklyXpGoal: fallbackPlan.weeklyXpGoal,
+        encouragement: fallbackPlan.encouragement,
+        meta: {
+          fallback: true,
+          reason: 'AI service unavailable - using template plan'
+        }
       }
     });
   }

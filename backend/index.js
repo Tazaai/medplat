@@ -7,6 +7,24 @@ import path from 'path';
 import url from 'url';
 import fs from 'fs';
 import topicsRouter from './routes/topics_api.mjs';
+
+// Diagnostic: Log fallback topics file presence and sample
+try {
+	const fallbackPath = path.join(__dirname, 'data/new_topics_global.json');
+	if (fs.existsSync(fallbackPath)) {
+		const fallbackContent = fs.readFileSync(fallbackPath, 'utf8');
+		const fallbackTopics = JSON.parse(fallbackContent);
+		console.log(`🟢 Fallback topics file found: ${fallbackPath}`);
+		console.log(`🟢 Fallback topics count: ${fallbackTopics.length}`);
+		if (fallbackTopics.length > 0) {
+			console.log('🟢 Fallback topic sample:', fallbackTopics[0]);
+		}
+	} else {
+		console.warn(`🔴 Fallback topics file NOT found: ${fallbackPath}`);
+	}
+} catch (e) {
+	console.error('🔴 Error reading fallback topics file:', e && e.message ? e.message : e);
+}
 import expertPanelApi from './routes/expert_panel_api.mjs';
 import internalPanelApi from './routes/internal_panel_api.mjs';
 import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Development Panel

@@ -117,7 +117,11 @@ router.post('/fetch', async (req, res) => {
   const { topic, region } = req.body;
 
   if (!topic) {
-    return res.status(400).json({ ok: false, error: 'Topic is required' });
+    return res.status(400).json({
+      ok: false,
+      message: 'Topic is required',
+      details: {}
+    });
   }
 
   try {
@@ -128,17 +132,19 @@ router.post('/fetch', async (req, res) => {
         const docId = `${regionKey}_${topic}`.replace(/\s+/g, '_').toLowerCase();
         const docRef = db.collection('guideline_registry').doc(docId);
         const doc = await docRef.get();
-
         if (doc.exists) {
           const data = doc.data();
-          // Return guidelines field from Firestore document
-          return res.json({ ok: true, guidelines: data.guidelines });
+          return res.json({
+            ok: true,
+            message: 'Guidelines fetched from Firestore',
+            guidelines: data.guidelines,
+            details: { guidelines: data.guidelines }
+          });
         }
       } catch (firestoreErr) {
         console.warn('Firestore unavailable, using static registry:', firestoreErr.message);
       }
     }
-
     // Fallback to static registry
     const regionKey = region || 'global';
     const guidelines = GUIDELINE_REGISTRY[regionKey]?.[topic] || GUIDELINE_REGISTRY.global[topic] || {
@@ -147,11 +153,14 @@ router.post('/fetch', async (req, res) => {
       regional: [],
       international: []
     };
-
-    res.json({ ok: true, guidelines });
+    res.json({
+      ok: true,
+      message: 'Guidelines fetched from static registry',
+      guidelines,
+      details: { guidelines }
+    });
   } catch (err) {
     console.error('Guideline fetch error:', err);
-    
     // Graceful fallback
     const regionKey = region || 'global';
     const guidelines = GUIDELINE_REGISTRY[regionKey]?.[topic] || GUIDELINE_REGISTRY.global[topic] || {
@@ -160,8 +169,12 @@ router.post('/fetch', async (req, res) => {
       regional: [],
       international: []
     };
-
-    res.json({ ok: true, guidelines, warning: 'Using static guideline registry' });
+    res.json({
+      ok: false,
+      message: 'Guideline fetch error, using static registry',
+      guidelines,
+      details: { guidelines, error: err.message }
+    });
   }
 });
 
