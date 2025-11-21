@@ -332,32 +332,7 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-// backend/routes/topics_api.mjs
-import express from "express";
-import { initFirebase } from "../firebaseClient.js";
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const router = express.Router();
-
-// Load fallback topics data
-let fallbackTopics = [];
-try {
-  const fallbackPath = path.join(__dirname, '../data/new_topics_global.json');
-  const fallbackContent = fs.readFileSync(fallbackPath, 'utf8');
-  fallbackTopics = JSON.parse(fallbackContent);
-  console.log(`✅ Loaded ${fallbackTopics.length} fallback topics`);
-} catch (error) {
-  console.warn('⚠️ Could not load fallback topics:', error.message);
-}
-
-router.get("/", async (req, res) => {
-  const fb = initFirebase();
-  const firestore = fb.firestore;
+// ...existing code...
   const collectionName = process.env.TOPICS_COLLECTION || "topics2";
   let topics = [];
 
