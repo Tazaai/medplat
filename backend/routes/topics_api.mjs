@@ -232,42 +232,6 @@ function sanitizeTopic(doc, approvedCategories) {
       res.status(500).json({ ok: false, message: 'Failed to preview changes', details: { error: err.message } });
     }
   });
-      // Category stats
-      if (d.category) {
-        foundCategories.add(d.category);
-        categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
-      }
-    });
-
-    const categoriesFound = Array.from(foundCategories).sort();
-    const categoriesWithNoTopics = STANDARD_CATEGORIES.filter(cat => !categoryCounts[cat]);
-    const categoriesMissing = STANDARD_CATEGORIES.filter(cat => !foundCategories.has(cat));
-
-    res.json({
-      ok: true,
-      total: docs.length,
-      // Approve category creation (manual only)
-      router.post('/admin/topics2/approve-category', async (req, res) => {
-        const { category } = req.body;
-        if (!category) return res.status(400).json({ ok: false, error: 'Missing category' });
-        const id = `${category.replace(/\s+/g, '_').toLowerCase()}_placeholder`;
-        const doc = {
-          id,
-          topic: `${category} Placeholder`,
-          category,
-          lang: 'en',
-          difficulty: 'basic',
-          keywords: { topic: category }
-        };
-        try {
-          await db.collection('topics2').doc(id).set(doc);
-          res.json({ ok: true, id });
-        } catch (err) {
-          res.status(500).json({ ok: false, error: err.message });
-        }
-      });
-      duplicates,
-      missingFields,
       categories: categoriesFound,
       categoriesFound,
       categoriesMissing,
