@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import './LanguageSelector.css';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 export default function LanguageSelector({ currentLanguage, onLanguageChange }) {
 	// Static high-quality language list - API is optional enhancement only

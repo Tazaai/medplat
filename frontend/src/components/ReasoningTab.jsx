@@ -8,7 +8,7 @@ import MultiStepCase from './MultiStepCase';
 import ReasoningInsights from './ReasoningInsights';
 import './ReasoningTab.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 export default function ReasoningTab({ caseData }) {
 	const [activeSubTab, setActiveSubTab] = useState('differential');
