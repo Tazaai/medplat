@@ -1,0 +1,120 @@
+# =========================
+# Node / NPM / Yarn
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# =========================
+# Build / Dist Artifacts
+# =========================
+frontend/dist/
+backend/dist/
+build/
+coverage/
+.cache/
+.vite/
+out/
+
+# =========================
+# Environment / Secrets / API Keys
+# =========================
+# 🔐 Critical protection: never commit keys or credentials
+*.env
+.env*
+.env.local
+.env.development
+.env.production
+.env.test
+.envrc
+.envrc.local
+.envrc.*
+serviceAccountKey.json
+firebase-service-key.json
+firebase-adminsdk-*.json
+secret.*
+*.pem
+*.p12
+*.key
+*.crt
+*.enc.json
+*.secrets
+*.apikey
+*.api_key
+*_API_KEY*
+*_SECRET*
+*_TOKEN*
+*_PRIVATE_KEY*
+OPENAI_API_KEY*
+FIREBASE_SERVICE_KEY*
+GOOGLE_APPLICATION_CREDENTIALS*
+GCP_SERVICE_KEY*
+AI_KEY*
+KEY.txt
+config/private/
+credentials/
+keys/
+secure/
+!example.env        # safe placeholder template allowed
+
+# =========================
+# OS / IDE / Logs
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+*.pid
+logs/
+tmp/
+tmp/*.pid
+tmp/*.log
+
+# =========================
+# Cloud / Deployment
+# =========================
+Dockerfile~
+*.tgz
+.gcloudignore
+.gcloud/
+cloudbuild.yaml
+*.tar.gz
+.firebase/
+.firebaserc
+firebase-debug.log
+.github/artifacts-*/
+.github/workflows/*.tmp
+tmp/actions-artifacts/
+functions/lib/
+lib/
+*.zip
+
+# =========================
+# Test / Reports
+# =========================
+coverage/
+reports/
+__tests__/
+*.spec.js
+*.test.js
+test-results.xml
+junit.xml
+
+# =========================
+# Misc / Backup
+# =========================
+*.bak
+*.old
+*.orig
+*.rej
+*~
+scripts/local-*.sh
+firebase_key.json
+
+
