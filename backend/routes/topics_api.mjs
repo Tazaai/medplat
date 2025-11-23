@@ -381,7 +381,7 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
 
 
 // GET all categories from topics2
-router.get('/topics2/categories', async (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     const snapshot = await db.collection('topics2').get();
     const categories = [

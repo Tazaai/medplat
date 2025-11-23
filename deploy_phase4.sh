@@ -28,7 +28,7 @@ fi
 # --- STEP 2: DEPLOY BACKEND ---
 echo ""
 echo "🚀 Step 1/3: Deploying backend to Cloud Run..."
-cd /workspaces/medplat/backend
+cd "$(dirname "$0")/backend"
 
 gcloud run deploy medplat-backend \
   --source . \

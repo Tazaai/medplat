@@ -32,17 +32,14 @@ import panelRouter from './routes/panel_api.mjs'; // Phase 5: External Developme
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
 
-// 🔧 COMPREHENSIVE CORS SETUP (ChatGPT recommended fix for Cloud Run)
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// REQUIRED for Cloud Run - handle all OPTIONS preflight requests
-app.options("*", cors());
+// 🔧 GLOBAL CORS FIX - Must be at the absolute top, before any routes
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 
 // Startup-time diagnostic: list route files immediately so we see
 // whether the routes/ folder is present in each container instance.
@@ -167,32 +164,7 @@ async function mountRoutes() {
 		import('./routes/translation_api.mjs'), // Phase 7 M2: Multi-Language
 		import('./routes/voice_api.mjs'), // Phase 7 M3: Voice Interaction
 		import('./routes/glossary_api.mjs'), // Phase 7 M4: Medical Glossary
-	]);		// Log module shapes to help diagnose mount-time issues
-	try { console.log('MODULE: dialogMod keys=', Object.keys(dialogMod || {}), 'defaultType=', typeof (dialogMod && dialogMod.default)); } catch (e) {}
-	try { console.log('MODULE: gamifyMod keys=', Object.keys(gamifyMod || {}), 'defaultType=', typeof (gamifyMod && gamifyMod.default)); } catch (e) {}
-	try { console.log('MODULE: gamifyDirectMod keys=', Object.keys(gamifyDirectMod || {}), 'defaultType=', typeof (gamifyDirectMod && gamifyDirectMod.default)); } catch (e) {}
-	try { console.log('MODULE: commentMod keys=', Object.keys(commentMod || {}), 'defaultType=', typeof (commentMod && commentMod.default)); } catch (e) {}
-	try { console.log('MODULE: locationMod keys=', Object.keys(locationMod || {}), 'defaultType=', typeof (locationMod && locationMod.default)); } catch (e) {}
-	try { console.log('MODULE: casesMod keys=', Object.keys(casesMod || {}), 'defaultType=', typeof (casesMod && casesMod.default)); } catch (e) {}
-	try { console.log('MODULE: quickrefMod keys=', Object.keys(quickrefMod || {}), 'defaultType=', typeof (quickrefMod && quickrefMod.default)); } catch (e) {}
-	try { console.log('MODULE: evidenceMod keys=', Object.keys(evidenceMod || {}), 'defaultType=', typeof (evidenceMod && evidenceMod.default)); } catch (e) {}
-	try { console.log('MODULE: panelDiscussionMod keys=', Object.keys(panelDiscussionMod || {}), 'defaultType=', typeof (panelDiscussionMod && panelDiscussionMod.default)); } catch (e) {}
-	try { console.log('MODULE: guidelinesMod keys=', Object.keys(guidelinesMod || {}), 'defaultType=', typeof (guidelinesMod && guidelinesMod.default)); } catch (e) {}
-	try { console.log('MODULE: adaptiveFeedbackMod keys=', Object.keys(adaptiveFeedbackMod || {}), 'defaultType=', typeof (adaptiveFeedbackMod && adaptiveFeedbackMod.default)); } catch (e) {}
-	try { console.log('MODULE: telemetryMod keys=', Object.keys(telemetryMod || {}), 'defaultType=', typeof (telemetryMod && telemetryMod.default)); } catch (e) {}
-	try { console.log('MODULE: mentorMod keys=', Object.keys(mentorMod || {}), 'defaultType=', typeof (mentorMod && mentorMod.default)); } catch (e) {}
-	try { console.log('MODULE: curriculumMod keys=', Object.keys(curriculumMod || {}), 'defaultType=', typeof (curriculumMod && curriculumMod.default)); } catch (e) {}
-	try { console.log('MODULE: analyticsMod keys=', Object.keys(analyticsMod || {}), 'defaultType=', typeof (analyticsMod && analyticsMod.default)); } catch (e) {}
-	try { console.log('MODULE: mentorNetworkMod keys=', Object.keys(mentorNetworkMod || {}), 'defaultType=', typeof (mentorNetworkMod && mentorNetworkMod.default)); } catch (e) {}
-	try { console.log('MODULE: certificationMod keys=', Object.keys(certificationMod || {}), 'defaultType=', typeof (certificationMod && certificationMod.default)); } catch (e) {}
-		try { console.log('MODULE: leaderboardMod keys=', Object.keys(leaderboardMod || {}), 'defaultType=', typeof (leaderboardMod && leaderboardMod.default)); } catch (e) {}
-	try { console.log('MODULE: examPrepMod keys=', Object.keys(examPrepMod || {}), 'defaultType=', typeof (examPrepMod && examPrepMod.default)); } catch (e) {}
-	try { console.log('MODULE: analyticsDashboardMod keys=', Object.keys(analyticsDashboardMod || {}), 'defaultType=', typeof (analyticsDashboardMod && analyticsDashboardMod.default)); } catch (e) {}
-	try { console.log('MODULE: socialMod keys=', Object.keys(socialMod || {}), 'defaultType=', typeof (socialMod && socialMod.default)); } catch (e) {}
-	try { console.log('MODULE: reasoningMod keys=', Object.keys(reasoningMod || {}), 'defaultType=', typeof (reasoningMod && reasoningMod.default)); } catch (e) {}
-	try { console.log('MODULE: translationMod keys=', Object.keys(translationMod || {}), 'defaultType=', typeof (translationMod && translationMod.default)); } catch (e) {}
-	try { console.log('MODULE: voiceMod keys=', Object.keys(voiceMod || {}), 'defaultType=', typeof (voiceMod && voiceMod.default)); } catch (e) {}
-
+	]);
 	const dialogRouter = normalizeRouter(dialogMod);
 	const gamifyRouter = normalizeRouter(gamifyMod);
 	const gamifyDirectRouter = normalizeRouter(gamifyDirectMod);
@@ -219,21 +191,6 @@ async function mountRoutes() {
 	const voiceRouter = normalizeRouter(voiceMod); // Phase 7 M3
 	const glossaryRouter = normalizeRouter(glossaryMod); // Phase 7 M4
 
-	// Debug logging for Phase 3 + Phase 4 + Phase 5 + Phase 6 + Phase 7 + Phase 8 routers
-	console.log('DEBUG: guidelinesRouter=', guidelinesRouter, 'type=', typeof guidelinesRouter);
-	console.log('DEBUG: adaptiveFeedbackRouter=', adaptiveFeedbackRouter, 'type=', typeof adaptiveFeedbackRouter);
-	console.log('DEBUG: telemetryRouter=', telemetryRouter, 'type=', typeof telemetryRouter);
-	console.log('DEBUG: mentorRouter=', mentorRouter, 'type=', typeof mentorRouter);
-	console.log('DEBUG: curriculumRouter=', curriculumRouter, 'type=', typeof curriculumRouter);
-	console.log('DEBUG: analyticsRouter=', analyticsRouter, 'type=', typeof analyticsRouter);
-	console.log('DEBUG: mentorNetworkRouter=', mentorNetworkRouter, 'type=', typeof mentorNetworkRouter);
-	console.log('DEBUG: certificationRouter=', certificationRouter, 'type=', typeof certificationRouter);
-	console.log('DEBUG: leaderboardRouter=', leaderboardRouter, 'type=', typeof leaderboardRouter);
-	console.log('DEBUG: examPrepRouter=', examPrepRouter, 'type=', typeof examPrepRouter);
-	console.log('DEBUG: analyticsDashboardRouter=', analyticsDashboardRouter, 'type=', typeof analyticsDashboardRouter);
-	console.log('DEBUG: socialRouter=', socialRouter, 'type=', typeof socialRouter);
-	console.log('DEBUG: reasoningRouter=', reasoningRouter, 'type=', typeof reasoningRouter);
-	console.log('DEBUG: translationRouter=', translationRouter, 'type=', typeof translationRouter);
 
 		// Mount each router individually and guard against a single broken module bringing down startup
 		try {
