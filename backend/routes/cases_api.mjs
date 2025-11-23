@@ -3,8 +3,6 @@ import { initFirebase } from '../firebaseClient.js';
 // generate_case_clinical.mjs lives at the repository root (copied into the image root)
 // relative to this routes file it is one level up: ../generate_case_clinical.mjs
 import generateCase from '../generate_case_clinical.mjs';
-// Phase C: ECG Image Integration (v15.0.0)
-import { fetchECGImageUrl } from '../utils/ecg_image_pipeline.mjs';
 // v15.2.0: Stability helpers
 import { withTimeoutAndRetry, safeRouteHandler, createFallbackResponse } from '../utils/api_helpers.mjs';
 
@@ -57,48 +55,6 @@ export default function casesApi() {
         panelNote = '⚠️ Internal review unavailable';
       }
       
-      // Phase C: ECG Integration (v15.0.0) - Detect cardiac rhythm cases and add ECG images
-      let ecgData = null;
-      const cardiacKeywords = [
-        'arrhythmia', 'tachycardia', 'bradycardia', 'fibrillation', 'flutter', 
-        'heart block', 'bundle branch', 'st elevation', 'stemi', 'nstemi',
-        'myocardial infarction', 'angina', 'cardiac', 'heart', 'rhythm',
-        'palpitation', 'syncope', 'chest pain', 'coronary', 'aortic'
-      ];
-      
-      const topicLower = topic.toLowerCase();
-      const diagnosisLower = (reviewedResult.final_diagnosis?.name || '').toLowerCase();
-      const historyLower = (reviewedResult.history?.presenting_complaint || '').toLowerCase();
-      
-      const isCardiacCase = cardiacKeywords.some(keyword => 
-        topicLower.includes(keyword) || 
-        diagnosisLower.includes(keyword) || 
-        historyLower.includes(keyword)
-      );
-      
-      if (isCardiacCase) {
-        try {
-          // Determine ECG category based on specific diagnosis
-          let ecgCategory = 'normal';
-          if (topicLower.includes('fibrillation') || topicLower.includes('flutter')) {
-            ecgCategory = 'arrhythmia';
-          } else if (topicLower.includes('stemi') || topicLower.includes('st elevation') || topicLower.includes('myocardial')) {
-            ecgCategory = 'acute_coronary';
-          } else if (topicLower.includes('tachycardia') && (topicLower.includes('ventricular') || topicLower.includes('vtach'))) {
-            ecgCategory = 'life_threatening';
-          } else if (topicLower.includes('heart block') || topicLower.includes('bundle branch')) {
-            ecgCategory = 'conduction';
-          } else if (topicLower.includes('cardiac') || topicLower.includes('heart')) {
-            ecgCategory = 'normal'; // Default to normal rhythm for general cardiac cases
-          }
-          
-          ecgData = fetchECGImageUrl(ecgCategory, diagnosisLower);
-          console.log(`🫀 ECG Integration: Added ${ecgCategory} ECG for topic: ${topic}`);
-        } catch (ecgError) {
-          console.warn('⚠️ ECG integration failed:', ecgError.message);
-        }
-      }
-      
       // Step 3: Transform to frontend format with enhanced fields
       const transformed = {
         Topic: reviewedResult.meta?.topic || topic,
@@ -113,10 +69,7 @@ export default function casesApi() {
           imaging: reviewedResult.paraclinical?.imaging || reviewedResult.imaging || [],
           ecg: reviewedResult.paraclinical?.ecg || '',
           other: reviewedResult.paraclinical?.other_tests || [],
-          test_kinetics: reviewedResult.paraclinical?.test_kinetics || [],
-          // Phase C: ECG Academy Integration (v15.0.0)
-          ecg_image: ecgData?.data || null,
-          has_ecg_integration: !!ecgData
+          test_kinetics: reviewedResult.paraclinical?.test_kinetics || []
         },
         Differential_Diagnoses: reviewedResult.differentials || [],
         Red_Flags: reviewedResult.red_flags || [],
