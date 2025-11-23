@@ -1,4 +1,8 @@
+import express from 'express';
+import { initFirebase } from '../firebaseClient.js';
 import fs from 'fs';
+
+const router = express.Router();
 const CATEGORIES_PATH = process.env.CATEGORIES_PATH || './backend/data/categories.json';
 let APPROVED_CATEGORIES = [];
 try {
@@ -6,6 +10,8 @@ try {
 } catch (e) {
   APPROVED_CATEGORIES = [];
 }
+
+const db = initFirebase().firestore;
 
 
 // --- Strict schema for topics2 ---
@@ -53,11 +59,14 @@ function sanitizeTopic(doc, approvedCategories) {
   // Difficulty
   if (!['beginner','intermediate','advanced'].includes(t.difficulty)) t.difficulty = 'intermediate';
   // Area
-  // ------------------------
-  // ADMIN ROUTES (topics2)
-  // ------------------------
+  return t;
+}
 
-  // Sanitize one topic by id (strict schema)
+// ------------------------
+// ADMIN ROUTES (topics2)
+// ------------------------
+
+// Sanitize one topic by id (strict schema)
   router.post('/admin/topics2/sanitizeOne', async (req, res) => {
     const { id } = req.body;
     if (!id) return res.status(400).json({ ok: false, message: 'Missing id', details: {} });
@@ -332,53 +341,6 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-// ...existing code...
-  const collectionName = process.env.TOPICS_COLLECTION || "topics2";
-  let topics = [];
-
-  try {
-    if (fb.initialized) {
-      const snapshot = await firestore.collection(collectionName).get();
-      topics = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    }
-    
-    // Use fallback if Firestore not available or empty
-    if (!fb.initialized || topics.length === 0) {
-      topics = fallbackTopics.map((topic, index) => ({
-        id: `fallback_${index}`,
-        ...topic
-      }));
-    }
-
-    res.json({
-      ok: true,
-      firestore_initialized: fb.initialized,
-      count: topics.length,
-      topics,
-      collection_used: fb.initialized ? collectionName : 'fallback_data',
-    });
-  } catch (err) {
-    console.error("🔥 Error fetching topics:", err.message);
-    // Return fallback data on error
-    const fallbackTopicsWithId = fallbackTopics.map((topic, index) => ({
-      id: `fallback_${index}`,
-      ...topic
-    }));
-    
-    res.json({
-      ok: true,
-      firestore_initialized: false,
-      error: err.message,
-      topics: fallbackTopicsWithId,
-      count: fallbackTopicsWithId.length,
-      collection_used: 'fallback_data',
-    });
-  }
-});
-
 
 // GET all categories from topics2
 router.get('/categories', async (req, res) => {
