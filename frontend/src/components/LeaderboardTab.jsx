@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from './ui/select';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 const TIER_BADGES = {
   diamond: { emoji: '💎', label: 'Diamond', color: 'bg-cyan-100 text-cyan-800 border-cyan-300' },

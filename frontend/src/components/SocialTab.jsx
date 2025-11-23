@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Users, Trophy, Award, Share2, Plus, UserPlus, Target } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 export default function SocialTab({ uid }) {
   const [activeTab, setActiveTab] = useState('groups');

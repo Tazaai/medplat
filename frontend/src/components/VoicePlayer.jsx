@@ -30,7 +30,7 @@ const VoicePlayer = ({ text, language = 'en-US', autoPlay = false }) => {
 			setIsLoading(true);
 			setError(null);
 
-			const apiUrl = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+			const apiUrl = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 			const response = await fetch(`${apiUrl}/api/voice/synthesize`, {
 				method: 'POST',
 				headers: {

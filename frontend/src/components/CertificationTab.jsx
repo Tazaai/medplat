@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Award, BookOpen, Target, TrendingUp, Download, ExternalLink, CheckCircle2 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 export default function CertificationTab({ uid }) {
   const [pathways, setPathways] = useState([]);

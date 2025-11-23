@@ -29,7 +29,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://medplat-backend-139218747785.us-central1.run.app';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://medplat-backend-139218747785.europe-west1.run.app';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
