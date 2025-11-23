@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { BarChart3, Users, Trophy, BookOpen, TrendingUp, Download, Activity } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.us-central1.run.app';
 
 export default function AnalyticsDashboardTab({ uid, isAdmin }) {
   const [overview, setOverview] = useState(null);

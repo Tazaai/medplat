@@ -214,7 +214,7 @@ jobs:
           # Deploy with correct secret names
           gcloud run deploy medplat-backend \
             --image gcr.io/$GCP_PROJECT/medplat-backend:latest \
-            --region europe-west1 \
+            --region us-central1 \
             --allow-unauthenticated \
             --port 8080 \
             --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
@@ -225,7 +225,7 @@ jobs:
         id: build_frontend
         run: |
           cd frontend
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=us-central1 --project=$GCP_PROJECT --format='value(status.url)')
           echo "Detected backend URL: $BACKEND_URL"
           export VITE_API_BASE=$BACKEND_URL
           npm ci && npm run build
@@ -264,7 +264,7 @@ jobs:
           # Deploy with backend URL
           gcloud run deploy medplat-frontend \
             --image gcr.io/$GCP_PROJECT/medplat-frontend:latest \
-            --region europe-west1 \
+            --region us-central1 \
             --allow-unauthenticated \
             --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
             --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
@@ -277,13 +277,13 @@ jobs:
 
           # Ensure services allow unauthenticated invocations (idempotent)
           echo "Ensuring Cloud Run services allow unauthenticated invocations"
-          gcloud run services add-iam-policy-binding medplat-frontend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
-          gcloud run services add-iam-policy-binding medplat-backend --region=europe-west1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
+          gcloud run services add-iam-policy-binding medplat-frontend --region=us-central1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
+          gcloud run services add-iam-policy-binding medplat-backend --region=us-central1 --member="allUsers" --role="roles/run.invoker" --project=$GCP_PROJECT || true
 
           resolve_url() {
             svc="$1"
             # re-query the service URL to avoid stale values
-            url=$(gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+            url=$(gcloud run services describe "$svc" --region=us-central1 --project=$GCP_PROJECT --format='value(status.url)')
             echo "$url"
           }
 
@@ -311,7 +311,7 @@ jobs:
                   # Try fallback regional URL using project number (some Cloud Run hostnames differ)
                   PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
                   if [ -n "$PROJECT_NUMBER" ]; then
-                    alt_url="https://$svc-$PROJECT_NUMBER.europe-west1.run.app"
+                    alt_url="https://$svc-$PROJECT_NUMBER.us-central1.run.app"
                     echo "Trying fallback URL: $alt_url"
                     alt_status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$alt_url" || true)
                     echo "$name fallback URL responded with HTTP $alt_status"
@@ -329,8 +329,8 @@ jobs:
                 echo "$name failed health check after $retries attempts"
                 # print some diagnostics
                 echo "Diagnostics: describe and IAM policy for $svc"
-                gcloud run services describe "$svc" --region=europe-west1 --project=$GCP_PROJECT || true
-                gcloud run services get-iam-policy "$svc" --region=europe-west1 --project=$GCP_PROJECT || true
+                gcloud run services describe "$svc" --region=us-central1 --project=$GCP_PROJECT || true
+                gcloud run services get-iam-policy "$svc" --region=us-central1 --project=$GCP_PROJECT || true
                 exit 1
               fi
               echo "Retrying $name in $delay seconds... (attempt $attempt/$retries)"
@@ -343,8 +343,8 @@ jobs:
 
       - name: 📊 Summary
         run: |
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
-          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=us-central1 --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=us-central1 --format='value(status.url)')
           echo "✅ Backend: $BACKEND_URL"
           echo "✅ Frontend: $FRONTEND_URL"
           echo "🎯 MedPlat deployment successful"
@@ -356,8 +356,8 @@ jobs:
           # Allow a soft-fail mode via environment variable (set to 'true' to avoid failing the workflow)
           SOFT_FAIL=${SOFT_FAIL_CONNECTIVITY:-false}
 
-          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=us-central1 --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=us-central1 --format='value(status.url)')
           echo "Frontend URL: $FRONTEND_URL"
           echo "Backend URL: $BACKEND_URL"
 
@@ -440,14 +440,14 @@ jobs:
           # so the upload-artifact step has a non-empty 'path' input. The upload
           # will warn if no files are present but won't fail with a missing input.
           echo "artifact=tmp" >> $GITHUB_OUTPUT
-          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=us-central1 --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=us-central1 --format='value(status.url)')
           PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
           FRONTEND_FALLBACK=""
           BACKEND_FALLBACK=""
           if [ -n "$PROJECT_NUMBER" ]; then
-            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.europe-west1.run.app"
-            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.europe-west1.run.app"
+            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.us-central1.run.app"
+            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.us-central1.run.app"
           fi
           echo "Frontend URL: $FRONTEND_URL"
           echo "Frontend fallback: $FRONTEND_FALLBACK"

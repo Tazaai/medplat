@@ -23,7 +23,7 @@ if (import.meta.env.VITE_API_BASE) {
 } else if (import.meta.env.MODE === 'development') {
   API_BASE = 'http://localhost:8080';
 } else {
-  API_BASE = 'https://medplat-backend-139218747785.europe-west1.run.app';
+  API_BASE = 'https://medplat-backend-139218747785.us-central1.run.app';
 }
 
 export { API_BASE };
