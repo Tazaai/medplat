@@ -1103,6 +1103,16 @@ function normalizeDifferentials(caseData) {
       
       let rawJustification = item.justification || '';
       rawJustification = cleanParaclinicalBleed(String(rawJustification));
+
+      const exclusionPatterns = [
+        /\b(?:less likely|unlikely)\s+(?:because|due to|since|as)\s+/i,
+        /\b(?:ruled out|excluded)\s+(?:because|due to|since|as)\s+/i,
+        /\b(?:argues against|weighs against|contraindicated)\s+/i,
+        /\b(?:not consistent with|inconsistent with)\s+/i,
+        /\b(?:less likely|unlikely)\s+/i,
+        /\b(?:ruled out|excluded)\s+/i,
+        /\bagainst\s+/i,
+      ];
       
       // Extract "for" reasoning from existing fields
       let forReasoning = '';
@@ -1157,17 +1167,6 @@ function normalizeDifferentials(caseData) {
       
       // Extract "against" reasoning from existing fields or generate
       let againstReasoning = '';
-      
-      // Exclusion patterns that indicate AGAINST reasoning
-      const exclusionPatterns = [
-        /\b(?:less likely|unlikely)\s+(?:because|due to|since|as)\s+/i,
-        /\b(?:ruled out|excluded)\s+(?:because|due to|since|as)\s+/i,
-        /\b(?:argues against|weighs against|contraindicated)\s+/i,
-        /\b(?:not consistent with|inconsistent with)\s+/i,
-        /\b(?:less likely|unlikely)\s+/i,
-        /\b(?:ruled out|excluded)\s+/i,
-        /\bagainst\s+/i,
-      ];
       
       if (lessLikely && !isPlaceholder(lessLikely)) {
         againstReasoning = lessLikely;
