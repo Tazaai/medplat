@@ -899,42 +899,79 @@ Return ONLY valid JSON:
   }
 }`;
 
-      const completion = await generateCaseContent(selectedModel, prompt, 0.4, 30000);
+      const buildUpdateFields = (parsed) => {
+        // Ensure complete JSON structure even if fields missing
+        const updateFields = {
+          paraclinical: {
+            labs: parsed.paraclinical?.labs || parsed.paraclinical?.Labs || '',
+            imaging: parsed.paraclinical?.imaging || parsed.paraclinical?.Imaging || ''
+          }
+        };
 
-      const text = completion.choices?.[0]?.message?.content || '{}';
-      const parsed = safeParseJSON(text);
+        // Lock diagnosis after ECG/lab interpretation step
+        // Always set final_diagnosis (default to empty string if missing)
+        const lockedDiagnosis = parsed.finalDiagnosis || parsed.final_diagnosis || parsed.Final_Diagnosis || '';
+        updateFields.final_diagnosis = lockedDiagnosis;
 
-      // Ensure complete JSON structure even if fields missing
-      const updateFields = {
-        paraclinical: {
-          labs: parsed.paraclinical?.labs || parsed.paraclinical?.Labs || '',
-          imaging: parsed.paraclinical?.imaging || parsed.paraclinical?.Imaging || ''
+        // Stage A: Always set differential_diagnoses with required For/Against structure
+        const rawDifferentials =
+          parsed.differentialDiagnosis ||
+          parsed.differential_diagnoses ||
+          parsed.Differential_Diagnoses ||
+          [];
+        const normalizedDifferentials = normalizeDifferentialDiagnoses(rawDifferentials);
+        updateFields.differential_diagnoses = validateDifferentialDiagnoses(normalizedDifferentials);
+
+        // Stage A: management is part of the base case (ground truth)
+        const management = normalizeManagementObject(parsed.management || parsed.Management || {});
+        updateFields.management = validateManagementObject(management);
+
+        // Store locked diagnosis in meta for reuse across sections
+        if (lockedDiagnosis) {
+          updateFields.meta = existingCase.meta || {};
+          updateFields.meta.locked_diagnosis = lockedDiagnosis;
+          updateFields.meta.diagnosis_locked_at = new Date().toISOString();
         }
-      };
-      
-      // Lock diagnosis after ECG/lab interpretation step
-      // Always set final_diagnosis (default to empty string if missing)
-      const lockedDiagnosis = parsed.finalDiagnosis || parsed.final_diagnosis || parsed.Final_Diagnosis || '';
-      updateFields.final_diagnosis = lockedDiagnosis;
-      
-      // Stage A: Always set differential_diagnoses with required For/Against structure
-      const rawDifferentials =
-        parsed.differentialDiagnosis ||
-        parsed.differential_diagnoses ||
-        parsed.Differential_Diagnoses ||
-        [];
-      const normalizedDifferentials = normalizeDifferentialDiagnoses(rawDifferentials);
-      updateFields.differential_diagnoses = validateDifferentialDiagnoses(normalizedDifferentials);
 
-      // Stage A: management is part of the base case (ground truth)
-      const management = normalizeManagementObject(parsed.management || parsed.Management || {});
-      updateFields.management = validateManagementObject(management);
-      
-      // Store locked diagnosis in meta for reuse across sections
-      if (lockedDiagnosis) {
-        updateFields.meta = existingCase.meta || {};
-        updateFields.meta.locked_diagnosis = lockedDiagnosis;
-        updateFields.meta.diagnosis_locked_at = new Date().toISOString();
+        return updateFields;
+      };
+
+      const attemptParaclinical = async (userPrompt, attemptLabel) => {
+        const attemptStart = Date.now();
+        const completion = await generateCaseContent(selectedModel, userPrompt, 0.4, 30000);
+        const text = completion.choices?.[0]?.message?.content || '{}';
+        const parsed = safeParseJSON(text);
+        const updateFields = buildUpdateFields(parsed);
+        const elapsedMs = Date.now() - attemptStart;
+        console.log(`[PARACLINICAL_RETRY] ${attemptLabel} success`, { caseId, ms: elapsedMs });
+        return updateFields;
+      };
+
+      let updateFields;
+      const firstAttemptStart = Date.now();
+      try {
+        updateFields = await attemptParaclinical(prompt, 'attempt_1');
+      } catch (err) {
+        const firstElapsedMs = Date.now() - firstAttemptStart;
+        console.warn('[PARACLINICAL_RETRY] attempt_1 failed, retrying once', {
+          caseId,
+          ms: firstElapsedMs,
+          error: err?.message || String(err),
+        });
+
+        const retryPrompt = `${prompt}\n\nReturn valid JSON strictly matching the required structure. No prose, no markdown.`;
+        const retryStart = Date.now();
+        try {
+          updateFields = await attemptParaclinical(retryPrompt, 'attempt_2');
+        } catch (retryErr) {
+          const retryElapsedMs = Date.now() - retryStart;
+          console.warn('[PARACLINICAL_RETRY] attempt_2 failed', {
+            caseId,
+            ms: retryElapsedMs,
+            error: retryErr?.message || String(retryErr),
+          });
+          throw retryErr;
+        }
       }
 
       const updated = await updateCaseFields(caseId, updateFields);
