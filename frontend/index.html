@@ -8,5 +8,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        console.log("FRONTEND_ERROR", msg, src, line, col, err);
+      };
+      window.onunhandledrejection = function(e) {
+        console.log("FRONTEND_PROMISE_ERROR", e.reason);
+      };
+    </script>
   </body>
 </html>

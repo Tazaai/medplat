@@ -4,8 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { BookOpen, Clock, Target, Trophy, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+import { API_BASE } from '../config';
 
 export default function ExamPrepTab({ uid }) {
   const [tracks, setTracks] = useState([]);

@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './StudyGroup.css';
+import { API_BASE } from '../config';
 
 const StudyGroup = ({ userId, groupId }) => {
   const [group, setGroup] = useState(null);
@@ -31,7 +32,7 @@ const StudyGroup = ({ userId, groupId }) => {
   const fetchGroupData = async () => {
     setIsLoading(true);
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = API_BASE;
       const response = await fetch(`${backendUrl}/api/social/groups/${groupId}`);
       
       if (response.ok) {
@@ -48,7 +49,7 @@ const StudyGroup = ({ userId, groupId }) => {
 
   const fetchLeaderboard = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = API_BASE;
       const response = await fetch(`${backendUrl}/api/social/leaderboard/group/${groupId}?metric=xp`);
       
       if (response.ok) {
@@ -64,7 +65,7 @@ const StudyGroup = ({ userId, groupId }) => {
     if (!inviteEmail) return;
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = API_BASE;
       const response = await fetch(`${backendUrl}/api/social/groups/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -12,13 +12,17 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: [
       "localhost",
-      "medplat-frontend-139218747785.europe-west1.run.app"
+      "medplat-frontend.europe-west1.run.app"
     ],
   },
   build: {
     // Phase 13: Performance Hardening
     rollupOptions: {
       output: {
+        // Cache-busting: Add hash to filenames
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
           // Vendor chunks for better caching
           'vendor-react': ['react', 'react-dom'],

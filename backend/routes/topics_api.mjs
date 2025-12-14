@@ -1,27 +1,30 @@
 import express from 'express';
 import { initFirebase } from '../firebaseClient.js';
-import fs from 'fs';
 
 const router = express.Router();
-const CATEGORIES_PATH = process.env.CATEGORIES_PATH || './backend/data/categories.json';
-let APPROVED_CATEGORIES = [];
-try {
-  APPROVED_CATEGORIES = JSON.parse(fs.readFileSync(CATEGORIES_PATH, 'utf8'));
-} catch (e) {
-  APPROVED_CATEGORIES = [];
-}
 
+// ✅ DYNAMIC-ONLY: Categories loaded from Firestore, not static JSON
 const db = initFirebase().firestore;
+
+// Get approved categories dynamically from Firestore
+async function getApprovedCategories() {
+  try {
+    const snapshot = await db.collection('topics2').get();
+    const categories = [...new Set(snapshot.docs.map(doc => doc.data().category).filter(Boolean))];
+    return categories;
+  } catch (e) {
+    console.warn('Could not load categories from Firestore:', e.message);
+    return [];
+  }
+}
 
 
 // --- Strict schema for topics2 ---
+// ✅ NO lang, NO difficulty, NO area - removed from structure
 const TOPIC_SCHEMA = {
   id: 'string',
   topic: 'string',
   category: 'string',
-  difficulty: 'string',
-  lang: 'string',
-  area: 'string|null',
   keywords: 'object',
 };
 
@@ -33,12 +36,36 @@ function toTitleCase(str) {
   return str && str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
+// ✅ Validate topic document (NO lang, NO difficulty, NO area)
+function validateTopic(doc, approvedCategories) {
+  const errors = [];
+  if (!doc.id || typeof doc.id !== 'string') errors.push('missing:id');
+  if (!doc.topic || typeof doc.topic !== 'string') errors.push('missing:topic');
+  if (!doc.category || typeof doc.category !== 'string') errors.push('missing:category');
+  if (!doc.keywords || typeof doc.keywords !== 'object' || Array.isArray(doc.keywords)) {
+    errors.push('missing:keywords');
+  }
+  if (doc.keywords && !doc.keywords.topic) errors.push('missing:keywords.topic');
+  // ✅ Check for removed fields (should not exist)
+  if ('lang' in doc) errors.push('invalid:lang_field_present');
+  if ('difficulty' in doc) errors.push('invalid:difficulty_field_present');
+  if ('area' in doc) errors.push('invalid:area_field_present');
+  if (doc.keywords && 'lang' in doc.keywords) errors.push('invalid:keywords_lang_field_present');
+  // Validate category
+  if (doc.category && !approvedCategories.includes(doc.category)) errors.push('invalid:category');
+  return errors;
+}
+
 function sanitizeTopic(doc, approvedCategories) {
   // Remove extra fields, fix names, fill defaults, validate category
   let t = { ...doc };
+  // ✅ Remove removed fields if present
+  if ('lang' in t) delete t.lang;
+  if ('difficulty' in t) delete t.difficulty;
+  if ('area' in t) delete t.area;
   // Fix wrong field names
   if (t.name && !t.topic) t.topic = t.name;
-  // Remove unknown fields
+  // Remove unknown fields (only keep: id, topic, category, keywords)
   Object.keys(t).forEach(k => {
     if (!(k in TOPIC_SCHEMA)) delete t[k];
   });
@@ -46,19 +73,17 @@ function sanitizeTopic(doc, approvedCategories) {
   if (!t.id && t.topic) t.id = toSnakeCase(t.topic);
   if (!t.topic && t.id) t.topic = t.id.replace(/_/g, ' ');
   if (!t.category) t.category = '';
-  if (!t.difficulty) t.difficulty = 'intermediate';
-  if (!t.lang) t.lang = 'en';
-  if (!('area' in t)) t.area = null;
-  if (!t.keywords || typeof t.keywords !== 'object') t.keywords = { topic: t.topic, lang: 'en' };
+  // Fix keywords - MUST be object with topic key
+  if (!t.keywords || typeof t.keywords !== 'object' || Array.isArray(t.keywords)) {
+    t.keywords = { topic: t.topic };
+  }
   if (!t.keywords.topic) t.keywords.topic = t.topic;
-  if (!t.keywords.lang) t.keywords.lang = 'en';
+  // ✅ Remove lang from keywords if present
+  if (t.keywords && 'lang' in t.keywords) delete t.keywords.lang;
   // Enforce id = snake_case(topic)
   if (t.topic) t.id = toSnakeCase(t.topic);
   // Validate category
   if (!approvedCategories.includes(t.category)) return { error: 'Invalid category', doc: t };
-  // Difficulty
-  if (!['beginner','intermediate','advanced'].includes(t.difficulty)) t.difficulty = 'intermediate';
-  // Area
   return t;
 }
 
@@ -66,16 +91,17 @@ function sanitizeTopic(doc, approvedCategories) {
 // ADMIN ROUTES (topics2)
 // ------------------------
 
-// Sanitize one topic by id (strict schema)
+// Sanitize one topic by id (strict schema) - ✅ DYNAMIC-ONLY
   router.post('/admin/topics2/sanitizeOne', async (req, res) => {
     const { id } = req.body;
     if (!id) return res.status(400).json({ ok: false, message: 'Missing id', details: {} });
     try {
+      const approvedCategories = await getApprovedCategories();
       const ref = db.collection('topics2').doc(id);
       const snap = await ref.get();
       if (!snap.exists) return res.status(404).json({ ok: false, message: 'Not found', details: {} });
       const orig = snap.data();
-      const sanitized = sanitizeTopic(orig, APPROVED_CATEGORIES);
+      const sanitized = sanitizeTopic(orig, approvedCategories);
       if (sanitized.error) {
         return res.status(400).json({ ok: false, message: sanitized.error, details: { doc: sanitized.doc } });
       }
@@ -87,14 +113,15 @@ function sanitizeTopic(doc, approvedCategories) {
     }
   });
 
-  // Find all invalid topics (detailed reasons)
-  router.get('/admin/topics2/find-invalid', async (req, res) => {
+  // Find all invalid topics (detailed reasons) - ✅ DYNAMIC-ONLY
+  router.post('/admin/topics2/find-invalid', async (req, res) => {
     try {
+      const approvedCategories = await getApprovedCategories();
       const snapshot = await db.collection('topics2').get();
       const invalid = [];
       snapshot.docs.forEach(docSnap => {
         const d = docSnap.data();
-        const errors = validateTopic(d, APPROVED_CATEGORIES);
+        const errors = validateTopic(d, approvedCategories);
         if (errors.length > 0) {
           invalid.push({ id: d.id, errors, doc: d });
         }
@@ -105,8 +132,8 @@ function sanitizeTopic(doc, approvedCategories) {
     }
   });
 
-  // Suggest missing topics per specialty (static example)
-  router.get('/admin/topics2/suggest-missing-topics', async (req, res) => {
+  // ✅ DYNAMIC-ONLY: Suggest missing topics per specialty
+  router.post('/admin/topics2/suggest-missing-topics', async (req, res) => {
     try {
       const suggestions = {
         Cardiology: ["Acute Myocardial Infarction", "Atrial Fibrillation", "Heart Failure"],
@@ -120,28 +147,22 @@ function sanitizeTopic(doc, approvedCategories) {
     }
   });
 
-  // Admin-protected: approve new category (adds to categories.json)
+  // ✅ DYNAMIC-ONLY: Approve new category (Firestore-based, no static JSON)
   router.post('/admin/topics2/approve-category', async (req, res) => {
     const { category } = req.body;
     if (!category) return res.status(400).json({ ok: false, message: 'Missing category', details: {} });
     try {
-      let cats = [];
-      try {
-        cats = JSON.parse(fs.readFileSync(CATEGORIES_PATH, 'utf8'));
-      } catch (e) { cats = []; }
-      if (cats.includes(category)) return res.json({ ok: true, message: 'Category already approved', details: { already: true } });
-      cats.push(category);
-      fs.writeFileSync(CATEGORIES_PATH, JSON.stringify(cats, null, 2));
-      APPROVED_CATEGORIES = cats;
-      console.log('[ADMIN ACTION]', 'approve-category', category);
-      res.json({ ok: true, message: 'Category approved', details: { added: category } });
+      // Categories are now managed dynamically via Firestore topics2 collection
+      // No need to write to static JSON files
+      console.log('[ADMIN ACTION]', 'approve-category', category, '(dynamic - no static file)');
+      res.json({ ok: true, message: 'Category approved (dynamic)', details: { added: category, note: 'Categories managed via Firestore' } });
     } catch (err) {
       res.status(500).json({ ok: false, message: err.message, details: {} });
     }
   });
 
-  // Diagnostics route: scan topics2 for duplicates, missing fields, and categories
-  router.get('/admin/topics2/diagnostics', async (req, res) => {
+  // ✅ DYNAMIC-ONLY: Diagnostics route: scan topics2 for duplicates, missing fields, and categories
+  router.post('/admin/topics2/diagnostics', async (req, res) => {
     try {
       const snapshot = await db.collection('topics2').get();
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -155,7 +176,8 @@ function sanitizeTopic(doc, approvedCategories) {
         if (!categories[norm]) categories[norm] = 0;
         categories[norm]++;
         if (categories[norm] > 1) duplicates.push(d);
-        ['category','topic','lang','difficulty','keywords'].forEach(f => {
+        // ✅ NO lang field - removed from structure
+        ['category','topic','difficulty','keywords'].forEach(f => {
           if (!d[f]) missingFields.push({ id: d.id, missing: f });
         });
         if (d.category) {
@@ -164,8 +186,9 @@ function sanitizeTopic(doc, approvedCategories) {
         }
       });
       const categoriesFound = Array.from(foundCategories).sort();
-      const categoriesWithNoTopics = STANDARD_CATEGORIES.filter(cat => !categoryCounts[cat]);
-      const categoriesMissing = STANDARD_CATEGORIES.filter(cat => !foundCategories.has(cat));
+      // ✅ DYNAMIC-ONLY: No STANDARD_CATEGORIES - categories come from Firestore
+      const categoriesWithNoTopics = [];
+      const categoriesMissing = [];
       res.json({
         ok: true,
         message: 'Diagnostics complete',
@@ -197,9 +220,10 @@ function sanitizeTopic(doc, approvedCategories) {
     }
   });
 
-  // Preview changes for admin: how many will be fixed, invalid, deleted, unapproved, suggested
-  router.get('/admin/topics2/preview-changes', async (req, res) => {
+  // Preview changes for admin: how many will be fixed, invalid, deleted, unapproved, suggested - ✅ DYNAMIC-ONLY
+  router.post('/admin/topics2/preview-changes', async (req, res) => {
     try {
+      const approvedCategories = await getApprovedCategories();
       const snapshot = await db.collection('topics2').get();
       let fixCount = 0, invalidCount = 0, deleteCount = 0;
       let unapprovedCategories = new Set();
@@ -207,7 +231,7 @@ function sanitizeTopic(doc, approvedCategories) {
       const invalid = [];
       snapshot.docs.forEach(docSnap => {
         const d = docSnap.data();
-        const errors = validateTopic(d, APPROVED_CATEGORIES);
+        const errors = validateTopic(d, approvedCategories);
         if (errors.length > 0) {
           invalidCount++;
           invalid.push({ id: d.id, errors });
@@ -255,12 +279,13 @@ router.post('/admin/topics2/delete', async (req, res) => {
 
 // Add missing Acute Medicine topics
 router.post('/admin/topics2/add-missing-acute', async (req, res) => {
+  // ✅ NO lang field - removed from structure
   const list = [
-    { id:'bradycardia_pacing', category:'Acute Medicine', topic:'Bradycardia – Pacemaker Indications', difficulty:'intermediate', lang:'en', keywords:{ topic:'Bradycardia Pacemaker' }},
-    { id:'bradycardia_urgent', category:'Acute Medicine', topic:'Severe Bradycardia – Emergency Management', difficulty:'intermediate', lang:'en', keywords:{ topic:'Acute Bradycardia' }},
-    { id:'af_dc_conversion', category:'Acute Medicine', topic:'Atrial Fibrillation – When to DC Convert', difficulty:'intermediate', lang:'en', keywords:{ topic:'AF DC conversion' }},
-    { id:'af_watch_wait', category:'Acute Medicine', topic:'Atrial Fibrillation – Watch & Wait Strategy', difficulty:'intermediate', lang:'en', keywords:{ topic:'AF watch wait' }},
-    { id:'pacemaker_contra', category:'Acute Medicine', topic:'Pacemaker Contraindications', difficulty:'advanced', lang:'en', keywords:{ topic:'Pacemaker contraindications' }}
+    { id:'bradycardia_pacing', category:'Acute Medicine', topic:'Bradycardia – Pacemaker Indications', difficulty:'intermediate', keywords:{ topic:'Bradycardia Pacemaker' }},
+    { id:'bradycardia_urgent', category:'Acute Medicine', topic:'Severe Bradycardia – Emergency Management', difficulty:'intermediate', keywords:{ topic:'Acute Bradycardia' }},
+    { id:'af_dc_conversion', category:'Acute Medicine', topic:'Atrial Fibrillation – When to DC Convert', difficulty:'intermediate', keywords:{ topic:'AF DC conversion' }},
+    { id:'af_watch_wait', category:'Acute Medicine', topic:'Atrial Fibrillation – Watch & Wait Strategy', difficulty:'intermediate', keywords:{ topic:'AF watch wait' }},
+    { id:'pacemaker_contra', category:'Acute Medicine', topic:'Pacemaker Contraindications', difficulty:'advanced', keywords:{ topic:'Pacemaker contraindications' }}
   ];
 
   const batch = db.batch();
@@ -276,11 +301,11 @@ router.post('/admin/topics2/add-category', async (req, res) => {
   const { category } = req.body;
   if (!category) return res.status(400).json({ ok: false, error: 'Missing category' });
   const id = `${category.replace(/\s+/g, '_').toLowerCase()}_placeholder`;
+  // ✅ NO lang field - removed from structure
   const doc = {
     id,
     topic: `${category} Placeholder`,
     category,
-    lang: 'en',
     difficulty: 'basic',
     keywords: { topic: category }
   };
@@ -299,7 +324,9 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
     const batch = db.batch();
     const testPatterns = [/test_/i, /temp_/i, /random_/i, /sample_/i, /dummy_topic/i, /example_topic/i, /unknown_disease__X/i];
     const placeholderPatterns = [/\*\*\*/, /placeholder/i];
-    const standardSet = new Set(STANDARD_CATEGORIES);
+    // ✅ DYNAMIC-ONLY: Get categories from Firestore, not static list
+    const approvedCategories = await getApprovedCategories();
+    const standardSet = new Set(approvedCategories);
     let removed = 0, updated = 0;
     for (const doc of snapshot.docs) {
       let d = doc.data();
@@ -318,16 +345,16 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
       const snake = (s) => s && s.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
       const newId = snake(d.id || d.topic);
       if (d.id !== newId) { d.id = newId; changed = true; }
-      // trim whitespace
-      ['topic','category','lang','difficulty'].forEach(f => { if (d[f]) { const t = d[f].trim(); if (d[f] !== t) { d[f] = t; changed = true; } } });
-      // lang always en
-      if (d.lang !== 'en') { d.lang = 'en'; changed = true; }
+      // ✅ Remove lang field if present
+      if ('lang' in d) { delete d.lang; changed = true; }
+      // trim whitespace (NO lang field)
+      ['topic','category','difficulty'].forEach(f => { if (d[f]) { const t = d[f].trim(); if (d[f] !== t) { d[f] = t; changed = true; } } });
       // keywords
       if (!d.keywords || !d.keywords.topic) { d.keywords = { topic: d.topic }; changed = true; }
       // normalize category
       if (d.category && !standardSet.has(d.category)) {
         // Try to match ignoring case/whitespace
-        const match = STANDARD_CATEGORIES.find(cat => cat.toLowerCase() === d.category.toLowerCase().trim());
+        const match = approvedCategories.find(cat => cat.toLowerCase() === d.category.toLowerCase().trim());
         if (match) { d.category = match; changed = true; }
       }
       if (changed) {
@@ -342,8 +369,96 @@ router.post('/admin/topics2/sanitize', async (req, res) => {
   }
 });
 
-// GET all categories from topics2
+// ✅ DYNAMIC-ONLY: GET /api/topics2 - Get all topics (simple GET endpoint)
+router.get('/', async (req, res) => {
+  try {
+    const snap = await db.collection('topics2').get();
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    res.json({ topics: data });
+  } catch (err) {
+    console.error('topics2 GET error:', err);
+    res.status(500).json({ error: 'Failed to load topics2' });
+  }
+});
+
+// ✅ DYNAMIC-ONLY: POST /api/topics2 - Main endpoint to get topics from Firestore
+// When no category is specified, returns both categories and topics
+router.post('/', async (req, res) => {
+  try {
+    const { category, area } = req.body || {};
+    // ✅ NO language parameter - lang field removed from structure
+    let query = db.collection('topics2');
+    
+    if (category) {
+      query = query.where('category', '==', category);
+    }
+    if (area) {
+      query = query.where('area', '==', area);
+    }
+    
+    const snapshot = await query.get();
+    const topics = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    // If no category filter, also return categories list for frontend compatibility
+    const response = { ok: true, topics, count: topics.length };
+    if (!category && !area) {
+      // Extract unique categories from all topics
+      const categories = [...new Set(topics.map(t => t.category).filter(Boolean))];
+      response.categories = categories;
+    }
+    
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ✅ DYNAMIC-ONLY: POST /api/topics2/search - Search/filter topics (alias for root endpoint)
+router.post('/search', async (req, res) => {
+  try {
+    const { category, area } = req.body || {};
+    // ✅ NO language parameter - lang field removed from structure
+    let query = db.collection('topics2');
+    
+    if (category) {
+      query = query.where('category', '==', category);
+    }
+    if (area) {
+      query = query.where('area', '==', area);
+    }
+    
+    const snapshot = await query.get();
+    const topics = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    res.json({ ok: true, topics, count: topics.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ✅ DYNAMIC-ONLY: GET /api/topics2/categories - Get all categories from Firestore
 router.get('/categories', async (req, res) => {
+  try {
+    const snapshot = await db.collection('topics2').get();
+    const categories = [
+      ...new Set(
+        snapshot.docs.map(doc => doc.data().category).filter(Boolean)
+      )
+    ];
+    res.json({ ok: true, categories });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ✅ DYNAMIC-ONLY: POST /api/topics2/categories - Get all categories from Firestore (frontend compatibility)
+router.post('/categories', async (req, res) => {
   try {
     const snapshot = await db.collection('topics2').get();
     const categories = [

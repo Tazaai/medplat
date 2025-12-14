@@ -1,10 +1,10 @@
 // Modern Case Display with Collapsible Sections
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as Collapsible from '@radix-ui/react-collapsible';
 import { Card, CardHeader, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { formatParaclinical } from '../utils/paraclinicalFormatter';
 import {
   Clock,
   User,
@@ -26,40 +26,37 @@ function CollapsibleSection({ title, icon: Icon, children, defaultOpen = false }
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
-      <Collapsible.Trigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start text-left font-normal hover:bg-slate-50 h-7 px-2 py-1"
-        >
-          {Icon && <Icon size={12} className="mr-1.5 text-blue-600" />}
-          <span className="flex-1 text-xs">{title}</span>
-          {isOpen ? (
-            <ChevronDown size={12} className="text-slate-400" />
-          ) : (
-            <ChevronRight size={12} className="text-slate-400" />
-          )}
-        </Button>
-      </Collapsible.Trigger>
-      <Collapsible.Content>
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-3 px-3 py-2 bg-slate-50 rounded-md border border-slate-100"
-            >
-              <div className="text-sm text-slate-700 leading-relaxed">
-                {children}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Collapsible.Content>
-    </Collapsible.Root>
+    <div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full justify-start text-left font-normal hover:bg-slate-50 h-7 px-2 py-1"
+      >
+        {Icon && <Icon size={12} className="mr-1.5 text-blue-600" />}
+        <span className="flex-1 text-xs">{title}</span>
+        {isOpen ? (
+          <ChevronDown size={12} className="text-slate-400" />
+        ) : (
+          <ChevronRight size={12} className="text-slate-400" />
+        )}
+      </Button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-3 px-3 py-2 bg-slate-50 rounded-md border border-slate-100"
+          >
+            <div className="text-sm text-slate-700 leading-relaxed">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -176,7 +173,34 @@ export default function ModernCaseDisplay({ caseData }) {
           {/* Investigations */}
           {c.Paraclinical_Investigations && (
             <CollapsibleSection title="Paraclinical Investigations" icon={FlaskConical}>
-              {renderContent(c.Paraclinical_Investigations)}
+              {(() => {
+                // Format paraclinical data if it's an object with labs/imaging
+                const paraclinicalData = c.Paraclinical_Investigations || c.paraclinical;
+                if (paraclinicalData && typeof paraclinicalData === 'object' && (paraclinicalData.labs || paraclinicalData.imaging)) {
+                  const formatted = formatParaclinical(paraclinicalData);
+                  return (
+                    <div className="space-y-4">
+                      {formatted.labs && (
+                        <div>
+                          <h4 className="font-semibold text-gray-700 mb-3 text-sm">Laboratory Results:</h4>
+                          <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-green-400">
+                            {formatted.labs}
+                          </div>
+                        </div>
+                      )}
+                      {formatted.imaging && (
+                        <div>
+                          <h4 className="font-semibold text-gray-700 mb-3 text-sm">Imaging:</h4>
+                          <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-blue-400">
+                            {formatted.imaging}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return renderContent(paraclinicalData || c.Paraclinical_Investigations);
+              })()}
             </CollapsibleSection>
           )}
 

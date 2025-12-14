@@ -11,17 +11,28 @@ export default function TopicsAdmin() {
   const [editTopicData, setEditTopicData] = useState({});
   const [message, setMessage] = useState("");
 
-  // Load categories
+  // Load categories - ✅ DYNAMIC-ONLY: POST-only (never use GET)
   useEffect(() => {
-    fetch(`${API_BASE}/api/topics2/categories`)
-      .then((res) => res.json())
-      .then((data) => setCategories(data.categories || []));
+    fetch(`${API_BASE}/api/topics2`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      })
+      .then((data) => setCategories(data.categories || []))
+      .catch((err) => {
+        console.error('Failed to load categories:', err);
+        setCategories([]);
+      });
   }, [message]);
 
-  // Load topics for selected category
+  // Load topics for selected category - ✅ FIXED: Use /api/topics2
   useEffect(() => {
     if (!selectedCategory) return setTopics([]);
-    fetch(`${API_BASE}/api/topics2/search`, {
+    fetch(`${API_BASE}/api/topics2`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category: selectedCategory }),

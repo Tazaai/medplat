@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import CaseView from "./components/CaseView";
+import InteractiveCaseGenerator from "./components/InteractiveCaseGenerator";
 import ErrorBoundary from "./components/ErrorBoundary";
-import TopicsAdmin from "./pages/TopicsAdmin";
-import TopicsDiagnostics from "./pages/TopicsDiagnostics";
+import { AuthProvider } from "./contexts/AuthContext"; // ✅ Auth context
 
 export default function App() {
   const [route, setRoute] = useState(window.location.hash.replace('#','') || 'case');
@@ -14,24 +13,11 @@ export default function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <div className="w-full flex justify-end p-2">
-        <button
-          className="text-xs px-2 py-1 bg-gray-200 rounded mr-2"
-          onClick={() => window.location.hash = 'case'}
-        >Case Generator</button>
-        <button
-          className="text-xs px-2 py-1 bg-gray-200 rounded mr-2"
-          onClick={() => window.location.hash = 'admin'}
-        >Topics Admin</button>
-        <button
-          className="text-xs px-2 py-1 bg-yellow-300 rounded"
-          onClick={() => window.location.hash = 'admin-diagnostics'}
-        >Diagnostics</button>
-      </div>
-      {route === 'admin' ? <TopicsAdmin /> :
-        route === 'admin-diagnostics' ? <TopicsDiagnostics /> :
-        <CaseView />}
-    </ErrorBoundary>
+    <AuthProvider>
+      <ErrorBoundary>
+        {route === 'case' && <CaseView />}
+        {route === 'interactive' && <InteractiveCaseGenerator />}
+      </ErrorBoundary>
+    </AuthProvider>
   );
 }

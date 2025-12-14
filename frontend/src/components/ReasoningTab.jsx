@@ -6,9 +6,10 @@ import DifferentialBuilder from './DifferentialBuilder';
 import BayesianCalculator from './BayesianCalculator';
 import MultiStepCase from './MultiStepCase';
 import ReasoningInsights from './ReasoningInsights';
+import { API_BASE } from '../config';
 import './ReasoningTab.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+const BACKEND_URL = API_BASE;
 
 export default function ReasoningTab({ caseData }) {
 	const [activeSubTab, setActiveSubTab] = useState('differential');

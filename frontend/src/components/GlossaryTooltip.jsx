@@ -64,7 +64,7 @@ const GlossaryTooltip = ({
     setError(null);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/glossary/term/${termId}?language=${language}`);
       
       if (!response.ok) {
@@ -83,7 +83,7 @@ const GlossaryTooltip = ({
 
   const fetchRelatedTerms = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/glossary/related/${termId}?limit=5`);
       
       if (response.ok) {
@@ -102,7 +102,7 @@ const GlossaryTooltip = ({
     if (onAudioPlay) onAudioPlay(termId);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/voice/synthesize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -4,6 +4,48 @@
 📘 PROJECT_GUIDE.md found — master documentation loaded
 📛 Note: PROJECT_GUIDE.md is protected. Do not edit it automatically; follow the policy in PROJECT_GUIDE.md for changes.
 
+=====================================================
+🚀 AUTHORITATIVE DEPLOYMENT CONFIGURATION
+=====================================================
+⚠️ CRITICAL: These are the ONLY valid Cloud Run services. Use these exact values for ALL deployments.
+🚫 NEVER CREATE NEW BACKEND OR FRONTEND SERVICES. ALWAYS USE THE EXISTING ONES.
+
+BACKEND_SERVICE_NAME = "medplat-backend"
+BACKEND_URL = "https://medplat-backend-139218747785.europe-west1.run.app"
+
+FRONTEND_SERVICE_NAME = "medplat-frontend"
+FRONTEND_URL = "https://medplat-frontend-139218747785.europe-west1.run.app"
+
+❌ FORBIDDEN: Never create new services or use old URLs like:
+   - https://medplat-backend-2pr2rrffwq-ew.a.run.app
+   - https://medplat-frontend-2pr2rrffwq-ew.a.run.app
+   - Any other service names or URLs
+
+API Endpoints (all use ${BACKEND_URL}):
+  - ${BACKEND_URL}/api/topics2/*
+  - ${BACKEND_URL}/api/dialog
+  - ${BACKEND_URL}/api/panel
+  - ${BACKEND_URL}/api/gamify
+
+Backend Deploy Command:
+  gcloud run deploy medplat-backend \
+    --image gcr.io/medplat-458911/medplat-backend:latest \
+    --region europe-west1 \
+    --allow-unauthenticated \
+    --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
+    --port 8080
+
+Frontend Deploy Command (use existing service):
+  gcloud run deploy medplat-frontend \
+    --image gcr.io/medplat-458911/medplat-frontend:latest \
+    --region europe-west1 \
+    --allow-unauthenticated \
+    --project medplat-458911 \
+    --port 8080
+
+❌ DEPRECATED: Any URLs containing "2pr2rrffwq" or other old service names must be removed.
+=====================================================
+
 ## 📚 README check
 ✅ README.md found
 🔍 README mentions backend

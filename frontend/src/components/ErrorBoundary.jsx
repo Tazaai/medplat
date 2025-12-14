@@ -14,10 +14,39 @@ class ErrorBoundary extends React.Component {
 	}
 	
 	componentDidCatch(error, errorInfo) {
-		console.error('❌ ErrorBoundary caught error:', error, errorInfo);
+		// DIAGNOSTIC PATCH: Enhanced error logging for production debugging
+		const errorDetails = {
+			message: error?.message || error?.toString() || 'Unknown error',
+			name: error?.name || 'Error',
+			stack: error?.stack || 'No stack trace',
+			componentStack: errorInfo?.componentStack || 'No component stack',
+			fullError: error,
+			fullErrorInfo: errorInfo,
+			timestamp: new Date().toISOString(),
+			url: window.location.href,
+			userAgent: navigator.userAgent
+		};
+
+		// Log to console with clear markers for production debugging
+		console.error('========================================');
+		console.error('🔴 FRONTEND_ERROR_BOUNDARY_TRIGGERED');
+		console.error('========================================');
+		console.error('Error Message:', errorDetails.message);
+		console.error('Error Name:', errorDetails.name);
+		console.error('Error Stack:', errorDetails.stack);
+		console.error('Component Stack:', errorDetails.componentStack);
+		console.error('Full Error Object:', error);
+		console.error('Full Error Info:', errorInfo);
+		console.error('URL:', errorDetails.url);
+		console.error('Timestamp:', errorDetails.timestamp);
+		console.error('========================================');
+
+		// Also log as a single object for easier inspection
+		console.error('FRONTEND_ERROR_DETAILS:', JSON.stringify(errorDetails, null, 2));
+
 		this.setState({ error, errorInfo });
 		
-		// Log to telemetry (if available)
+		// Log to telemetry with full details
 		if (window.navigator.onLine) {
 			try {
 				fetch('/api/telemetry/event', {
@@ -28,9 +57,12 @@ class ErrorBoundary extends React.Component {
 						data: {
 							uid: 'anonymous',
 							event: 'error_boundary_triggered',
-							error: error.toString(),
-							stack: errorInfo.componentStack,
-							timestamp: new Date().toISOString()
+							error: errorDetails.message,
+							errorName: errorDetails.name,
+							stack: errorDetails.stack,
+							componentStack: errorDetails.componentStack,
+							url: errorDetails.url,
+							timestamp: errorDetails.timestamp
 						}
 					})
 				}).catch(() => {}); // Silent fail
@@ -66,12 +98,20 @@ class ErrorBoundary extends React.Component {
 							</button>
 						</div>
 						
-						{process.env.NODE_ENV === 'development' && this.state.error && (
-							<details style={styles.details}>
-								<summary style={styles.summary}>Error Details (Dev Only)</summary>
+						{/* DIAGNOSTIC PATCH: Always show error details in production for debugging */}
+						{this.state.error && (
+							<details style={styles.details} open={true}>
+								<summary style={styles.summary}>🔍 Error Details (Diagnostic Mode)</summary>
 								<pre style={styles.errorText}>
-									{this.state.error.toString()}
-									{this.state.errorInfo?.componentStack}
+									<strong>Error Message:</strong> {this.state.error?.message || this.state.error?.toString() || 'Unknown error'}
+									{'\n\n'}
+									<strong>Error Name:</strong> {this.state.error?.name || 'Error'}
+									{'\n\n'}
+									<strong>Error Stack:</strong>
+									{'\n'}{this.state.error?.stack || 'No stack trace available'}
+									{'\n\n'}
+									<strong>Component Stack:</strong>
+									{'\n'}{this.state.errorInfo?.componentStack || 'No component stack available'}
 								</pre>
 							</details>
 						)}

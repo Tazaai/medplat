@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Award, BookOpen, Target, TrendingUp, Download, ExternalLink, CheckCircle2 } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+import CertificationDisplay from './CertificationDisplay'; // Phase 7: New certification system
+import { API_BASE } from '../config';
 
 export default function CertificationTab({ uid }) {
   const [pathways, setPathways] = useState([]);
@@ -13,6 +13,7 @@ export default function CertificationTab({ uid }) {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPathway, setSelectedPathway] = useState(null);
+  const [viewMode, setViewMode] = useState('phase7'); // 'phase7' or 'pathways'
 
   useEffect(() => {
     if (uid) {
@@ -114,17 +115,38 @@ export default function CertificationTab({ uid }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with view mode toggle */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Certification Pathways</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Certifications</h2>
           <p className="text-muted-foreground">
             Earn professional certifications by mastering specialty tracks
           </p>
         </div>
-        <Award className="h-12 w-12 text-amber-500" />
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'phase7' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('phase7')}
+          >
+            Phase 7 Certifications
+          </Button>
+          <Button
+            variant={viewMode === 'pathways' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('pathways')}
+          >
+            Certification Pathways
+          </Button>
+        </div>
       </div>
 
+      {/* Phase 7 Certification Display */}
+      {viewMode === 'phase7' && <CertificationDisplay />}
+
+      {/* Certification Pathways (Legacy) */}
+      {viewMode === 'pathways' && (
+        <>
       {/* Earned Certificates */}
       {certificates.length > 0 && (
         <Card className="border-amber-200 bg-amber-50">
@@ -283,6 +305,8 @@ export default function CertificationTab({ uid }) {
             <p className="text-lg text-muted-foreground">No pathways available</p>
           </CardContent>
         </Card>
+      )}
+        </>
       )}
     </div>
   );

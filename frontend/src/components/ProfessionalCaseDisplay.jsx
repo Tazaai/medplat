@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import ModernCaseDisplay from "./ModernCaseDisplay";
 import ConferencePanel from "./ConferencePanel";
 import { API_BASE } from "../config";
+import { formatParaclinical } from "../utils/paraclinicalFormatter";
 import {
   User, Clock, Heart, Activity, Thermometer, Wind, Droplets,
   Stethoscope, TestTube, Brain, Target, Shield, BookOpen,
@@ -592,46 +593,135 @@ export default function ProfessionalCaseDisplay({ caseData }) {
 
       {/* Paraclinical Investigations */}
       <SectionCard title="Paraclinical Investigations" icon={TestTube} defaultOpen={true}>
-        {renderContent(caseData.Paraclinical_Investigations)}
+        {(() => {
+          // Format paraclinical data if it's an object with labs/imaging
+          const paraclinicalData = caseData.Paraclinical_Investigations || caseData.paraclinical;
+          if (paraclinicalData && typeof paraclinicalData === 'object' && (paraclinicalData.labs || paraclinicalData.imaging)) {
+            const formatted = formatParaclinical(paraclinicalData);
+            if (!formatted.labs && !formatted.imaging) {
+              return <span className="text-gray-400 italic">Not provided</span>;
+            }
+            return (
+              <div className="space-y-4">
+                {formatted.labs && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3 text-sm">Laboratory Results:</h4>
+                    <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-green-400">
+                      {formatted.labs}
+                    </div>
+                  </div>
+                )}
+                {formatted.imaging && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3 text-sm">Imaging:</h4>
+                    <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-blue-400">
+                      {formatted.imaging}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          return renderContent(paraclinicalData || caseData.Paraclinical_Investigations);
+        })()}
       </SectionCard>
 
       {/* Differential Diagnoses */}
       <SectionCard title="Differential Diagnoses" icon={Brain} defaultOpen={true}>
         {Array.isArray(caseData.Differential_Diagnoses) ? (
           <div className="space-y-3">
-            {caseData.Differential_Diagnoses.map((diff, idx) => (
-              <div 
-                key={idx} 
-                className={`p-4 rounded-lg border-l-4 ${
-                  diff.status === 'ACCEPTED' ? 'bg-green-50 border-green-500' :
-                  diff.status === 'REJECTED' ? 'bg-red-50 border-red-500' :
-                  'bg-gray-50 border-gray-400'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-lg font-bold text-gray-900">{diff.name || diff}</h4>
-                  {diff.status && (
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                      diff.status === 'ACCEPTED' ? 'bg-green-200 text-green-900' :
-                      diff.status === 'REJECTED' ? 'bg-red-200 text-red-900' :
-                      'bg-yellow-200 text-yellow-900'
-                    }`}>
-                      {diff.status}
-                    </span>
+            {caseData.Differential_Diagnoses.filter(diff => {
+              // Filter out empty differentials
+              if (typeof diff === "string") return diff && diff.trim();
+              if (typeof diff === "object") {
+                const name = diff.name || diff.diagnosis || diff.label || "";
+                return name && String(name).trim();
+              }
+              return false;
+            }).map((diff, idx) => {
+              // Helper to clean differential text
+              const cleanDiffText = (text) => {
+                if (!text || typeof text !== 'string') return text;
+                return text.replace(/\s*\(Differential diagnosis\s*[-–—]\s*tier should be determined.*?\)\s*$/i, '')
+                          .replace(/\s*\(Differential diagnosis.*?tier.*?\)\s*$/i, '')
+                          .replace(/\s*-\s*tier should be determined.*$/i, '')
+                          .trim();
+              };
+              
+              // Handle string format (legacy)
+              if (typeof diff === "string") {
+                const cleaned = cleanDiffText(diff);
+                if (!cleaned) return null;
+                return (
+                  <div 
+                    key={idx} 
+                    className="p-4 rounded-lg border-l-4 bg-gray-50 border-gray-400"
+                  >
+                    <h4 className="text-lg font-bold text-gray-900">{cleaned}</h4>
+                  </div>
+                );
+              }
+              
+              // Handle object format
+              if (!diff || typeof diff !== "object") {
+                return null;
+              }
+              
+              // Helper to safely convert to string
+              const safeString = (value) => {
+                if (value == null) return "";
+                if (typeof value === "string") return value;
+                if (typeof value === "number" || typeof value === "boolean") return String(value);
+                if (Array.isArray(value)) return value.map(safeString).join(", ");
+                if (typeof value === "object") {
+                  if (value.text) return safeString(value.text);
+                  if (value.value) return safeString(value.value);
+                  if (value.label) return safeString(value.label);
+                  return JSON.stringify(value);
+                }
+                return String(value);
+              };
+              
+              const name = cleanDiffText(safeString(diff.name || diff.diagnosis || diff.label || ""));
+              const forText = safeString(diff.why_for || diff.FOR || "");
+              const againstText = safeString(diff.why_against || diff.AGAINST || "");
+              
+              return (
+                <div 
+                  key={idx} 
+                  className={`p-4 rounded-lg border-l-4 ${
+                    diff.status === 'ACCEPTED' ? 'bg-green-50 border-green-500' :
+                    diff.status === 'REJECTED' ? 'bg-red-50 border-red-500' :
+                    'bg-gray-50 border-gray-400'
+                  }`}
+                >
+                  {name && (
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-bold text-gray-900">{name}</h4>
+                    {diff.status && (
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        diff.status === 'ACCEPTED' ? 'bg-green-200 text-green-900' :
+                        diff.status === 'REJECTED' ? 'bg-red-200 text-red-900' :
+                        'bg-yellow-200 text-yellow-900'
+                      }`}>
+                        {diff.status}
+                      </span>
+                    )}
+                  </div>
+                  )}
+                  {forText && (
+                    <p className="text-sm text-green-700 mb-1">
+                      <strong>✓ Supporting:</strong> {forText}
+                    </p>
+                  )}
+                  {againstText && (
+                    <p className="text-sm text-red-700">
+                      <strong>✗ Against:</strong> {againstText}
+                    </p>
                   )}
                 </div>
-                {diff.why_for && (
-                  <p className="text-sm text-green-700 mb-1">
-                    <strong>✓ Supporting:</strong> {diff.why_for}
-                  </p>
-                )}
-                {diff.why_against && (
-                  <p className="text-sm text-red-700">
-                    <strong>✗ Against:</strong> {diff.why_against}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : renderContent(caseData.Differential_Diagnoses)}
       </SectionCard>

@@ -16,8 +16,12 @@ MedPlat is a clinical case simulator and gamified MCQ platform. Development foll
 ### 1. Clinical Case Generation
 - **1115 Medical Topics** across 30 specialties (Cardiology, Neurology, Emergency Medicine, etc.)
 - **AI-Powered Cases** using GPT-4o/4o-mini
+- **Universal Dynamic Generation**: Cases include reasoning chains, red flag hierarchies, pathophysiology layers, exam pearls, next-best-step algorithms, and more
+- **Guideline Cascade System**: Priority order: Local → National → Continental → USA → Global (WHO)
+- **LMIC Fallback**: Low- and Middle-Income Country alternatives provided when standard resources unavailable
 - **Region-Adaptive**: Guidelines for Denmark, US, UK, Germany, WHO (global)
 - **Multilingual**: English, Danish, Farsi, Arabic, Urdu, Spanish, German, + custom
+- **Global Development Framework**: All cases reviewed by universal improvement system
 
 ### 2. Gamified Learning (12-MCQ System)
 - Adaptive difficulty based on performance
@@ -74,6 +78,62 @@ CI & Deployment
 
 - CI uses GitHub Actions with the deploy workflow at `.github/workflows/deploy.yml`.
 - Secrets required in GitHub: `OPENAI_API_KEY`, `GCP_PROJECT`, `GCP_SA_KEY`, `FIREBASE_SERVICE_KEY`, `VITE_API_BASE`.
+
+## 🏗️ Universal Case Generation Architecture
+
+MedPlat uses a **universal dynamic case generation system** that produces comprehensive clinical cases with the following features:
+
+### Universal Schema Fields
+
+All generated cases include these dynamic fields (when available):
+- **reasoning_chain**: Stepwise diagnostic reasoning
+- **red_flag_hierarchy**: Critical/Important/Rare-dangerous flag categorization
+- **pathophysiology**: Organ-level, cellular, and variant pathophysiology
+- **pathophysiology_detail**: Cellular/molecular mechanisms, organ microanatomy, mechanistic links
+- **mapped_guideline_tiers**: Local, national, continental, USA, and global guidelines
+- **exam_pearls**: Clinical examination insights
+- **exam_pitfalls**: Common examination mistakes
+- **next_best_step_algorithms**: Decision trees for diagnostic steps
+- **LMIC fallback**: Low-resource alternatives for resource-limited settings
+- **dynamic_diagnostic_evidence**: Sensitivity, specificity, PPV, NPV, likelihood ratios
+
+### Guideline Priority Cascade
+
+MedPlat follows a strict guideline priority hierarchy:
+
+1. **Local Guidelines** (Highest Priority) - Institutional or regional guidelines
+2. **National Guidelines** - Country-specific guidelines
+3. **Continental Guidelines** - Regional/continental guidelines
+4. **USA Guidelines** - US-specific guidelines
+5. **Global Guidelines (WHO)** (Fallback) - International/WHO guidelines
+
+The frontend displays guidelines in this priority order, clearly indicating which tier each guideline belongs to.
+
+### LMIC Fallback System
+
+When standard resources are unavailable, MedPlat provides **Low- and Middle-Income Country (LMIC) alternatives**. These are clearly marked with an "LMIC FALLBACK" badge in the UI and include:
+- Resource-appropriate diagnostic alternatives
+- Cost-effective treatment options
+- Simplified management protocols suitable for limited-resource settings
+
+### Global Development Framework
+
+All cases are reviewed by the **Global Development Framework**, which ensures:
+- Universal field completeness
+- Specialist-level reasoning standards
+- Region-appropriate guideline application
+- LMIC fallback availability when needed
+
+This framework operates independently of backend internal panel systems and focuses on universal improvements applicable across all specialties.
+
+### Frontend Display
+
+The frontend (`UniversalCaseDisplay.jsx`) gracefully handles missing fields:
+- Missing fields show "Not provided" placeholders instead of crashing
+- All universal fields are conditionally rendered only when present
+- Guideline cascade is visually displayed with priority indicators
+- LMIC fallback sections are clearly marked with badges
+- Global Development Framework review badge appears on all cases
 
 Project guide & editing policy
 -----------------------------

@@ -12,6 +12,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import './VoicePlayer.css';
+import { API_BASE } from '../config';
 
 const VoicePlayer = ({ text, language = 'en-US', autoPlay = false }) => {
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -30,7 +31,7 @@ const VoicePlayer = ({ text, language = 'en-US', autoPlay = false }) => {
 			setIsLoading(true);
 			setError(null);
 
-			const apiUrl = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+			const apiUrl = API_BASE;
 			const response = await fetch(`${apiUrl}/api/voice/synthesize`, {
 				method: 'POST',
 				headers: {

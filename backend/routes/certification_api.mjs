@@ -7,7 +7,13 @@ import express from 'express';
 import { db } from '../firebaseClient.js';
 import { generateCertificatePDF, generateVerificationCode, verifyPathwayRequirements } from '../utils/pdf_generator.mjs';
 import { logEngagementEvent } from '../telemetry/telemetry_logger.mjs';
-import pathwaysData from '../data/pathways.json' assert { type: 'json' };
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pathwaysData = JSON.parse(readFileSync(join(__dirname, '../data/pathways.json'), 'utf8'));
 
 const router = express.Router();
 

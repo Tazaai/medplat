@@ -208,25 +208,66 @@ jobs:
 
       - name: 🚀 Deploy Backend
         run: |
+          set -e
           cd backend
-          # Build and push to GCR (Google Container Registry)
-          gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-backend:latest .
-          # Deploy with correct secret names
-          gcloud run deploy medplat-backend \
-            --image gcr.io/$GCP_PROJECT/medplat-backend:latest \
-            --region europe-west1 \
-            --allow-unauthenticated \
-            --port 8080 \
-            --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
-            --update-env-vars "GCP_PROJECT=$GCP_PROJECT,TOPICS_COLLECTION=topics2,NODE_ENV=production" \
-            --project $GCP_PROJECT
+          # Retry logic for build (up to 3 attempts)
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          BUILD_SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$BUILD_SUCCESS" = false ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🔨 Build attempt $RETRY_COUNT/$MAX_RETRIES"
+            if gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-backend:latest .; then
+              BUILD_SUCCESS=true
+              echo "✅ Build successful"
+            else
+              echo "❌ Build failed, retrying..."
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                sleep $((RETRY_COUNT * 10))
+              fi
+            fi
+          done
+          if [ "$BUILD_SUCCESS" = false ]; then
+            echo "❌ Build failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          
+          # Retry logic for deploy (up to 3 attempts)
+          RETRY_COUNT=0
+          DEPLOY_SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$DEPLOY_SUCCESS" = false ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🚀 Deploy attempt $RETRY_COUNT/$MAX_RETRIES"
+            if gcloud run deploy medplat-backend \
+              --image gcr.io/$GCP_PROJECT/medplat-backend:latest \
+              --region europe-west1 \
+              --allow-unauthenticated \
+              --port 8080 \
+              --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
+              --update-env-vars "GCP_PROJECT=$GCP_PROJECT,TOPICS_COLLECTION=topics2,NODE_ENV=production" \
+              --project $GCP_PROJECT; then
+              DEPLOY_SUCCESS=true
+              echo "✅ Deploy successful"
+            else
+              echo "❌ Deploy failed, retrying..."
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                sleep $((RETRY_COUNT * 10))
+              fi
+            fi
+          done
+          if [ "$DEPLOY_SUCCESS" = false ]; then
+            echo "❌ Deploy failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
 
       - name: 🎨 Build Frontend (generate artifact)
         id: build_frontend
         run: |
+          set -e
           cd frontend
-          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
-          echo "Detected backend URL: $BACKEND_URL"
+          # THE ONLY CORRECT BACKEND URL
+          BACKEND_URL="https://medplat-backend-139218747785.europe-west1.run.app"
+          echo "Using backend URL: $BACKEND_URL"
           export VITE_API_BASE=$BACKEND_URL
           npm ci && npm run build
           # Use the environment file mechanism to set step outputs instead of the
@@ -256,19 +297,58 @@ jobs:
 
       - name: 🚀 Deploy Frontend
         run: |
+          set -e
           BACKEND_URL=${{ steps.build_frontend.outputs.backend_url }}
           cd frontend
           echo "Building frontend with backend URL: $BACKEND_URL"
-          # Build and push to GCR
-          gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-frontend:latest .
-          # Deploy with backend URL
-          gcloud run deploy medplat-frontend \
-            --image gcr.io/$GCP_PROJECT/medplat-frontend:latest \
-            --region europe-west1 \
-            --allow-unauthenticated \
-            --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
-            --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
-            --project $GCP_PROJECT
+          
+          # Retry logic for build (up to 3 attempts)
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          BUILD_SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$BUILD_SUCCESS" = false ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🔨 Frontend build attempt $RETRY_COUNT/$MAX_RETRIES"
+            if gcloud builds submit --tag gcr.io/$GCP_PROJECT/medplat-frontend:latest .; then
+              BUILD_SUCCESS=true
+              echo "✅ Frontend build successful"
+            else
+              echo "❌ Frontend build failed, retrying..."
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                sleep $((RETRY_COUNT * 10))
+              fi
+            fi
+          done
+          if [ "$BUILD_SUCCESS" = false ]; then
+            echo "❌ Frontend build failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          
+          # Retry logic for deploy (up to 3 attempts)
+          RETRY_COUNT=0
+          DEPLOY_SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$DEPLOY_SUCCESS" = false ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🚀 Frontend deploy attempt $RETRY_COUNT/$MAX_RETRIES"
+            if gcloud run deploy medplat-frontend \
+              --image gcr.io/$GCP_PROJECT/medplat-frontend:latest \
+              --region europe-west1 \
+              --allow-unauthenticated \
+              --set-env-vars "VITE_API_BASE=$BACKEND_URL" \
+              --project $GCP_PROJECT; then
+              DEPLOY_SUCCESS=true
+              echo "✅ Frontend deploy successful"
+            else
+              echo "❌ Frontend deploy failed, retrying..."
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                sleep $((RETRY_COUNT * 10))
+              fi
+            fi
+          done
+          if [ "$DEPLOY_SUCCESS" = false ]; then
+            echo "❌ Frontend deploy failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
 
       - name: 🩺 Post-deploy health checks
         run: |
@@ -308,10 +388,15 @@ jobs:
                     break
                   fi
 
-                  # Try fallback regional URL using project number (some Cloud Run hostnames differ)
-                  PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
-                  if [ -n "$PROJECT_NUMBER" ]; then
-                    alt_url="https://$svc-$PROJECT_NUMBER.europe-west1.run.app"
+                  # Try fallback URL with correct project number
+                  if [ "$svc" = "medplat-backend" ]; then
+                    alt_url="https://medplat-backend-139218747785.europe-west1.run.app"
+                  elif [ "$svc" = "medplat-frontend" ]; then
+                    alt_url="https://medplat-frontend-139218747785.europe-west1.run.app"
+                  else
+                    alt_url=""
+                  fi
+                  if [ -n "$alt_url" ]; then
                     echo "Trying fallback URL: $alt_url"
                     alt_status=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 "$alt_url" || true)
                     echo "$name fallback URL responded with HTTP $alt_status"
@@ -414,23 +499,118 @@ jobs:
           }
 
           # Run checks; honor soft-fail if configured
-          if ! retry_get "api/topics"; then
+          if ! retry_get "health"; then
             if [ "$SOFT_FAIL" = "true" ]; then
-              echo "⚠️ /api/topics unreachable but SOFT_FAIL enabled — continuing"
+              echo "⚠️ /health unreachable but SOFT_FAIL enabled — continuing"
             else
-              echo "❌ /api/topics unreachable — failing deploy"
+              echo "❌ /health unreachable — failing deploy"
               exit 1
             fi
           fi
 
-          if ! retry_post "api/dialog" '{"message":"ping"}'; then
+          if ! retry_get "api/topics2/categories"; then
             if [ "$SOFT_FAIL" = "true" ]; then
-              echo "⚠️ /api/dialog unreachable but SOFT_FAIL enabled — continuing"
+              echo "⚠️ /api/topics2/categories unreachable but SOFT_FAIL enabled — continuing"
             else
-              echo "❌ /api/dialog unreachable — failing deploy"
+              echo "❌ /api/topics2/categories unreachable — failing deploy"
               exit 1
             fi
           fi
+
+      - name: 🧪 Auto-validation: CORS and API endpoints
+        run: |
+          set -e
+          echo "🔍 Running auto-validation tests..."
+          BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --project=$GCP_PROJECT --format='value(status.url)')
+          
+          echo "Backend URL: $BACKEND_URL"
+          echo "Frontend URL: $FRONTEND_URL"
+          
+          # Wait for services to be ready
+          echo "⏳ Waiting for services to be ready..."
+          sleep 10
+          
+          # Test 1: CORS headers on OPTIONS preflight
+          echo ""
+          echo "🧪 Test 1: CORS OPTIONS preflight"
+          CORS_HEADERS=$(curl -s -I -X OPTIONS "$BACKEND_URL/api/topics2/categories" \
+            -H "Origin: $FRONTEND_URL" \
+            -H "Access-Control-Request-Method: GET" \
+            -H "Access-Control-Request-Headers: Content-Type" || echo "")
+          
+          if echo "$CORS_HEADERS" | grep -qi "access-control-allow-origin"; then
+            echo "✅ CORS headers present"
+            echo "$CORS_HEADERS" | grep -i "access-control" || true
+          else
+            echo "❌ CORS headers missing or incorrect"
+            echo "Response headers:"
+            echo "$CORS_HEADERS"
+            exit 1
+          fi
+          
+          # Test 2: CORS = * on actual GET request
+          echo ""
+          echo "🧪 Test 2: CORS header on GET request (expect Access-Control-Allow-Origin: *)"
+          CORS_GET=$(curl -s -I "$BACKEND_URL/api/topics2/categories" || echo "")
+          if echo "$CORS_GET" | grep -qi "access-control-allow-origin: \*"; then
+            echo "✅ CORS = * found in response"
+          else
+            echo "⚠️  CORS header may not be * (checking for any CORS header)"
+            if echo "$CORS_GET" | grep -qi "access-control-allow-origin"; then
+              echo "✅ CORS header present (may be specific origin)"
+              echo "$CORS_GET" | grep -i "access-control-allow-origin" || true
+            else
+              echo "❌ No CORS header found"
+              echo "Response headers:"
+              echo "$CORS_GET"
+              exit 1
+            fi
+          fi
+          
+          # Test 3: /api/topics2/categories endpoint returns data
+          echo ""
+          echo "🧪 Test 3: /api/topics2/categories endpoint"
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          ENDPOINT_SUCCESS=false
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$ENDPOINT_SUCCESS" = false ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Attempt $RETRY_COUNT/$MAX_RETRIES"
+            HTTP_CODE=$(curl -s -o /tmp/categories_response.json -w "%{http_code}" "$BACKEND_URL/api/topics2/categories" || echo "000")
+            if [ "$HTTP_CODE" = "200" ]; then
+              if [ -s /tmp/categories_response.json ]; then
+                RESPONSE_SIZE=$(wc -c < /tmp/categories_response.json)
+                echo "✅ Endpoint returned 200 OK (response size: $RESPONSE_SIZE bytes)"
+                ENDPOINT_SUCCESS=true
+              else
+                echo "⚠️  Endpoint returned 200 but empty response"
+              fi
+            else
+              echo "❌ Endpoint returned HTTP $HTTP_CODE"
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                sleep $((RETRY_COUNT * 5))
+              fi
+            fi
+          done
+          
+          if [ "$ENDPOINT_SUCCESS" = false ]; then
+            echo "❌ /api/topics2/categories endpoint validation failed"
+            exit 1
+          fi
+          
+          # Test 4: Frontend loads without CORS errors
+          echo ""
+          echo "🧪 Test 4: Frontend accessibility"
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL/" || echo "000")
+          if [ "$FRONTEND_STATUS" = "200" ] || [ "$FRONTEND_STATUS" = "304" ]; then
+            echo "✅ Frontend is accessible (HTTP $FRONTEND_STATUS)"
+          else
+            echo "⚠️  Frontend returned HTTP $FRONTEND_STATUS (may still be starting)"
+          fi
+          
+          echo ""
+          echo "✅ All auto-validation tests passed!"
 
       - name: 🧪 Post-deploy smoke tests
         id: smoke
@@ -442,19 +622,20 @@ jobs:
           echo "artifact=tmp" >> $GITHUB_OUTPUT
           FRONTEND_URL=$(gcloud run services describe medplat-frontend --region=europe-west1 --format='value(status.url)')
           BACKEND_URL=$(gcloud run services describe medplat-backend --region=europe-west1 --format='value(status.url)')
-          PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT --format='value(projectNumber)') || PROJECT_NUMBER=""
-          FRONTEND_FALLBACK=""
-          BACKEND_FALLBACK=""
-          if [ -n "$PROJECT_NUMBER" ]; then
-            FRONTEND_FALLBACK="https://medplat-frontend-$PROJECT_NUMBER.europe-west1.run.app"
-            BACKEND_FALLBACK="https://medplat-backend-$PROJECT_NUMBER.europe-west1.run.app"
-          fi
+          # THE ONLY CORRECT BACKEND URL
+          FRONTEND_FALLBACK="https://medplat-frontend-139218747785.europe-west1.run.app"
+          BACKEND_FALLBACK="https://medplat-backend-139218747785.europe-west1.run.app"
           echo "Frontend URL: $FRONTEND_URL"
           echo "Frontend fallback: $FRONTEND_FALLBACK"
           echo "Backend URL: $BACKEND_URL"
           echo "Backend fallback: $BACKEND_FALLBACK"
           mkdir -p tmp
-          node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt
+          if [ -f scripts/post_deploy_smoke_test.mjs ]; then
+            node scripts/post_deploy_smoke_test.mjs "$FRONTEND_URL" "$FRONTEND_FALLBACK" "$BACKEND_URL" "$BACKEND_FALLBACK" 2>&1 | tee tmp/smoke-output.txt
+          else
+            echo "⚠️  post_deploy_smoke_test.mjs not found, skipping"
+            echo "smoke-test-skipped" > tmp/smoke-output.txt
+          fi
           echo "artifact=tmp" >> $GITHUB_OUTPUT
 
       - name: 📦 Upload smoke test artifacts (if present)

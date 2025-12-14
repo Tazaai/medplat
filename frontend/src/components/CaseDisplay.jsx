@@ -1,5 +1,6 @@
 // ~/medplat/frontend/src/components/CaseDisplay.jsx
 import React, { useState } from "react";
+import { formatParaclinical } from "../utils/paraclinicalFormatter";
 import {
   ChevronDown, 
   ChevronUp, 
@@ -428,7 +429,7 @@ function PanelDiscussion({ caseData }) {
                 'bg-yellow-100 text-yellow-900'
               }`}>
                 <div className="flex items-center justify-between">
-                  <span>{diff.diagnosis}</span>
+                  <span>{typeof diff.diagnosis === "string" ? diff.diagnosis : (diff.diagnosis?.name || diff.diagnosis?.label || String(diff.diagnosis || ""))}</span>
                   <span className="text-sm font-semibold px-2 py-1 bg-white bg-opacity-50 rounded">
                     {diff.status}
                   </span>
@@ -596,74 +597,168 @@ export default function CaseDisplay({ caseData }) {
   const isValidated = caseData.meta?.reviewed_by_internal_panel;
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto px-4 py-6">
       {/* Header with Validation Badge */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold mb-3">{caseData.Topic}</h2>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 rounded-xl shadow-xl">
+        <h2 className="text-3xl font-bold mb-4">{caseData.Topic}</h2>
         {isValidated && (
-          <div className="flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-2 w-fit shadow-sm">
+          <div className="flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-2 w-fit shadow-sm mb-4">
             <CheckCircle2 className="w-5 h-5" />
             <span className="text-sm font-semibold">✅ Validated by Internal Expert Panel</span>
           </div>
         )}
-        <div className="mt-3 flex flex-wrap gap-4 text-sm">
-          {caseData.meta?.age && <span>👤 {caseData.meta.age} years old</span>}
+        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          {caseData.meta?.age && <span className="flex items-center gap-1">👤 {caseData.meta.age} years old</span>}
           {caseData.meta?.sex && <span>{caseData.meta.sex}</span>}
-          {caseData.meta?.region && <span>📍 {caseData.meta.region}</span>}
+          {caseData.meta?.region && <span className="flex items-center gap-1">📍 {caseData.meta.region}</span>}
         </div>
       </div>
 
       {/* Timeline */}
       {caseData.Timeline && (
         <CollapsibleSection title="Timeline & Onset" icon={Clock} defaultOpen={true}>
-          {renderContent(caseData.Timeline)}
+          <div className="text-gray-700 leading-relaxed">
+            {renderContent(caseData.Timeline)}
+          </div>
         </CollapsibleSection>
       )}
 
       {/* History */}
-      <CollapsibleSection title="Patient History" icon={Stethoscope} defaultOpen={true}>
-        {caseData.History_Full ? renderContent(caseData.History_Full) : renderContent(caseData.Patient_History)}
+      <CollapsibleSection title="History" icon={BookOpen} defaultOpen={true}>
+        <div className="text-gray-700 leading-relaxed">
+          {caseData.History_Full ? renderContent(caseData.History_Full) : renderContent(caseData.Patient_History)}
+        </div>
         <TeachingPearls teaching={caseData.Teaching} />
       </CollapsibleSection>
 
       {/* Examination */}
-      <CollapsibleSection title="Physical Examination" icon={Activity}>
+      <CollapsibleSection title="Physical Examination" icon={Stethoscope} defaultOpen={true}>
         {caseData.Vitals && Object.keys(caseData.Vitals).length > 0 && (
-          <div className="mb-3 p-2 bg-gray-50 rounded">
-            <h5 className="font-semibold mb-1">Vital Signs:</h5>
-            {renderContent(caseData.Vitals)}
+          <div className="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+            <h5 className="font-semibold mb-2 text-blue-900">Vital Signs:</h5>
+            <div className="text-gray-700">
+              {renderContent(caseData.Vitals)}
+            </div>
           </div>
         )}
-        {caseData.Exam_Full ? renderContent(caseData.Exam_Full) : renderContent(caseData.Objective_Findings)}
+        <div className="text-gray-700 leading-relaxed">
+          {caseData.Exam_Full ? renderContent(caseData.Exam_Full) : renderContent(caseData.Objective_Findings)}
+        </div>
       </CollapsibleSection>
 
       {/* Investigations */}
-      <CollapsibleSection title="Paraclinical Investigations" icon={TestTube}>
-        {renderContent(caseData.Paraclinical_Investigations)}
+      <CollapsibleSection title="Paraclinical Investigations" icon={TestTube} defaultOpen={true}>
+        {(() => {
+          // Format paraclinical data if it's an object with labs/imaging
+          const paraclinicalData = caseData.Paraclinical_Investigations || caseData.paraclinical;
+          if (paraclinicalData && typeof paraclinicalData === 'object' && (paraclinicalData.labs || paraclinicalData.imaging)) {
+            const formatted = formatParaclinical(paraclinicalData);
+            if (!formatted.labs && !formatted.imaging) {
+              return <span className="text-gray-400 italic">Not provided</span>;
+            }
+            return (
+              <div className="space-y-4">
+                {formatted.labs && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3 text-sm">Laboratory Results:</h4>
+                    <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-green-400">
+                      {formatted.labs}
+                    </div>
+                  </div>
+                )}
+                {formatted.imaging && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3 text-sm">Imaging:</h4>
+                    <div className="text-gray-800 bg-gray-50 p-4 rounded border-l-4 border-blue-400">
+                      {formatted.imaging}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          return renderContent(paraclinicalData || caseData.Paraclinical_Investigations);
+        })()}
       </CollapsibleSection>
 
       {/* Differentials */}
-      <CollapsibleSection title="Differential Diagnoses" icon={Brain}>
+      <CollapsibleSection title="Differential Diagnoses" icon={Brain} defaultOpen={true}>
         {caseData.Differential_Diagnoses && caseData.Differential_Diagnoses.length > 0 ? (
           <ul className="space-y-2">
-            {caseData.Differential_Diagnoses.map((diff, idx) => (
-              <li key={idx} className="border-l-4 border-gray-300 pl-3">
-                <div className="font-semibold">
-                  {diff.name}
-                  {diff.status && (
-                    <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
-                      diff.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                      diff.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {diff.status}
-                    </span>
+            {caseData.Differential_Diagnoses.filter(diff => {
+              // Filter out empty differentials
+              if (typeof diff === "string") return diff && diff.trim();
+              if (typeof diff === "object") {
+                const name = diff.name || diff.diagnosis || diff.label || "";
+                return name && String(name).trim();
+              }
+              return false;
+            }).map((diff, idx) => {
+              // Helper to clean differential text
+              const cleanDiffText = (text) => {
+                if (!text || typeof text !== 'string') return text;
+                return text.replace(/\s*\(Differential diagnosis\s*[-–—]\s*tier should be determined.*?\)\s*$/i, '')
+                          .replace(/\s*\(Differential diagnosis.*?tier.*?\)\s*$/i, '')
+                          .replace(/\s*-\s*tier should be determined.*$/i, '')
+                          .trim();
+              };
+              
+              // Handle string format (legacy)
+              if (typeof diff === "string") {
+                const cleaned = cleanDiffText(diff);
+                if (!cleaned) return null;
+                return (
+                  <li key={idx} className="border-l-4 border-blue-300 pl-4 py-2 mb-2 bg-gray-50 rounded-r">
+                    <div className="font-semibold text-gray-900">{cleaned}</div>
+                  </li>
+                );
+              }
+              
+              // Handle object format
+              if (!diff || typeof diff !== "object") {
+                return null;
+              }
+              
+              // Helper to safely convert to string
+              const safeString = (value) => {
+                if (value == null) return "";
+                if (typeof value === "string") return value;
+                if (typeof value === "number" || typeof value === "boolean") return String(value);
+                if (Array.isArray(value)) return value.map(safeString).join(", ");
+                if (typeof value === "object") {
+                  if (value.text) return safeString(value.text);
+                  if (value.value) return safeString(value.value);
+                  if (value.label) return safeString(value.label);
+                  return JSON.stringify(value);
+                }
+                return String(value);
+              };
+              
+              const name = cleanDiffText(safeString(diff.name || diff.diagnosis || diff.label || ""));
+              const forText = safeString(diff.why_for || diff.FOR || "");
+              const againstText = safeString(diff.why_against || diff.AGAINST || "");
+              
+              return (
+                <li key={idx} className="border-l-4 border-blue-300 pl-4 py-2 mb-2 bg-gray-50 rounded-r">
+                  {name && (
+                  <div className="font-semibold text-gray-900 mb-1">
+                    {name}
+                    {diff.status && (
+                      <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                        diff.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                        diff.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {diff.status}
+                      </span>
+                    )}
+                  </div>
                   )}
-                </div>
-                {diff.why_for && <p className="text-sm text-green-700 mt-1">✓ For: {diff.why_for}</p>}
-                {diff.why_against && <p className="text-sm text-red-700">✗ Against: {diff.why_against}</p>}
-              </li>
-            ))}
+                  {forText && <p className="text-sm text-green-700 mt-1 ml-1">✓ For: {forText}</p>}
+                  {againstText && <p className="text-sm text-red-700 ml-1">✗ Against: {againstText}</p>}
+                </li>
+              );
+            })}
           </ul>
         ) : renderContent(caseData.Differential_Diagnoses)}
       </CollapsibleSection>
@@ -675,18 +770,22 @@ export default function CaseDisplay({ caseData }) {
 
       {/* Final Diagnosis */}
       <CollapsibleSection title="Final Diagnosis" icon={Target} defaultOpen={true} highlight={true}>
-        <div className="text-lg">
-          <strong className="text-blue-900">{caseData.Final_Diagnosis?.Diagnosis}</strong>
-          {caseData.Final_Diagnosis?.Rationale && (
-            <p className="mt-2 text-gray-700">{caseData.Final_Diagnosis.Rationale}</p>
-          )}
+        <div className="text-gray-700 leading-relaxed">
+          <div className="text-lg">
+            <strong className="text-blue-900">{caseData.Final_Diagnosis?.Diagnosis}</strong>
+            {caseData.Final_Diagnosis?.Rationale && (
+              <p className="mt-2 text-gray-700">{caseData.Final_Diagnosis.Rationale}</p>
+            )}
+          </div>
         </div>
       </CollapsibleSection>
 
       {/* Management */}
       <CollapsibleSection title="Management" icon={Shield} defaultOpen={true} highlight={true}>
-        {caseData.Management_Full?.timing_windows && <TimingWindows windows={caseData.Management_Full.timing_windows} />}
-        {caseData.Management_Full ? renderContent(caseData.Management_Full) : renderContent(caseData.Management)}
+        <div className="text-gray-700 leading-relaxed">
+          {caseData.Management_Full?.timing_windows && <TimingWindows windows={caseData.Management_Full.timing_windows} />}
+          {caseData.Management_Full ? renderContent(caseData.Management_Full) : renderContent(caseData.Management)}
+        </div>
       </CollapsibleSection>
 
       {/* Pathophysiology */}

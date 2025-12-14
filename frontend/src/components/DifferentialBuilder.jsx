@@ -68,15 +68,32 @@ export default function DifferentialBuilder({
 				{studentDifferentials.length > 0 && (
 					<div className="diagnosis-list">
 						<h4>Your Differentials ({studentDifferentials.length})</h4>
-						{studentDifferentials.map((diff, index) => (
+						{studentDifferentials.map((diff, index) => {
+							// Safely convert diagnosis to string
+							const safeString = (value) => {
+								if (value == null) return "";
+								if (typeof value === "string") return value;
+								if (typeof value === "number" || typeof value === "boolean") return String(value);
+								if (Array.isArray(value)) return value.map(safeString).join(", ");
+								if (typeof value === "object") {
+									if (value.text) return safeString(value.text);
+									if (value.value) return safeString(value.value);
+									if (value.label || value.name || value.diagnosis) return safeString(value.label || value.name || value.diagnosis);
+									return JSON.stringify(value);
+								}
+								return String(value);
+							};
+							const diagnosisText = safeString(diff.diagnosis || "");
+							return (
 							<div key={index} className="diagnosis-item">
-								<span className="diagnosis-name">{diff.diagnosis}</span>
+									<span className="diagnosis-name">{diagnosisText}</span>
 								<span className="diagnosis-probability">
 									{(diff.probability * 100).toFixed(0)}%
 								</span>
 								<button onClick={() => handleRemoveDiagnosis(index)}>❌</button>
 							</div>
-						))}
+							);
+						})}
 					</div>
 				)}
 
@@ -174,13 +191,32 @@ export default function DifferentialBuilder({
 					{comparisonResult.critical_misses?.length > 0 && (
 						<div className="critical-misses">
 							<h4>⚠️ Critical Misses</h4>
-							{comparisonResult.critical_misses.map((miss, index) => (
+							{comparisonResult.critical_misses.map((miss, index) => {
+								// Safely convert diagnosis to string
+								const safeString = (value) => {
+									if (value == null) return "";
+									if (typeof value === "string") return value;
+									if (typeof value === "number" || typeof value === "boolean") return String(value);
+									if (Array.isArray(value)) return value.map(safeString).join(", ");
+									if (typeof value === "object") {
+										if (value.text) return safeString(value.text);
+										if (value.value) return safeString(value.value);
+										if (value.label || value.name || value.diagnosis) return safeString(value.label || value.name || value.diagnosis);
+										return JSON.stringify(value);
+									}
+									return String(value);
+								};
+								const diagnosisText = safeString(miss.diagnosis || "");
+								const whyCriticalText = safeString(miss.why_critical || "");
+								const teachingPointText = safeString(miss.teaching_point || "");
+								return (
 								<div key={index} className="miss-item">
-									<strong>{miss.diagnosis}</strong> (Expert: {(miss.expert_probability * 100).toFixed(0)}%)
-									<p>{miss.why_critical}</p>
-									<p className="teaching-point"><em>{miss.teaching_point}</em></p>
+										{diagnosisText && <strong>{diagnosisText}</strong>} (Expert: {(miss.expert_probability * 100).toFixed(0)}%)
+										{whyCriticalText && <p>{whyCriticalText}</p>}
+										{teachingPointText && <p className="teaching-point"><em>{teachingPointText}</em></p>}
 								</div>
-							))}
+								);
+							})}
 						</div>
 					)}
 

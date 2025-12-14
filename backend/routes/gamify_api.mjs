@@ -3,6 +3,7 @@ import express from 'express';
 import { getOpenAIClient } from '../openaiClient.js';
 import { logOpenAICall } from '../telemetry/telemetry_logger.mjs';
 import { registerTelemetry } from '../engagement/engagement_core.mjs';
+import { runMCQGenerator, upgradeMCQReasoning } from '../intelligence_core/ai_model_admin.mjs';
 
 export default function gamifyApi() {
   const router = express.Router();
@@ -124,19 +125,92 @@ Requirements:
 
 DO NOT ask about facts from the case above. Create NEW scenarios testing clinical application.`;
 
-      // Call OpenAI with optimized settings
+      // Phase 7: Call OpenAI with timeout protection and lightweight mode for GPT-4o-mini
       const startTime = Date.now();
       const model = process.env.GAMIFY_MODEL || 'gpt-4o-mini';
+      const isLightweight = model.includes('mini');
       
-      const response = await client.chat.completions.create({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        temperature: 0.9, // Increased for more creative vignette generation
-        max_tokens: 3000, // Increased for detailed clinical reasoning explanations
-      });
+      // Import timeout helper
+      const { withTimeoutAndRetry } = await import('../utils/api_helpers.mjs');
+      
+      // Build lightweight prompt for retry
+      const buildLightweightPrompt = () => {
+        return `You are a medical education expert creating CLINICAL REASONING questions.
+
+Generate exactly 12 multiple-choice questions (MCQs) with these rules:
+
+**QUESTION TYPES:**
+- Questions 1-3: DATA INTERPRETATION - New patient scenarios
+- Questions 4-6: DIFFERENTIAL DIAGNOSIS - Compare similar conditions
+- Questions 7-9: MANAGEMENT DECISIONS - Next-step/treatment choices
+- Questions 10-12: COMPLICATIONS & PATHOPHYSIOLOGY - Predict outcomes
+
+**REQUIREMENTS:**
+- Each question = new patient vignette (NOT about the provided case)
+- 4 answer choices (A, B, C, D)
+- Brief explanation with reasoning
+- Brief guideline citation when relevant
+
+**OUTPUT FORMAT (strict JSON):**
+{
+  "mcqs": [
+    {
+      "id": "q1",
+      "question": "Patient vignette...",
+      "choices": ["A: ...", "B: ...", "C: ...", "D: ..."],
+      "correct": "A: ...",
+      "explanation": "Brief explanation",
+      "step": 1,
+      "type": "data_interpretation",
+      "reasoning_type": "differential_diagnosis",
+      "guideline_reference": "General Guidelines"
+    }
+  ]
+}
+
+Return ONLY valid JSON (no markdown, no commentary).`;
+      };
+      
+      let response;
+      try {
+        response = await withTimeoutAndRetry(
+          async () => await client.chat.completions.create({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage },
+            ],
+            temperature: 0.9,
+            max_tokens: isLightweight ? 2500 : 3000, // Reduced for lightweight mode
+          }),
+          120000, // Phase 7: 120 second timeout
+          0 // No retry on first attempt
+        );
+      } catch (firstError) {
+        // Phase 7: If first attempt fails and not already lightweight, retry with lightweight mode
+        if (!isLightweight && (firstError.message === 'API_TIMEOUT' || firstError.name === 'AbortError')) {
+          console.warn('⚠️ First attempt timed out, retrying with lightweight mode...');
+          const lightweightPrompt = buildLightweightPrompt();
+          const lightweightUserMessage = `Generate 12 clinical reasoning questions about ${caseData.meta?.topic || 'this condition'} using NEW patient vignettes.
+Return ONLY valid JSON with "mcqs" array (no markdown, no commentary).`;
+          
+          response = await withTimeoutAndRetry(
+            async () => await client.chat.completions.create({
+              model,
+              messages: [
+                { role: 'system', content: lightweightPrompt },
+                { role: 'user', content: lightweightUserMessage },
+              ],
+              temperature: 0.9,
+              max_tokens: 2500, // Reduced for lightweight retry
+            }),
+            120000, // 120 second timeout
+            0 // No further retries
+          );
+        } else {
+          throw firstError; // Re-throw if not a timeout or already lightweight
+        }
+      }
 
       const latencyMs = Date.now() - startTime;
       const rawText = response?.choices?.[0]?.message?.content || '';
@@ -201,8 +275,22 @@ DO NOT ask about facts from the case above. Create NEW scenarios testing clinica
         });
       }
 
+      // Use model admin for MCQ generation and upgrade
+      let mcqs;
+      try {
+        // Generate MCQs using model admin
+        const generatedMCQs = await runMCQGenerator(caseData);
+        // Upgrade reasoning using upgrade model
+        const upgraded = await upgradeMCQReasoning(generatedMCQs);
+        mcqs = Array.isArray(upgraded) ? upgraded : (upgraded.mcqs || []);
+      } catch (modelAdminError) {
+        console.warn('[GAMIFY] Model admin MCQ generation failed, falling back to original method:', modelAdminError.message);
+        // Fallback to original parsed MCQs
+        mcqs = parsed.mcqs || [];
+      }
+
       // Ensure we have exactly 12 questions
-      let mcqs = parsed.mcqs.slice(0, 12);
+      mcqs = mcqs.slice(0, 12);
       
       // Fill with fallback questions if we got fewer than 12
       while (mcqs.length < 12) {

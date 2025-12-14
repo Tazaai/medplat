@@ -7,24 +7,25 @@
  * @param {number} maxRetries - Maximum retry attempts (default 1)
  * @returns {Promise} - The API result with timeout and retry protection
  */
-export async function withTimeoutAndRetry(apiCall, timeout = 8000, maxRetries = 1) {
+// Phase 7: Increased timeout to 120 seconds for enhanced prompts
+export async function withTimeoutAndRetry(apiCall, timeout = 120000, maxRetries = 1) {
   let lastError;
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      // Create abort controller for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API_TIMEOUT')), timeout)
+      );
       
-      // Execute API call with timeout
+      // Execute API call with timeout using Promise.race
+      // Note: OpenAI SDK doesn't support AbortController signal parameter,
+      // so we rely on Promise.race for timeout handling
       const result = await Promise.race([
-        apiCall(controller.signal),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('API_TIMEOUT')), timeout)
-        )
+        typeof apiCall === 'function' ? apiCall() : apiCall,
+        timeoutPromise
       ]);
       
-      clearTimeout(timeoutId);
       return result;
       
     } catch (error) {

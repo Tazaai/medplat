@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { BarChart3, Users, Trophy, BookOpen, TrendingUp, Download, Activity } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+import ProgressDashboard from './ProgressDashboard'; // Phase 7: User progress dashboard
+import { API_BASE } from '../config';
 
 export default function AnalyticsDashboardTab({ uid, isAdmin }) {
   const [overview, setOverview] = useState(null);
@@ -16,6 +16,7 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
   const [activityTimeline, setActivityTimeline] = useState([]);
   const [timeRange, setTimeRange] = useState('7d');
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState(isAdmin ? 'admin' : 'progress'); // 'admin' or 'progress'
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -132,18 +133,9 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
     }
   };
 
+  // Show progress dashboard for non-admin users
   if (!isAdmin) {
-    return (
-      <div className="p-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Admin access required to view analytics dashboard.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <ProgressDashboard />;
   }
 
   if (loading) {
@@ -152,7 +144,7 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
 
   return (
     <div className="space-y-4 p-4">
-      {/* Header with controls */}
+      {/* Header with controls and view mode toggle */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
@@ -164,6 +156,20 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
               <CardDescription>Platform performance metrics and insights</CardDescription>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant={viewMode === 'admin' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('admin')}
+              >
+                Admin Analytics
+              </Button>
+              <Button
+                variant={viewMode === 'progress' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('progress')}
+              >
+                My Progress
+              </Button>
               <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -175,14 +181,23 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
                   <SelectItem value="all">All time</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={exportData} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
+              {viewMode === 'admin' && (
+                <Button onClick={exportData} variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
       </Card>
+
+      {/* Show Progress Dashboard for progress view */}
+      {viewMode === 'progress' && <ProgressDashboard />}
+
+      {/* Admin Analytics (only show in admin mode) */}
+      {viewMode === 'admin' && (
+        <>
 
       {/* Overview metrics */}
       {overview && (
@@ -390,6 +405,8 @@ export default function AnalyticsDashboardTab({ uid, isAdmin }) {
             </div>
           </CardContent>
         </Card>
+      )}
+        </>
       )}
     </div>
   );

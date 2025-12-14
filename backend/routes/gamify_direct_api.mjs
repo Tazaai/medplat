@@ -58,8 +58,58 @@ export default function gamifyDirectApi() {
 
       console.log(`🎯 Direct gamification: ${topic} (${language}, ${region})`);
 
+      // Phase 7: Lightweight mode for GPT-4o-mini to prevent stalling
+      const isLightweight = (model || 'gpt-4o-mini').includes('mini');
+      
+      // Helper: Build lightweight prompt for GPT-4o-mini
+      const buildLightweightPrompt = () => {
+        return `You are a medical education expert creating CLINICAL REASONING questions.
+
+TOPIC: ${topic}
+LANGUAGE: ${language}
+REGION: ${region}
+LEVEL: ${level}
+
+Generate exactly 12 multiple-choice questions (MCQs) with these rules:
+
+**QUESTION TYPES:**
+- Questions 1-3: DATA INTERPRETATION - New patient scenarios with vitals/labs/imaging
+- Questions 4-6: DIFFERENTIAL DIAGNOSIS - Compare similar conditions
+- Questions 7-9: MANAGEMENT DECISIONS - Next-step/treatment choices
+- Questions 10-12: COMPLICATIONS & PATHOPHYSIOLOGY - Predict outcomes
+
+**REQUIREMENTS:**
+- Each question = new patient vignette (NOT about a specific case)
+- 4 answer choices (A, B, C, D)
+- Expert explanation with WHY correct and WHY wrong
+- Brief guideline citation when relevant
+
+**OUTPUT FORMAT (strict JSON):**
+{
+  "mcqs": [
+    {
+      "id": "q1",
+      "question": "Patient vignette...",
+      "choices": ["A: ...", "B: ...", "C: ...", "D: ..."],
+      "correct": "A: ...",
+      "explanation": "Brief explanation with reasoning",
+      "step": 1,
+      "type": "data_interpretation",
+      "reasoning_type": "differential_diagnosis",
+      "guideline_reference": "General Guidelines"
+    }
+  ]
+}
+
+Return ONLY valid JSON (no markdown, no commentary).`;
+      };
+
+      try {
       // Build comprehensive system prompt for 12-question adaptive quiz
-      const systemPrompt = `You are a medical education expert creating CLINICAL REASONING questions for board exams (USMLE Step 2/3, MRCP, FRACP).
+      // Phase 7: Use lightweight mode for GPT-4o-mini to prevent stalling
+      const systemPrompt = isLightweight 
+        ? buildLightweightPrompt()
+        : `You are a medical education expert creating CLINICAL REASONING questions for board exams (USMLE Step 2/3, MRCP, FRACP).
 
 TOPIC: ${topic}
 LANGUAGE: ${language}
@@ -168,20 +218,51 @@ Requirements:
 
 Return ONLY valid JSON with "mcqs" array (no markdown, no commentary).`;
 
-      // Call OpenAI with timeout protection
-      const completion = await withTimeoutAndRetry(
-        async () => await client.chat.completions.create({
-          model: model || 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.8,
-          max_tokens: 4000,
-        }),
-        8000, // 8 second timeout
-        1 // 1 retry
-      );
+      // Phase 7: Call OpenAI with 120-second timeout and retry with simplified prompt
+      let completion;
+      try {
+        completion = await withTimeoutAndRetry(
+          async () => await client.chat.completions.create({
+            model: model || 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.8,
+            max_tokens: isLightweight ? 3000 : 4000, // Reduced for lightweight mode
+          }),
+          120000, // Phase 7: 120 second timeout for enhanced prompts
+          0 // No retry on first attempt (will retry with lightweight if fails)
+        );
+      } catch (firstError) {
+        // Phase 7: If first attempt fails and not already lightweight, retry with lightweight mode
+        if (!isLightweight && (firstError.message === 'API_TIMEOUT' || firstError.name === 'AbortError')) {
+          console.warn('⚠️ First attempt timed out, retrying with lightweight mode...');
+          const lightweightPrompt = buildLightweightPrompt();
+          const lightweightUserPrompt = `Generate 12 clinical reasoning MCQs for: ${topic}
+Requirements:
+- All questions in ${language}
+- Clinical context: ${region}
+- Difficulty: ${level}
+- Return ONLY valid JSON with "mcqs" array (no markdown, no commentary).`;
+          
+          completion = await withTimeoutAndRetry(
+            async () => await client.chat.completions.create({
+              model: model || 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: lightweightPrompt },
+                { role: 'user', content: lightweightUserPrompt },
+              ],
+              temperature: 0.8,
+              max_tokens: 3000, // Reduced for lightweight retry
+            }),
+            120000, // 120 second timeout
+            0 // No further retries
+          );
+        } else {
+          throw firstError; // Re-throw if not a timeout or already lightweight
+        }
+      }
 
       const rawText = completion.choices[0]?.message?.content || '';
       console.log('📦 Raw MCQ response length:', rawText.length);

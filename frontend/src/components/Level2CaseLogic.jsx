@@ -4,6 +4,9 @@ import useLevel2CaseEngine from "./useLevel2CaseEngine";
 import { API_BASE } from "../config";
 import { db } from "../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../contexts/AuthContext";
+import CaseSummaryPanel from "./CaseSummaryPanel";
+import { safeFetchQuiz } from "../utils/safeFetch"; // Phase 7: Safe fetch with timeout and retry
 
 /**
  * 🧭 @copilot: Adaptive Quiz UI with Tier-Based Feedback
@@ -35,9 +38,12 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
  */
 
 export default function Level2CaseLogic({ caseData, gamify = true }) {
+  const { uid } = useAuth() || {};
   const [reviewMode, setReviewMode] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(true);
   const [encouragement, setEncouragement] = useState("");
+  const [realTimeEncouragement, setRealTimeEncouragement] = useState("");
   const [levelTitle, setLevelTitle] = useState("Medical Student");
   const {
     questions,
@@ -45,10 +51,18 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     currentIndex,
     answers,
     answerQuestion,
+    continueToNext,
     resetQuiz,
     score,
     isComplete,
     isAnswering,
+    showFeedback,
+    lastAnswerCorrect,
+    lastAnswerPoints,
+    consecutiveCorrect,
+    consecutiveIncorrect,
+    currentDifficulty,
+    questionTypes,
   } = useLevel2CaseEngine([]);
 
   // Fetch MCQs for this case (or use pre-generated MCQs from direct gamification)
@@ -59,9 +73,9 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
       console.log("🔍 caseData.mcqs exists?", !!caseData?.mcqs);
       console.log("🔍 caseData.mcqs is array?", Array.isArray(caseData?.mcqs));
       
-      // If MCQs already exist in caseData (direct gamification), use them directly
-      if (caseData?.mcqs && Array.isArray(caseData.mcqs)) {
-        console.log("✅ Using pre-generated MCQs from direct gamification, count:", caseData.mcqs.length);
+      // If MCQs already exist in caseData (from universal system or direct gamification), use them directly
+      if (caseData?.mcqs && Array.isArray(caseData.mcqs) && caseData.mcqs.length > 0) {
+        console.log("✅ Using pre-generated MCQs from universal system, count:", caseData.mcqs.length);
         setQuestions(caseData.mcqs);
         setLoading(false);
         return;
@@ -71,7 +85,8 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
       // Otherwise, fetch MCQs via /api/gamify (traditional flow)
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/gamify`, {
+        // Phase 7: Use safe fetch with 90-second timeout and retry logic
+        const res = await safeFetchQuiz(`${API_BASE}/api/gamify`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -79,12 +94,19 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
             text: JSON.stringify(caseData),
           }),
         });
+        
         const data = await res.json();
         if (data?.ok && Array.isArray(data.mcqs)) {
           setQuestions(data.mcqs);
+        } else {
+          console.error("❌ Invalid MCQ data received:", data);
         }
       } catch (e) {
         console.error("MCQ fetch failed:", e);
+        // Phase 7: Better error handling
+        if (e.name === 'AbortError') {
+          console.warn("⚠️ MCQ generation timed out. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -113,7 +135,13 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     
     // Analyze weak areas based on question types answered incorrectly
     const incorrectTypes = questions
-      .filter(q => answers[q.id] && answers[q.id] !== q.correct)
+      .filter(q => {
+        const ans = answers[q.id];
+        if (!ans) return false;
+        // Fix: Handle both string (choice text) and number (index) formats
+        const ansText = typeof ans === 'string' ? ans : (q.choices && q.choices[ans]);
+        return ansText !== q.correct;
+      })
       .map(q => q.type || q.reasoning_type)
       .filter(Boolean);
     
@@ -137,16 +165,73 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     }
   }, [reviewMode, score, questions, answers, caseData]);
 
-  // Save score to Firebase when quiz is complete
+  // Optimized real-time encouragement engine (Duolingo-style)
+  useEffect(() => {
+    if (!showFeedback || lastAnswerCorrect === null) {
+      setRealTimeEncouragement("");
+      return;
+    }
+
+    const maxScore = questions.length * 3;
+    const percentage = (score / maxScore) * 100;
+    const category = caseData?.meta?.category || caseData?.meta?.topic || "this topic";
+    const remaining = questions.length - currentIndex - 1;
+
+    // Immediate feedback-based encouragement
+    if (lastAnswerCorrect) {
+      if (consecutiveCorrect >= 3) {
+        const streakMessages = [
+          "🔥🔥🔥 Amazing streak!",
+          "⚡⚡⚡ On fire!",
+          "🌟 Perfect! Keep going!",
+          "💎 Master level!",
+          "🚀 Unstoppable!"
+        ];
+        setRealTimeEncouragement(streakMessages[Math.floor(Math.random() * streakMessages.length)]);
+      } else if (consecutiveCorrect >= 2) {
+        const goodMessages = [
+          "✨ Excellent!",
+          "🎯 Great answer!",
+          "👍 Perfect!",
+          "⭐ Well done!",
+          "💪 Strong work!"
+        ];
+        setRealTimeEncouragement(goodMessages[Math.floor(Math.random() * goodMessages.length)]);
+      } else {
+        setRealTimeEncouragement("✅ Correct! +" + lastAnswerPoints + " points");
+      }
+      
+    } else {
+      // Constructive feedback for incorrect answers
+      const encouragingMessages = [
+        "💡 Close! Let's learn together",
+        "📚 Good effort! Here's why...",
+        "🧠 Great thinking! Here's the key point...",
+        "💪 Keep going! This will help...",
+        "🎓 Learning moment! Review this..."
+      ];
+      setRealTimeEncouragement(encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)]);
+    }
+  }, [showFeedback, lastAnswerCorrect, lastAnswerPoints, consecutiveCorrect, score, currentIndex, questions.length, caseData]);
+
+  // Save score and show summary when quiz is complete
   useEffect(() => {
     if (!isComplete || !caseData?.meta?.topic) return;
 
-    const saveScore = async () => {
+    const saveScoreAndShowSummary = async () => {
       try {
         const topic = caseData.meta.topic;
         const lang = caseData.meta.language || "en";
         const maxScore = questions.length * 3;
+        const correctCount = questions.filter((q) => {
+          const ans = answers[q.id];
+          if (ans === undefined) return false;
+          // Fix: Handle both string (choice text) and number (index) formats
+          const ansText = typeof ans === 'string' ? ans : (q.choices && q.choices[ans]);
+          return ansText === q.correct;
+        }).length;
         
+        // Save to Firebase (legacy)
         const scoreDoc = {
           topic,
           lang,
@@ -164,12 +249,16 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         const docRef = doc(db, "quiz_scores", `${topic}_${Date.now()}`);
         await setDoc(docRef, scoreDoc);
         console.log("✅ Score saved to Firebase");
+
+        // Show summary panel
+        setShowSummary(true);
       } catch (error) {
         console.warn("⚠️ Could not save score to Firebase:", error.message);
+        setShowSummary(true); // Show summary anyway
       }
     };
 
-    saveScore();
+    saveScoreAndShowSummary();
   }, [isComplete, score, levelTitle, questions.length, answers, caseData]);
 
   if (!gamify) {
@@ -234,7 +323,9 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         
         {questions.map((q, idx) => {
           const chosen = answers[q.id];
-          const isCorrect = chosen === q.correct;
+          // Fix: Handle both string (choice text) and number (index) formats for backward compatibility
+          const chosenText = typeof chosen === 'string' ? chosen : (q.choices && q.choices[chosen]);
+          const isCorrect = chosenText === q.correct;
           const earnedPoints = isCorrect ? 3 : (chosen ? 0 : null); // null if not answered
           
           return (
@@ -254,7 +345,10 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
               <ul className="space-y-2 mb-3">
                 {q.choices.map((c, i) => {
                   const isThisCorrect = c === q.correct;
-                  const wasChosen = c === chosen;
+                  // Fix: Handle both string (choice text) and number (index) formats
+                  const wasChosen = typeof chosen === 'string' 
+                    ? c === chosen 
+                    : i === chosen;
                   
                   return (
                     <li
@@ -301,6 +395,33 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
     );
   }
 
+  // Show summary panel if quiz is complete
+  if (showSummary && isComplete) {
+    const maxScore = questions.length * 3;
+    const correctCount = questions.filter((q) => {
+      const ans = answers[q.id];
+      if (ans === undefined) return false;
+      // Fix: Handle both string (choice text) and number (index) formats
+      const ansText = typeof ans === 'string' ? ans : (q.choices && q.choices[ans]);
+      return ansText === q.correct;
+    }).length;
+
+    return (
+      <CaseSummaryPanel
+        caseData={caseData}
+        score={score}
+        maxScore={maxScore}
+        correctCount={correctCount}
+        totalQuestions={questions.length}
+        questionTypes={questionTypes}
+        onClose={() => {
+          setShowSummary(false);
+          setReviewMode(true);
+        }}
+      />
+    );
+  }
+
   // Normal quiz mode: show current question, NO explanations until review
   const q = questions[currentIndex];
   if (!q) {
@@ -317,39 +438,59 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         </p>
         <button
           className="mt-6 px-8 py-4 bg-blue-600 text-white text-lg rounded-lg hover:bg-blue-700 transition shadow-lg"
-          onClick={() => setReviewMode(true)}
+          onClick={() => setShowSummary(true)}
         >
-          📖 Review All Answers & Explanations
+          📊 View Summary & Progress
         </button>
       </div>
     );
   }
 
+  const maxScore = questions.length * 3;
+  const percentage = Math.round((score / maxScore) * 100);
+  const chosenAnswer = answers[q.id];
+  const chosenText = typeof chosenAnswer === 'string' ? chosenAnswer : (q.choices && q.choices[chosenAnswer]);
+  const isCorrect = chosenText === q.correct;
+  const correctChoiceIndex = q.choices?.findIndex(c => c === q.correct) ?? -1;
+
   return (
     <div className="p-6 space-y-6">
-      {/* Progress header with visual indicator */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between mb-1">
+      {/* Enhanced Progress header with prominent score */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500">Question {currentIndex + 1} of {questions.length}</p>
-          <p className="text-sm font-semibold text-gray-700">Current Score: {score}</p>
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full shadow-lg">
+              <span className="text-lg font-bold">{score}</span>
+              <span className="text-sm opacity-90"> / {maxScore} points</span>
+            </div>
+            <div className="text-sm font-semibold text-gray-700">
+              {percentage}% correct
+            </div>
+          </div>
         </div>
         
-        {/* Progress bar */}
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        {/* Enhanced progress bar */}
+        <div className="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
           <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+            className={`h-full transition-all duration-500 ${
+              percentage >= 90 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+              percentage >= 75 ? 'bg-gradient-to-r from-blue-500 to-purple-500' :
+              percentage >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+              'bg-gradient-to-r from-orange-500 to-red-500'
+            }`}
+            style={{ width: `${((currentIndex + (showFeedback ? 1 : 0)) / questions.length) * 100}%` }}
           />
         </div>
         
         {/* Question type badge */}
         {q.type && (
           <div className="flex gap-2">
-            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
               {q.type.replace(/_/g, ' ').toUpperCase()}
             </span>
             {q.guideline_reference && (
-              <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded">
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">
                 📚 {q.guideline_reference}
               </span>
             )}
@@ -357,30 +498,100 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         )}
       </div>
       
+      {/* Immediate feedback banner (shows after answering) */}
+      {showFeedback && lastAnswerCorrect !== null && (
+        <div className={`rounded-lg p-4 shadow-lg transition-all duration-500 ${
+          lastAnswerCorrect 
+            ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400' 
+            : 'bg-gradient-to-r from-red-100 to-orange-100 border-2 border-red-400'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{lastAnswerCorrect ? '✅' : '❌'}</span>
+              <div>
+                <p className={`text-lg font-bold ${lastAnswerCorrect ? 'text-green-800' : 'text-red-800'}`}>
+                  {lastAnswerCorrect ? 'Correct!' : 'Incorrect'}
+                </p>
+                {lastAnswerCorrect && (
+                  <p className="text-sm text-green-700">+{lastAnswerPoints} points earned</p>
+                )}
+              </div>
+            </div>
+            {realTimeEncouragement && (
+              <p className={`text-sm font-semibold ${lastAnswerCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                {realTimeEncouragement}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Difficulty indicator and hint (before answering) */}
+      {!showFeedback && currentDifficulty === 'easy' && consecutiveIncorrect >= 2 && (
+        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 mb-4">
+          <p className="text-sm text-yellow-800">
+            💡 <strong>Hint:</strong> Review the key concepts in {caseData?.meta?.topic || "this topic"}. 
+            Consider the most common presentation and typical management approach.
+          </p>
+        </div>
+      )}
+
+      {!showFeedback && currentDifficulty === 'hard' && consecutiveCorrect >= 2 && (
+        <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3 mb-4">
+          <p className="text-sm text-purple-800">
+            🎯 <strong>Challenge Mode:</strong> You're doing great! This is a more advanced question.
+          </p>
+        </div>
+      )}
+
+      {/* Question card */}
       <div className="bg-white border-2 border-gray-300 rounded-lg p-6 shadow-md">
         <p className="text-xl font-semibold mb-6">{q.question}</p>
         
         <ul className="space-y-3">
           {q.choices.map((c, i) => {
-            const isSelected = answers[q.id] === i;
-            const buttonClass = `w-full text-left px-4 py-3 border-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              isAnswering 
-                ? 'cursor-wait opacity-50' 
-                : isSelected
-                ? 'bg-blue-100 border-blue-500 text-blue-800'
-                : 'border-gray-300 hover:bg-blue-50 hover:border-blue-400'
-            }`;
+            const isSelected = typeof chosenAnswer === 'number' ? chosenAnswer === i : chosenText === c;
+            const isCorrectAnswer = c === q.correct;
+            
+            // Determine button styling based on feedback state
+            let buttonClass = 'w-full text-left px-4 py-3 border-2 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 ';
+            
+            if (showFeedback) {
+              // After feedback is shown
+              if (isCorrectAnswer) {
+                buttonClass += 'bg-green-100 border-green-500 text-green-800 font-semibold';
+              } else if (isSelected && !isCorrect) {
+                buttonClass += 'bg-red-100 border-red-500 text-red-800';
+              } else {
+                buttonClass += 'bg-gray-50 border-gray-300 text-gray-600 opacity-60';
+              }
+            } else {
+              // Before answering
+              if (isAnswering) {
+                buttonClass += 'cursor-wait opacity-50 border-gray-300';
+              } else if (isSelected) {
+                buttonClass += 'bg-blue-100 border-blue-500 text-blue-800';
+              } else {
+                buttonClass += 'border-gray-300 hover:bg-blue-50 hover:border-blue-400 hover:shadow-sm';
+              }
+            }
             
             return (
               <li key={i}>
                 <button
                   className={buttonClass}
-                  onClick={() => answerQuestion(i)}
-                  disabled={isAnswering || isSelected}
+                  onClick={() => !showFeedback && answerQuestion(i)}
+                  disabled={isAnswering || showFeedback}
                 >
-                  <span className="font-medium">
-                    {isSelected ? '✓ ' : ''}{c}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{c}</span>
+                    {showFeedback && isCorrectAnswer && (
+                      <span className="text-green-600 font-bold text-xl">✓</span>
+                    )}
+                    {showFeedback && isSelected && !isCorrect && (
+                      <span className="text-red-600 font-bold text-xl">✗</span>
+                    )}
+                  </div>
                 </button>
               </li>
             );
@@ -388,9 +599,30 @@ export default function Level2CaseLogic({ caseData, gamify = true }) {
         </ul>
       </div>
       
-      <p className="text-sm text-gray-500 text-center italic">
-        💡 Explanations will be shown after completing all {questions.length} questions
-      </p>
+      {/* Immediate explanation panel (shows after answering) */}
+      {showFeedback && q.explanation && (
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-400 rounded-lg p-5 shadow-md transition-all duration-500">
+          <div className="flex items-start gap-3 mb-3">
+            <span className="text-2xl">💡</span>
+            <h3 className="text-lg font-bold text-blue-900">Explanation</h3>
+          </div>
+          <p className="text-blue-800 leading-relaxed">{q.explanation}</p>
+        </div>
+      )}
+
+      {/* Continue button (shows after feedback) */}
+      {showFeedback && (
+        <button
+          onClick={continueToNext}
+          className={`w-full py-4 px-6 rounded-lg text-lg font-bold shadow-lg transition-all duration-300 transform hover:scale-105 ${
+            lastAnswerCorrect
+              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+              : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600'
+          }`}
+        >
+          {currentIndex + 1 < questions.length ? 'Continue →' : 'View Results →'}
+        </button>
+      )}
     </div>
   );
 }

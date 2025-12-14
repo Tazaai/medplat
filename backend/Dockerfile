@@ -5,8 +5,9 @@ FROM node:18
 WORKDIR /usr/src/app
 
 # Copy package files and install only production deps
-COPY package*.json ./
-RUN npm install --production
+# --unsafe-perm allows npm to run as root (required for Cloud Build)
+COPY package.json package-lock.json ./
+RUN npm ci --production --unsafe-perm || npm install --production --unsafe-perm
 
 # Copy backend source
 COPY . .

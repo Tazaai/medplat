@@ -12,6 +12,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import './VoiceRecorder.css';
+import { API_BASE } from '../config';
 
 const VoiceRecorder = ({ onTranscript, onCommand, language = 'en-US' }) => {
 	const [isRecording, setIsRecording] = useState(false);
@@ -167,7 +168,7 @@ const VoiceRecorder = ({ onTranscript, onCommand, language = 'en-US' }) => {
 			formData.append('language', language);
 			formData.append('encoding', 'WEBM_OPUS');
 
-			const apiUrl = process.env.REACT_APP_BACKEND_URL || 'https://medplat-backend-139218747785.europe-west1.run.app';
+			const apiUrl = API_BASE;
 			const response = await fetch(`${apiUrl}/api/voice/transcribe`, {
 				method: 'POST',
 				body: formData

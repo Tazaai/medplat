@@ -18,8 +18,7 @@
  */
 
 import { useState, useEffect } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://medplat-backend-139218747785.europe-west1.run.app';
+import { API_BASE } from '../config';
 
 export default function GlobalMentorHub({ user }) {
   const [activeTab, setActiveTab] = useState('overview'); // overview | mentor | challenges | leaderboard | certificates
