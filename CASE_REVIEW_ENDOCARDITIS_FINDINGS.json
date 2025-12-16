@@ -1,0 +1,157 @@
+[
+  {
+    "case_probe": "Infective Endocarditis - 45-year-old male",
+    "universal_issues_detected": 12,
+    "critical_issues": 2,
+    "high_priority_issues": 2,
+    "medium_priority_issues": 5,
+    "low_priority_issues": 3,
+    "findings": [
+      {
+        "issue_id": "object_serialization_bugs",
+        "severity": "CRITICAL",
+        "evidence_in_case": [
+          "Pharmacology section: [object Object] appears twice",
+          "Local Guidelines: [object Object] appears 3 times",
+          "LMIC Alternatives: [object Object] appears"
+        ],
+        "universal_impact": "Affects ALL cases with structured objects (medications, guidelines, LMIC alternatives)",
+        "maps_to_issue": "object_serialization_bugs"
+      },
+      {
+        "issue_id": "reasoning_chain_contamination",
+        "severity": "CRITICAL",
+        "evidence_in_case": [
+          "Steps 1-8: Generic ABC/primary survey (trauma template leaking)",
+          "Step 13: ACS probability calculation (wrong domain - cardiac template in infectious disease case)",
+          "Steps 10-12: Generic red flag detection without domain-specific logic"
+        ],
+        "universal_impact": "Affects ALL non-trauma cases (generic ABC appears in wrong cases)",
+        "expected_for_endocarditis": "Domain-specific steps: History → Risk factors → Physical exam → Blood cultures → Echo → Duke criteria → Antibiotics → Surgical evaluation",
+        "maps_to_issue": "reasoning_chain_contamination"
+      },
+      {
+        "issue_id": "complication_library_pollution",
+        "severity": "HIGH",
+        "evidence_in_case": [
+          "Immediate: ARDS, Ventricular arrhythmias, Cardiogenic shock, Cardiac arrest, Respiratory failure, Hypoxic respiratory failure (generic ICU complications)",
+          "Early: MODS, DIC, Pneumonia, Pleural effusion, Pneumothorax (not endocarditis-specific)",
+          "Late: Pulmonary fibrosis, Chronic respiratory insufficiency (not endocarditis-specific)"
+        ],
+        "universal_impact": "Affects ALL cases (generic ICU complications appear in non-ICU cases)",
+        "expected_for_endocarditis": "Valve perforation, perivalvular abscess, embolic events (stroke/splenic/renal infarcts), conduction abnormalities, glomerulonephritis",
+        "maps_to_issue": "complication_library_pollution"
+      },
+      {
+        "issue_id": "differential_diagnosis_no_structure",
+        "severity": "HIGH",
+        "evidence_in_case": [
+          "Plain strings with placeholder: 'Differential diagnosis - tier should be determined by clinical context'",
+          "No FOR/AGAINST evidence-based reasoning",
+          "Generic placeholder: 'Differential diagnosis 6: See case analysis'"
+        ],
+        "universal_impact": "Affects ALL cases (no structured differential format)",
+        "expected_format": "{name, tier: 'tier_1|tier_2|tier_3', for: 'evidence FOR', against: 'evidence AGAINST', probability: 'high|medium|low'}",
+        "maps_to_issue": "differential_diagnosis_no_structure"
+      },
+      {
+        "issue_id": "guideline_cascade_noise",
+        "severity": "MEDIUM",
+        "evidence_in_case": [
+          "Surviving Sepsis Campaign Guidelines (WRONG - not a septic case in classic sense)",
+          "WHO Cardiovascular Disease Prevention (too generic)",
+          "Multiple [object Object] entries in Local Guidelines"
+        ],
+        "universal_impact": "Affects ALL cases (irrelevant guidelines appear)",
+        "expected_for_endocarditis": "ESC 2023 Endocarditis Guidelines, AHA/ACC Endocarditis Guidelines, IDSA Endocarditis Guidelines, Danish Cardiology Society Endocarditis Guidelines",
+        "maps_to_issue": "guideline_cascade_noise"
+      },
+      {
+        "issue_id": "template_leakage_cross_domain",
+        "severity": "MEDIUM",
+        "evidence_in_case": [
+          "Reasoning chain contains ACS probability calculation (Step 13) - cardiac template in infectious disease case",
+          "Generic ABC/primary survey (trauma template) in non-trauma case"
+        ],
+        "universal_impact": "Affects ALL cases (templates leak across domains)",
+        "maps_to_issue": "template_leakage_cross_domain"
+      },
+      {
+        "issue_id": "pharmacology_unstructured",
+        "severity": "MEDIUM",
+        "evidence_in_case": [
+          "[object Object] instead of formatted medication info",
+          "Generic mechanism: 'Inhibit bacterial cell wall synthesis' (not medication-specific)",
+          "Missing: Specific dose adjustments, monitoring requirements, LMIC alternatives"
+        ],
+        "universal_impact": "Affects ALL cases (medications not validated against schema)",
+        "expected_format": "**Penicillin G** (Beta-lactam) - Mechanism: [specific] - Dose: [specific] - Renal adjustment: [specific] - Monitoring: [specific]",
+        "maps_to_issue": "pharmacology_unstructured"
+      },
+      {
+        "issue_id": "empty_trivial_sections",
+        "severity": "MEDIUM",
+        "evidence_in_case": [
+          "Secondary diagnosis: 'No items available'",
+          "National Guidelines: 'No items available' (should have Danish guidelines)",
+          "US Guidelines: 'No items available' (should have AHA/ACC guidelines)"
+        ],
+        "universal_impact": "Affects ALL cases (placeholder text instead of content)",
+        "maps_to_issue": "empty_trivial_sections"
+      },
+      {
+        "issue_id": "lmic_logic_too_generic",
+        "severity": "LOW",
+        "evidence_in_case": [
+          "LMIC Alternatives: [object Object] (serialization bug)",
+          "No visible domain-specific LMIC alternatives for endocarditis"
+        ],
+        "universal_impact": "Affects ALL LMIC cases (generic alternatives, not condition-specific)",
+        "expected_for_endocarditis": "High-dose oral amoxicillin if IV unavailable, basic TTE instead of TEE, conservative management if surgery unavailable",
+        "maps_to_issue": "lmic_logic_too_generic"
+      },
+      {
+        "issue_id": "disposition_social_logic_missing",
+        "severity": "LOW",
+        "evidence_in_case": [
+          "No disposition section present",
+          "No rehab referral recommendations",
+          "No home support requirements",
+          "No driving restrictions"
+        ],
+        "universal_impact": "Affects ALL cases (missing social context and disposition planning)",
+        "expected_for_endocarditis": "Home support for 4-6 week IV antibiotics, driving restrictions until stable, follow-up Cardiology + ID, rehab if valvular dysfunction persists",
+        "maps_to_issue": "disposition_social_logic_missing"
+      },
+      {
+        "issue_id": "threshold_algorithms_generic",
+        "severity": "LOW",
+        "evidence_in_case": [
+          "Generic: 'Consider surgical intervention if heart failure, emboli, or persistent infection'",
+          "Missing: ESC surgical criteria, Duke criteria, quantifiable thresholds"
+        ],
+        "universal_impact": "Affects ALL cases (generic thresholds, not condition-specific)",
+        "expected_for_endocarditis": "ESC surgical criteria: Heart failure (EF <50%), recurrent emboli (2+ events), persistent bacteremia >7 days, large vegetation >10mm, perivalvular abscess",
+        "maps_to_issue": "threshold_algorithms_generic"
+      },
+      {
+        "issue_id": "domain_classifier_underspecified",
+        "severity": "LOW",
+        "evidence_in_case": [
+          "Category shows: 'Cardiology' (correct but incomplete)",
+          "Missing: subdomain (infectious_endocarditis), confidence score, multi-domain detection"
+        ],
+        "universal_impact": "Affects ALL cases (cannot route content based on subdomain)",
+        "expected_format": "{primary_domain: 'cardio', subdomain: 'infectious_endocarditis', secondary_domains: ['infectious'], confidence: 0.95}",
+        "maps_to_issue": "domain_classifier_underspecified"
+      }
+    ],
+    "validation": {
+      "all_issues_are_universal": true,
+      "no_case_specific_fixes": true,
+      "all_mapped_to_master_plan": true,
+      "ready_for_implementation": true
+    }
+  }
+]
+

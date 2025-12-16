@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE } from "../config";
+import { API_BASE, ADMIN_KEY } from "../config";
+
+const ADMIN_ENABLED = Boolean(ADMIN_KEY);
+const ADMIN_MISSING_MESSAGE = "Set VITE_ADMIN_KEY to access this diagnostics page.";
+
+const adminFetch = (path, options = {}) => {
+  if (!ADMIN_ENABLED) {
+    return Promise.reject(new Error(ADMIN_MISSING_MESSAGE));
+  }
+  const headers = {
+    ...(options.headers || {}),
+    "x-admin-key": ADMIN_KEY,
+  };
+  return fetch(`${API_BASE}${path}`, { ...options, headers });
+};
 
 export default function TopicsDiagnostics() {
   const [diagnostics, setDiagnostics] = useState(null);
@@ -10,44 +24,60 @@ export default function TopicsDiagnostics() {
   const [showModal, setShowModal] = useState(false);
 
   const fetchDiagnostics = async () => {
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      return;
+    }
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/diagnostics`);
+      const res = await adminFetch("/api/admin/topics2/diagnostics");
       const data = await res.json();
       setDiagnostics(data);
       if (data.message) setMessage("From backend: " + data.message);
     } catch (err) {
-      setMessage("From backend: Failed to fetch diagnostics");
+      setMessage(err.message || "From backend: Failed to fetch diagnostics");
     }
     setLoading(false);
   };
 
   // Preview changes
   const fetchPreview = async () => {
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      return;
+    }
     setShowPreview(true);
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/preview-changes`);
+      const res = await adminFetch("/api/admin/topics2/preview-changes");
       const data = await res.json();
       setPreview(data.details || {});
       if (data.message) setMessage("From backend: " + data.message);
-    } catch {
-      setMessage("From backend: Failed to fetch preview");
+    } catch (err) {
+      setMessage(err.message || "From backend: Failed to fetch preview");
     }
     setLoading(false);
   };
 
   useEffect(() => {
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      return;
+    }
     fetchDiagnostics();
   }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this topic?")) return;
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      return;
+    }
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/delete`, {
+      const res = await adminFetch("/api/admin/topics2/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -68,8 +98,13 @@ export default function TopicsDiagnostics() {
   const handleAddAcute = async () => {
     setLoading(true);
     setMessage("");
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/add-missing-acute`, {
+      const res = await adminFetch("/api/admin/topics2/add-missing-acute", {
         method: "POST",
       });
       const data = await res.json();
@@ -89,8 +124,13 @@ export default function TopicsDiagnostics() {
   const approveCategory = async (category) => {
     setLoading(true);
     setMessage("");
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/approve-category`, {
+      const res = await adminFetch("/api/admin/topics2/approve-category", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category }),
@@ -118,8 +158,14 @@ export default function TopicsDiagnostics() {
   // Fetch invalid topics
   const fetchInvalidTopics = async () => {
     setFixing(true);
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setFixing(false);
+      setInvalidTopics([]);
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/find-invalid`);
+      const res = await adminFetch("/api/admin/topics2/find-invalid");
       const data = await res.json();
       if (data.ok) setInvalidTopics(data.invalid);
       else setInvalidTopics([]);
@@ -131,8 +177,12 @@ export default function TopicsDiagnostics() {
 
   // Fetch suggested missing topics
   const fetchSuggested = async () => {
+    if (!ADMIN_ENABLED) {
+      setSuggested({});
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/admin/topics2/suggest-missing-topics`);
+      const res = await adminFetch("/api/admin/topics2/suggest-missing-topics");
       const data = await res.json();
       setSuggested(data.suggestions || {});
     } catch {
@@ -141,6 +191,7 @@ export default function TopicsDiagnostics() {
   };
 
   useEffect(() => {
+    if (!ADMIN_ENABLED) return;
     fetchInvalidTopics();
     fetchSuggested();
   }, [diagnostics]);
@@ -148,8 +199,13 @@ export default function TopicsDiagnostics() {
   // Fix one topic
   const fixOneTopic = async (id) => {
     setFixing(true);
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setFixing(false);
+      return;
+    }
     try {
-      await fetch(`${API_BASE}/api/admin/topics2/sanitizeOne`, {
+      await adminFetch("/api/admin/topics2/sanitizeOne", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -163,8 +219,13 @@ export default function TopicsDiagnostics() {
   // Delete one topic
   const deleteOneTopic = async (id) => {
     setDeleting((d) => ({ ...d, [id]: true }));
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setDeleting((d) => ({ ...d, [id]: false }));
+      return;
+    }
     try {
-      await fetch(`${API_BASE}/api/admin/topics2/delete`, {
+      await adminFetch("/api/admin/topics2/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -179,6 +240,11 @@ export default function TopicsDiagnostics() {
   const fixAllTopics = async () => {
     setShowModal(false);
     setFixing(true);
+    if (!ADMIN_ENABLED) {
+      setMessage(ADMIN_MISSING_MESSAGE);
+      setFixing(false);
+      return;
+    }
     for (const t of invalidTopics) {
       await fixOneTopic(t.id);
     }

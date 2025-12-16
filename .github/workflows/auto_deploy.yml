@@ -1,0 +1,21 @@
+name: Auto-Deploy Trigger
+
+on:
+  push:
+    paths:
+      - '.github/trigger.txt'
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 'main'
+
+      - name: Create empty commit and push to main
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit --allow-empty -m "Triggering deployment"
+          git push origin main

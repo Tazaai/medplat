@@ -1,0 +1,1 @@
+gcr.io/medplat-458911/medplat-backend:getmodelguard-20251213-215107

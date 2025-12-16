@@ -1,0 +1,492 @@
+[
+  {
+    "rule_id": "schema_object_serialization_enforcement",
+    "scope": "post_processing | frontend_renderer | internal_panel",
+    "category": "Schema & Rendering",
+    "problem_pattern": "[object Object] appears in Key Medications, Local Guidelines, LMIC Alternatives sections. Objects not serialized before rendering.",
+    "universal_fix": {
+      "schema_enforcement": [
+        "Enforce strict schemas: medication_schema.mjs, guideline_schema.mjs, lmic_option_schema.mjs",
+        "Always map fields explicitly in renderer - never render raw objects",
+        "Add automatic test: any string literal equals '[object Object]' in final JSON/UI = automatic case-quality failure",
+        "Internal panel must repair or block display if [object Object] detected"
+      ],
+      "implementation": [
+        "Integrate serialization_helper.mjs into generate_case_clinical.mjs before return",
+        "Add [object Object] detection test in normalizeCaseSchema",
+        "Add quality gate in internal_panel.mjs to reject cases with [object Object]",
+        "Update UniversalCaseDisplay.jsx to handle serialized strings only"
+      ]
+    },
+    "acceptance_criteria": [
+      "ZERO instances of '[object Object]' in any case output (tested automatically)",
+      "All medications display as formatted strings or structured JSON (never raw objects)",
+      "All guidelines display as formatted strings or structured JSON (never raw objects)",
+      "Internal panel automatically repairs or rejects cases with [object Object]",
+      "Quality gate blocks case display if [object Object] detected"
+    ],
+    "affected_modules": [
+      "generate_case_clinical.mjs",
+      "intelligence_core/serialization_helper.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "intelligence_core/internal_panel.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "hide_empty_placeholder_sections",
+    "scope": "frontend_renderer",
+    "category": "Schema & Rendering",
+    "problem_pattern": "Empty sections render as noise: 'Secondary: No items available', 'National Guidelines: No items available', etc.",
+    "universal_fix": {
+      "renderer_logic": [
+        "Hide entire section if array is empty OR value is null OR value equals 'No items available'",
+        "Apply to: secondary_diagnoses, national_guidelines, continental_guidelines, us_guidelines, global_guidelines",
+        "Conditional rendering: only show section if has meaningful content"
+      ],
+      "implementation": [
+        "Update UniversalCaseDisplay.jsx with conditional rendering helpers",
+        "Create isEmptySection() helper function",
+        "Apply to all guideline sections, secondary diagnoses, etc."
+      ]
+    },
+    "acceptance_criteria": [
+      "ZERO 'No items available' text rendered in UI",
+      "Empty sections are completely hidden (not shown at all)",
+      "All guideline cascade levels hide if no matching guidelines found",
+      "Secondary diagnoses section hidden if empty"
+    ],
+    "affected_modules": [
+      "frontend/src/components/UniversalCaseDisplay.jsx",
+      "frontend/src/components/CaseDisplay.jsx",
+      "frontend/src/components/ProfessionalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "differential_structure_mandatory",
+    "scope": "generator_engine | post_processing",
+    "category": "Clinical Reasoning & Differential Engine",
+    "problem_pattern": "Differentials have debug text: '(tier should be determined by clinical context)', 'Differential diagnosis 6: See case analysis'. No structured FOR/AGAINST reasoning.",
+    "universal_fix": {
+      "schema_structure": {
+        "required_format": {
+          "name": "string (required)",
+          "tier": "critical_life_threatening | urgent_mimics | common_causes | benign_causes",
+          "for": "string (required) - evidence FOR this diagnosis",
+          "against": "string (required) - evidence AGAINST this diagnosis",
+          "justification": "string (optional) - additional reasoning"
+        },
+        "processing_rules": [
+          "Generator must ONLY output differentials in this structure",
+          "Strip all debug strings automatically in post-processing",
+          "Remove placeholder text: 'See case analysis', 'tier should be determined', etc.",
+          "Renderer uses name, tier, for, against and never prints raw system notes"
+        ]
+      },
+      "implementation": [
+        "Create differential_schema.mjs with validation and serialization",
+        "Update normalizeCaseSchema to enforce differential structure",
+        "Add debug text stripping in reasoning_cleanup.mjs",
+        "Update frontend renderer to display FOR/AGAINST sections"
+      ]
+    },
+    "acceptance_criteria": [
+      "ALL differential diagnoses have mandatory structure: {name, tier, for, against, justification?}",
+      "ZERO debug strings in differential section",
+      "ZERO placeholder text ('See case analysis', 'tier should be determined')",
+      "Frontend displays tier badges and FOR/AGAINST sections clearly",
+      "Minimum 4 differentials per case, all structured"
+    ],
+    "affected_modules": [
+      "intelligence_core/schemas/differential_schema.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "intelligence_core/reasoning_cleanup.mjs",
+      "generate_case_clinical.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "reasoning_chain_deduplication_domain_filter",
+    "scope": "post_processing | generator_engine",
+    "category": "Clinical Reasoning & Differential Engine",
+    "problem_pattern": "Steps duplicated ('Step 1: Step 1: 1. ...'). ACS chest-pain probability logic appears in non-ACS cases. Generic ABC steps in non-trauma cases.",
+    "universal_fix": {
+      "cleanup_logic": [
+        "cleanupReasoning must normalize to single sequence Step 1...N",
+        "Deduplicate steps by content similarity",
+        "Enforce domain filter: no ACS reasoning in non-ACS cases, no sepsis-only reasoning in non-infection cases",
+        "Add domain tag to each reasoning snippet and filter at post-processing",
+        "Remove generic ABC/primary survey unless domain is trauma or emergency"
+      ],
+      "domain_specific_chains": {
+        "cardio": "risk stratification → ECG → biomarkers → management",
+        "neuro": "history → localization → mechanism → imaging → management",
+        "infection": "history → risk factors → physical exam → cultures → imaging → management",
+        "trauma": "ABC/primary survey → secondary survey → imaging → management"
+      },
+      "implementation": [
+        "Create reasoning_chain_engine.mjs with domain-specific templates",
+        "Enhance reasoning_cleanup.mjs with deduplication and domain filtering",
+        "Add domain tag validation in normalizeCaseSchema",
+        "Filter out domain-inappropriate reasoning steps"
+      ]
+    },
+    "acceptance_criteria": [
+      "ZERO step duplication (no 'Step 1: Step 1:')",
+      "Non-trauma cases contain ZERO ABC/primary survey steps",
+      "Non-ACS cases contain ZERO ACS probability calculations",
+      "Reasoning chains follow domain-specific logic flow",
+      "Each step has domain tag, filtered by case domain"
+    ],
+    "affected_modules": [
+      "intelligence_core/reasoning_chain_engine.mjs",
+      "intelligence_core/reasoning_cleanup.mjs",
+      "intelligence_core/domain_router.mjs",
+      "generate_case_clinical.mjs"
+    ]
+  },
+  {
+    "rule_id": "domain_specific_high_acuity_headers",
+    "scope": "generator_engine | high_acuity_engine",
+    "category": "Management & High-Acuity Engine",
+    "problem_pattern": "Generic HIGH-ACUITY boilerplate appears in unrelated pathologies: 'HIGH-ACUITY CASE: Arrhythmias, cardiogenic shock, or cardiac arrest' in non-cardiac cases.",
+    "universal_fix": {
+      "domain_parameterization": [
+        "runHighAcuityEngine must generate domain-specific high-acuity headers",
+        "Cardiac ischemia: 'HIGH-ACUITY: STEMI/NSTEMI, arrhythmias, cardiogenic shock'",
+        "Cardiac infection: 'HIGH-ACUITY: Acute heart failure, embolic stroke, septic shock'",
+        "Sepsis: 'HIGH-ACUITY: Septic shock, multi-organ failure, disseminated infection'",
+        "Neuro emergencies: 'HIGH-ACUITY: Stroke, status epilepticus, increased ICP'",
+        "High-acuity text is parameterized by domain + topic, not one global template"
+      ],
+      "implementation": [
+        "Update high_acuity_engine.mjs with domain-specific templates",
+        "Remove generic HIGH-ACUITY template",
+        "Add domain parameter to runHighAcuityEngine()",
+        "Generate domain-appropriate high-acuity header"
+      ]
+    },
+    "acceptance_criteria": [
+      "Cardiac cases have cardiac-specific high-acuity header",
+      "Neuro cases have neuro-specific high-acuity header",
+      "Infection cases have infection-specific high-acuity header",
+      "ZERO generic 'Arrhythmias, cardiogenic shock, or cardiac arrest' in non-cardiac cases",
+      "High-acuity header matches case domain"
+    ],
+    "affected_modules": [
+      "intelligence_core/high_acuity_engine.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/domain_router.mjs"
+    ]
+  },
+  {
+    "rule_id": "structured_treatment_thresholds",
+    "scope": "generator_engine | schema",
+    "category": "Management & High-Acuity Engine",
+    "problem_pattern": "Treatment thresholds too vague: 'Consider surgical intervention if...' with no structured thresholds or linkage to guidelines.",
+    "universal_fix": {
+      "threshold_schema": {
+        "required_structure": {
+          "intervention": "string (required) - e.g. 'valve surgery', 'thrombolysis', 'surgical evacuation'",
+          "trigger": "string[] (required) - e.g. ['heart_failure', 'recurrent_emboli', 'uncontrolled_infection', 'abscess']",
+          "evidence_source": "string (required) - guideline_id or citation",
+          "urgency": "immediate | early | elective",
+          "quantifiable_criteria": "string[] (optional) - e.g. ['EF <50%', 'vegetation >10mm']"
+        },
+        "rendering": [
+          "Renderer shows these as clear bullets",
+          "Gamification can reuse thresholds for MCQ generation",
+          "Link to guideline source for transparency"
+        ]
+      },
+      "implementation": [
+        "Create threshold_schema.mjs with validation",
+        "Update generate_case_clinical.mjs to generate structured thresholds",
+        "Add threshold generation to domain_extensions.mjs",
+        "Update frontend renderer to display structured thresholds"
+      ]
+    },
+    "acceptance_criteria": [
+      "ALL treatment thresholds have structured format: {intervention, trigger, evidence_source, urgency}",
+      "Thresholds link to specific guidelines (not generic)",
+      "Thresholds are quantifiable where possible (EF <50%, vegetation >10mm)",
+      "Frontend displays thresholds as clear bullets with urgency tags",
+      "Gamification can extract thresholds for MCQ generation"
+    ],
+    "affected_modules": [
+      "intelligence_core/schemas/threshold_schema.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/domain_extensions.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "domain_specific_complication_libraries",
+    "scope": "generator_engine | complications",
+    "category": "Complications Library",
+    "problem_pattern": "ICU bucket complications pasted everywhere: MODS, DIC, ARDS, ventricular aneurysm, papillary muscle rupture, pulmonary fibrosis appear in many cases regardless of topic. Duplicates within case.",
+    "universal_fix": {
+      "complication_schema": {
+        "required_structure": {
+          "name": "string (required)",
+          "domain": "string[] (required) - e.g. ['infection', 'ICU'] or ['cardio', 'infection']",
+          "probability_band": "common | uncommon | rare",
+          "timing": "immediate | early | late",
+          "setting": "all | icu | inpatient | outpatient"
+        },
+        "filtering_rules": [
+          "Only pull items where domain matches case's main domains",
+          "OR ICU engine explicitly flags an ICU scenario",
+          "Remove duplicates within a case automatically",
+          "Filter by setting (outpatient cases get no ICU complications)"
+        ]
+      },
+      "implementation": [
+        "Create domain-specific complication libraries: cardio_complications.mjs, neuro_complications.mjs, id_complications.mjs",
+        "Each complication has domain tags and setting tags",
+        "Filter complications by case domain and setting",
+        "Add deduplication in normalizeCaseSchema"
+      ]
+    },
+    "acceptance_criteria": [
+      "Outpatient cases contain ZERO ICU-specific complications",
+      "Neuro cases contain ONLY neuro complications (no cardiac arrhythmias)",
+      "Cardiac cases contain ONLY cardiac complications (no stroke complications)",
+      "ZERO duplicates within a case",
+      "Complications match case domain and setting"
+    ],
+    "affected_modules": [
+      "intelligence_core/complications/cardio_complications.mjs",
+      "intelligence_core/complications/neuro_complications.mjs",
+      "intelligence_core/complications/id_complications.mjs",
+      "intelligence_core/domain_extensions.mjs",
+      "intelligence_core/schema_normalizer.mjs"
+    ]
+  },
+  {
+    "rule_id": "structured_medication_schema_synergy",
+    "scope": "generator_engine | schema",
+    "category": "Pharmacology",
+    "problem_pattern": "Unstructured antibiotics: mechanism is generic one-liner, key meds hidden in [object Object], LMIC context not explicit, synergy/combination not structured.",
+    "universal_fix": {
+      "medication_schema_enhanced": {
+        "required_fields": [
+          "name (required)",
+          "class (required)",
+          "mechanism (required) - specific, not generic",
+          "standard_dose (required)",
+          "route (required)",
+          "duration (required)",
+          "renal_adjustment (optional)",
+          "hepatic_adjustment (optional)",
+          "major_contraindications (array, required)",
+          "monitoring (array, required)",
+          "lmci_alternative (optional) - explicit alternative"
+        ],
+        "synergy_field": {
+          "synergy_combination": "object (optional) - for multi-drug regimens",
+          "example": {
+            "regimen": "beta-lactam + gentamicin",
+            "rationale": "synergy for enterococcal endocarditis",
+            "monitoring_rules": ["daily gentamicin levels", "renal function q48h"],
+            "duration": "2 weeks gentamicin, 4-6 weeks beta-lactam"
+          }
+        },
+        "rendering": [
+          "Renderer: table or bullet layout, consistent across all cases",
+          "Show synergy combinations explicitly",
+          "Display LMIC alternatives clearly"
+        ]
+      },
+      "implementation": [
+        "Enhance medication_schema.mjs with synergy field",
+        "Update serialization_helper.mjs to handle synergy combinations",
+        "Enforce schema validation in normalizeCaseSchema",
+        "Update frontend renderer for structured medication display"
+      ]
+    },
+    "acceptance_criteria": [
+      "ALL medications follow enhanced medication_schema.mjs structure",
+      "Synergy combinations explicitly documented with rationale and monitoring",
+      "Mechanisms are specific (not generic 'inhibits cell wall synthesis')",
+      "LMIC alternatives explicitly shown when applicable",
+      "Frontend displays medications in consistent table/bullet format"
+    ],
+    "affected_modules": [
+      "intelligence_core/schemas/medication_schema.mjs",
+      "intelligence_core/serialization_helper.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "domain_tagged_guideline_registry",
+    "scope": "guideline_router | guideline_registry",
+    "category": "Guidelines & LMIC logic",
+    "problem_pattern": "Noisy guideline cascade: relevant societies mixed with generic trauma/sepsis frameworks in every case. Generic guidelines appear regardless of domain.",
+    "universal_fix": {
+      "guideline_registry_structure": {
+        "tag_system": [
+          "Add domain_tags array to each guideline entry",
+          "Add condition_tags array to each guideline entry",
+          "Example: {name: 'ESC Endocarditis Guidelines', domain_tags: ['cardio', 'infection'], condition_tags: ['endocarditis']}",
+          "Example: {name: 'ATLS Guidelines', domain_tags: ['trauma'], condition_tags: ['trauma', 'emergency']}"
+        ],
+        "routing_logic": [
+          "Guideline router only surfaces guidelines whose tags intersect with case's domain/topic",
+          "If a cascade level has no matching guideline, hide it (don't show 'No items available')",
+          "Filter out generic WHO/ATLS/sepsis unless domain matches",
+          "Prioritize: domain match > condition match > regional match"
+        ]
+      },
+      "implementation": [
+        "Create guideline_registry.mjs with domain_tags and condition_tags",
+        "Update guideline_synthesis.mjs to filter by tags",
+        "Integrate domain router into guideline cascade",
+        "Update frontend to hide empty guideline levels"
+      ]
+    },
+    "acceptance_criteria": [
+      "Stroke cases contain ONLY neuro/stroke guidelines - NO trauma/ATLS",
+      "Endocarditis cases contain ONLY cardio/infection guidelines - NO generic sepsis",
+      "Non-trauma cases contain ZERO ATLS references",
+      "Empty guideline levels are hidden (not shown as 'No items available')",
+      "Guideline cascade length reduced by 40-60% (removing noise)"
+    ],
+    "affected_modules": [
+      "intelligence_core/guideline_registry.mjs",
+      "intelligence_core/guideline_synthesis.mjs",
+      "intelligence_core/domain_router.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "structured_lmic_option_schema",
+    "scope": "lmic_engine | schema",
+    "category": "Guidelines & LMIC logic",
+    "problem_pattern": "LMIC section too opaque: shows [object Object] and generic text, not clearly tied to the case. No structured workflow.",
+    "universal_fix": {
+      "lmic_option_schema": {
+        "required_structure": {
+          "resource_level": "basic | intermediate | advanced",
+          "domain": "string (required)",
+          "topic": "string (required)",
+          "workflow": "array of strings (required) - e.g. ['step 1', 'step 2', '...']",
+          "safety_notes": "array of strings (required)"
+        },
+        "rendering": [
+          "Renderer: one card per resource level",
+          "Show workflow steps clearly",
+          "Display safety notes prominently"
+        ],
+        "engine_requirements": [
+          "LMIC engine: always fills at least one safe, WHO-compatible workflow per case",
+          "Workflow must be domain and topic specific",
+          "Validate against WHO Essential Medicines List"
+        ]
+      },
+      "implementation": [
+        "Create lmic_option_schema.mjs",
+        "Update lmic_fallback.mjs to generate structured LMIC options",
+        "Create domain-specific LMIC libraries: lmic_cardio.mjs, lmic_neuro.mjs, etc.",
+        "Update frontend renderer for LMIC cards"
+      ]
+    },
+    "acceptance_criteria": [
+      "ALL LMIC alternatives follow lmic_option_schema.mjs structure",
+      "Each case has at least one safe, WHO-compatible workflow",
+      "LMIC workflows are domain and topic specific",
+      "Frontend displays LMIC options as resource level cards",
+      "ZERO [object Object] in LMIC section"
+    ],
+    "affected_modules": [
+      "intelligence_core/schemas/lmic_option_schema.mjs",
+      "intelligence_core/lmic_fallback.mjs",
+      "intelligence_core/lmic_cardio.mjs",
+      "intelligence_core/lmic_neuro.mjs",
+      "intelligence_core/lmic_id.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ]
+  },
+  {
+    "rule_id": "linked_teaching_blocks",
+    "scope": "generator_engine | gamification",
+    "category": "Education & Exam Layer",
+    "problem_pattern": "Teaching blocks too generic: Key Points, Common Pitfalls, Exam Pearls, Exam Notes are generic, not clearly linked to thresholds, guidelines, or differentials.",
+    "universal_fix": {
+      "teaching_item_schema": {
+        "required_structure": {
+          "title": "string (required)",
+          "linked_to": "string (required) - e.g. 'paraclinical.blood_cultures', 'differential_diagnoses[0]', 'treatment_thresholds[0]'",
+          "type": "pitfall | pearl | concept",
+          "exam_relevance": "high | medium | low"
+        },
+        "usage": [
+          "Gamification/MCQs use this metadata to generate targeted questions",
+          "Teaching items must link to specific case elements",
+          "Avoid generic statements that repeat case header information"
+        ]
+      },
+      "implementation": [
+        "Create teaching_item_schema.mjs",
+        "Update generate_case_clinical.mjs to link teaching items to case elements",
+        "Update gamification_engine.mjs to use linked teaching items for MCQ generation",
+        "Add validation that teaching items have links"
+      ]
+    },
+    "acceptance_criteria": [
+      "ALL teaching items (Key Points, Pitfalls, Pearls, Notes) have linked_to field",
+      "Teaching items link to specific case elements (thresholds, differentials, guidelines)",
+      "ZERO generic teaching items that repeat case header information",
+      "Gamification can extract linked teaching items for targeted MCQ generation",
+      "Teaching items add new educational angle, not restate basics"
+    ],
+    "affected_modules": [
+      "intelligence_core/schemas/teaching_item_schema.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/gamification_engine.mjs",
+      "intelligence_core/internal_panel.mjs"
+    ]
+  },
+  {
+    "rule_id": "redundancy_compression_quality_gate",
+    "scope": "internal_panel | quality_engine",
+    "category": "UX & Clarity",
+    "problem_pattern": "Redundant or noisy text blocks: generic sentences repeat case header information and waste space. Common Pitfalls restate basics already in Key Points.",
+    "universal_fix": {
+      "compression_logic": [
+        "Internal panel should compress and de-duplicate educational text",
+        "If concept already covered in History + Key Points, Common Pitfalls should add NEW angle (e.g. consequence of missing the sign), not restate basics",
+        "Remove redundant sentences that repeat case header information"
+      ],
+      "quality_gate": {
+        "redundancy_scoring": [
+          "Add 'max redundancy score' in quality engine",
+          "Above threshold → trigger panel rewrite",
+          "Detect repeated concepts across: History, Key Points, Pitfalls, Pearls, Notes",
+          "Flag generic statements that don't add value"
+        ]
+      },
+      "implementation": [
+        "Create redundancy_detector.mjs to analyze case text",
+        "Update internal_panel.mjs to compress redundant text",
+        "Add redundancy score to quality engine",
+        "Trigger regeneration if redundancy score too high"
+      ]
+    },
+    "acceptance_criteria": [
+      "Common Pitfalls add new educational angle, not restate basics",
+      "ZERO redundant sentences that repeat case header information",
+      "Quality engine detects redundancy and triggers rewrite if needed",
+      "Educational text is compressed and concise",
+      "Each teaching section adds unique value"
+    ],
+    "affected_modules": [
+      "intelligence_core/redundancy_detector.mjs",
+      "intelligence_core/internal_panel.mjs",
+      "intelligence_core/quality_engine.mjs",
+      "generate_case_clinical.mjs"
+    ]
+  }
+]
+

@@ -1,5 +1,7 @@
 // ~/medplat/frontend/src/components/CaseView.jsx
 import React, { useState, useEffect, useRef } from "react";
+const STAGE_B_ENDPOINTS = new Set(["expert_panel", "teaching", "evidence", "stability", "risk", "consistency"]);
+const STAGE_B_UNAVAILABLE_NOTE = "On-demand expansion currently unavailable for this case.";
 import CategoryCard from "./CategoryCard";
 import TopicCard from "./TopicCard";
 import Level2CaseLogic from "./Level2CaseLogic";
@@ -100,6 +102,7 @@ export default function CaseView() {
   const [caseId, setCaseId] = useState(null); // Store caseId for expand operations
   const [loading, setLoading] = useState(false);
   const [expanding, setExpanding] = useState(false);
+  const [stageBWarnings, setStageBWarnings] = useState({});
 
   const [userLocation, setUserLocation] = useState("unspecified");
   const [manualRegion, setManualRegion] = useState("");
@@ -323,6 +326,7 @@ export default function CaseView() {
   const hasStability = hasText(caseData?.stability);
   const hasRisk = hasText(caseData?.risk);
   const hasConsistency = hasText(caseData?.consistency);
+  const stageBUnavailable = Object.values(stageBWarnings).some(Boolean);
 
   const applyExpandedCase = (payload) => {
     const isSuccess = payload?.success || payload?.ok;
@@ -334,6 +338,10 @@ export default function CaseView() {
 
   const expandSection = async (endpoint) => {
     if (!caseId || expanding || loading) return;
+    const isStageB = STAGE_B_ENDPOINTS.has(endpoint);
+    if (isStageB) {
+      setStageBWarnings((prev) => ({ ...prev, [endpoint]: "" }));
+    }
     setExpanding(true);
     try {
       const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/${endpoint}`, {
@@ -345,10 +353,20 @@ export default function CaseView() {
         throw new Error(`HTTP ${res.status}: Failed to expand ${endpoint}`);
       }
       const data = await res.json();
+      const updatedCase = data?.data || data?.case;
+      const expandedSuccess = data?.success || data?.ok;
+      const expansionReady = expandedSuccess && !!updatedCase;
+      if (isStageB) {
+        setStageBWarnings((prev) => ({ ...prev, [endpoint]: expansionReady ? "" : STAGE_B_UNAVAILABLE_NOTE }));
+      }
       applyExpandedCase(data);
     } catch (err) {
       console.error(`Failed to expand ${endpoint}:`, err);
-      alert(`Failed to expand ${endpoint}: ${err.message || err}`);
+      if (isStageB) {
+        setStageBWarnings((prev) => ({ ...prev, [endpoint]: STAGE_B_UNAVAILABLE_NOTE }));
+      } else {
+        alert(`Failed to expand ${endpoint}: ${err.message || err}`);
+      }
     } finally {
       setExpanding(false);
     }
@@ -363,6 +381,7 @@ export default function CaseView() {
     console.info(`🎯 Case generation: gamify=${gamify}`);
     setLoading(true);
     setCaseData(null);
+    setStageBWarnings({});
     
     try {
       // 🎯 OPTIMIZATION: If gamify mode, use direct MCQ generation (faster, cheaper - 1 API call instead of 2)
@@ -495,17 +514,27 @@ export default function CaseView() {
         
         if (paraclinicalRes.ok) {
           const paraclinicalData = await paraclinicalRes.json();
-          // Support both new format (success + data) and old format (ok + case)
           const isSuccess = paraclinicalData.success || paraclinicalData.ok;
-          if (!isSuccess) {
-            throw new Error(paraclinicalData.error || "Failed to generate paraclinical");
-          }
-          if (isSuccess) {
-            currentCase = paraclinicalData.data || paraclinicalData.case || currentCase;
-            console.log("✅ Paraclinical generated");
+          const paraclinicalSource = paraclinicalData.data || paraclinicalData.case || paraclinicalData;
+          const resolvedParaclinical = paraclinicalSource?.paraclinical
+            || (paraclinicalSource && (paraclinicalSource.labs || paraclinicalSource.imaging)
+              ? {
+                  labs: paraclinicalSource.labs,
+                  imaging: paraclinicalSource.imaging
+                }
+              : null);
+
+          if (isSuccess && resolvedParaclinical) {
+            currentCase = {
+              ...currentCase,
+              paraclinical: resolvedParaclinical
+            };
+            console.log("Paraclinical generated");
+          } else if (isSuccess && !resolvedParaclinical) {
+            console.log("Paraclinical generated but payload empty");
           }
         }
-        
+
         // Stage B expansions are user-triggered only; management is generated in Stage A.
         if (false) {
         // Step 5: Generate management (legacy - should not run automatically)
@@ -950,73 +979,80 @@ export default function CaseView() {
             <div className="flex flex-col">
               {/* On-demand action buttons (one-click, no toggles) */}
               {caseId && (
-                <div className="flex gap-2 mt-4 mb-4 max-w-3xl mx-auto px-6 justify-center flex-wrap" style={{ order: 3 }}>
-                  {!hasExpertConference && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("expert_panel")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-blue-200 rounded text-sm"
-                    >
-                      Expert Conference
-                    </button>
-                  )}
+                <>
+                  <div className="flex gap-2 mt-4 mb-4 max-w-3xl mx-auto px-6 justify-center flex-wrap" style={{ order: 3 }}>
+                    {!hasExpertConference && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("expert_panel")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.expert_panel)}
+                        className="px-3 py-1 bg-blue-200 rounded text-sm"
+                      >
+                        Expert Conference
+                      </button>
+                    )}
 
-                  {!hasTeaching && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("teaching")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-purple-200 rounded text-sm"
-                    >
-                      Teaching Mode
-                    </button>
-                  )}
+                    {!hasTeaching && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("teaching")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.teaching)}
+                        className="px-3 py-1 bg-purple-200 rounded text-sm"
+                      >
+                        Teaching Mode
+                      </button>
+                    )}
 
-                  {!hasDeepEvidence && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("evidence")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-indigo-200 rounded text-sm"
-                    >
-                      Deep Evidence
-                    </button>
-                  )}
+                    {!hasDeepEvidence && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("evidence")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.evidence)}
+                        className="px-3 py-1 bg-indigo-200 rounded text-sm"
+                      >
+                        Deep Evidence
+                      </button>
+                    )}
 
-                  {!hasStability && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("stability")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-yellow-200 rounded text-sm"
-                    >
-                      Stability
-                    </button>
-                  )}
+                    {!hasStability && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("stability")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.stability)}
+                        className="px-3 py-1 bg-yellow-200 rounded text-sm"
+                      >
+                        Stability
+                      </button>
+                    )}
 
-                  {!hasRisk && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("risk")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-red-200 rounded text-sm"
-                    >
-                      Risk
-                    </button>
-                  )}
+                    {!hasRisk && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("risk")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.risk)}
+                        className="px-3 py-1 bg-red-200 rounded text-sm"
+                      >
+                        Risk
+                      </button>
+                    )}
 
-                  {!hasConsistency && (
-                    <button
-                      type="button"
-                      onClick={() => expandSection("consistency")}
-                      disabled={expanding || loading}
-                      className="px-3 py-1 bg-gray-200 rounded text-sm"
-                    >
-                      Consistency
-                    </button>
+                    {!hasConsistency && (
+                      <button
+                        type="button"
+                        onClick={() => expandSection("consistency")}
+                        disabled={expanding || loading || Boolean(stageBWarnings.consistency)}
+                        className="px-3 py-1 bg-gray-200 rounded text-sm"
+                      >
+                        Consistency
+                      </button>
+                    )}
+                  </div>
+                  {stageBUnavailable && (
+                    <div className="text-center text-sm text-yellow-800 mt-2">
+                      {STAGE_B_UNAVAILABLE_NOTE}
+                    </div>
                   )}
-                </div>
+                </>
               )}
 
               {/* Legacy toggle UI (disabled) */}

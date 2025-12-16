@@ -2,6 +2,7 @@
 // Catches React errors and displays fallback UI
 
 import React from 'react';
+import { API_BASE } from '../config';
 
 class ErrorBoundary extends React.Component {
 	constructor(props) {
@@ -49,7 +50,7 @@ class ErrorBoundary extends React.Component {
 		// Log to telemetry with full details
 		if (window.navigator.onLine) {
 			try {
-				fetch('/api/telemetry/event', {
+				fetch(`${API_BASE}/api/telemetry/event`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({

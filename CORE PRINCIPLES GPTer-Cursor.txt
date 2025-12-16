@@ -1,0 +1,64 @@
+{
+  "name": "MedPlat Case Specification v2",
+  "description": "Slim, modular specification for the new multi-step MedPlat generator.",
+  "spec": {
+    "core_principles": [
+      "Generate only one section per request.",
+      "Short, safe, globally neutral clinical language.",
+      "No guidelines, LMIC sections, or dosing.",
+      "Strict consistency with previously generated context.",
+      "No placeholders, no empty sections, no long schemas."
+    ],
+
+    "sections": {
+      "meta": {
+        "content": "Age, sex, setting, chief complaint, key risks, onset.",
+        "rules": ["Short structured lines.", "No diagnosis or management."]
+      },
+      "history": {
+        "content": "6–10 lines: timeline, symptoms, risk factors, key negatives, red-flag clues.",
+        "rules": ["No exam, labs, or management."]
+      },
+      "exam": {
+        "content": "5–8 lines: vitals, appearance, focused system findings, red flags.",
+        "rules": ["No interpretation beyond clear clinical meaning."]
+      },
+      "paraclinical": {
+        "content": "Labs + imaging with short textual interpretation only.",
+        "rules": ["No LR+/LR−, no scoring systems, no guidelines."]
+      },
+      "management": {
+        "content": "Initial actions, stabilization, key evaluations, definitive steps, disposition triggers.",
+        "rules": ["No drug doses.", "Globally safe phrasing."]
+      },
+      "pathophysiology": {
+        "content": "One deep structured section: mechanism, organ involvement, drivers, consequences, temporal progression.",
+        "rules": ["No short vs deep split.", "No textbook essays."]
+      },
+      "expert_conference": {
+        "content": "Dr A–D each give short viewpoints with at least one disagreement.",
+        "rules": ["End with a short consensus.", "No guidelines or citations."]
+      }
+    },
+
+    "reasoning_principles": [
+      "Internal consistency across all previously generated blocks.",
+      "Interpret labs/imaging in short clinically relevant terms.",
+      "Red-flag awareness only inside exam or management.",
+      "Avoid exhaustive differential lists unless specifically requested."
+    ],
+
+    "safety": [
+      "Never output medication doses or brand names.",
+      "No unsafe escalation or region-specific protocols.",
+      "Avoid overconfident statements when information is incomplete."
+    ],
+
+    "style": [
+      "Concise paragraphs.",
+      "No bullet walls unless clinically necessary.",
+      "Never regenerate the whole case.",
+      "Output only the requested block."
+    ]
+  }
+}

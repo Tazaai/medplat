@@ -1,0 +1,110 @@
+﻿{
+    "ok":  true,
+    "aiReply":  {
+                    "json":  {
+                                 "meta":  {
+                                              "topic":  "Myocardial Infarction",
+                                              "category":  "Cardiology",
+                                              "region_guideline_source":  "global"
+                                          },
+                                 "history":  "Patient presents with Myocardial Infarction.",
+                                 "physical_exam":  "Examination pending.",
+                                 "paraclinical":  {
+                                                      "labs":  "Cardiac troponins, complete blood count, electrolytes.",
+                                                      "imaging":  "ECG, echocardiography.",
+                                                      "diagnostic_evidence":  {
+
+                                                                              }
+                                                  },
+                                 "differential_diagnoses":  [
+                                                                "Unstable angina",
+                                                                "Aortic dissection",
+                                                                "Pulmonary embolism"
+                                                            ],
+                                 "final_diagnosis":  "Myocardial Infarction",
+                                 "management":  {
+                                                    "initial":  "Aspirin, nitroglycerin, beta-blockers.",
+                                                    "definitive":  "Percutaneous coronary intervention (PCI) if indicated.",
+                                                    "pharmacology":  {
+                                                                         "antiplatelet":  "Aspirin, Clopidogrel",
+                                                                         "anticoagulants":  "Heparin",
+                                                                         "statins":  "Atorvastatin"
+                                                                     },
+                                                    "treatment_thresholds":  "PCI indicated for STEMI patients with ongoing ischemia.",
+                                                    "complications":  {
+                                                                          "common":  "Heart failure, arrhythmias, cardiogenic shock."
+                                                                      }
+                                                },
+                                 "red_flags":  [
+                                                   "Severe chest pain",
+                                                   "Diaphoresis",
+                                                   "Syncope"
+                                               ],
+                                 "red_flag_hierarchy":  {
+                                                            "critical":  [
+
+                                                                         ],
+                                                            "important":  [
+
+                                                                          ],
+                                                            "rare_dangerous":  [
+
+                                                                               ]
+                                                        },
+                                 "key_points":  [
+
+                                                ],
+                                 "expert_conference":  "",
+                                 "pathophysiology":  "",
+                                 "pathophysiology_detail":  {
+
+                                                            },
+                                 "reasoning_chain":  [
+
+                                                     ],
+                                 "counterfactuals":  "",
+                                 "crucial_concepts":  "",
+                                 "common_pitfalls":  "",
+                                 "exam_notes":  "",
+                                 "exam_pearls":  "",
+                                 "comparison_tables":  "",
+                                 "next_best_step_algorithms":  "",
+                                 "risk_scores":  {
+                                                     "GRACE":  "Global Registry of Acute Coronary Events score",
+                                                     "TIMI":  "Thrombolysis In Myocardial Infarction score"
+                                                 },
+                                 "guidelines":  {
+                                                    "local":  [
+
+                                                              ],
+                                                    "national":  [
+
+                                                                 ],
+                                                    "continental":  [
+
+                                                                    ],
+                                                    "usa":  [
+
+                                                            ],
+                                                    "international":  [
+
+                                                                      ],
+                                                    "versions":  {
+
+                                                                 },
+                                                    "lmic_alternatives":  [
+
+                                                                          ],
+                                                    "antibiotic_resistance_logic":  ""
+                                                },
+                                 "clinical_risk_assessment":  "Use HEART score for evaluating chest pain.",
+                                 "next_diagnostic_steps":  "Stress testing, coronary angiography.",
+                                 "bedside_vs_advanced":  "",
+                                 "comorbidity_reasoning":  "",
+                                 "mcqs":  [
+
+                                          ]
+                             }
+                },
+    "mode":  "classic"
+}

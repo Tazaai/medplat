@@ -9,6 +9,23 @@ const fb = initFirebase();
 const db = fb.firestore;
 const COLLECTION_NAME = 'topics2';
 
+function requireAdminKey(req, res, next) {
+  const adminKey = process.env.ADMIN_DEBUG_KEY;
+  if (!adminKey) {
+    return res.status(403).json({
+      ok: false,
+      error: 'Admin key is not configured for admin topics endpoints'
+    });
+  }
+  if (req.headers['x-admin-key'] !== adminKey) {
+    return res.status(403).json({
+      ok: false,
+      error: 'Forbidden: invalid admin key'
+    });
+  }
+  next();
+}
+
 // Helper: Add timeout to Firestore queries
 async function firestoreQueryWithTimeout(queryPromise, timeoutMs = 3000) {
   return Promise.race([
@@ -188,7 +205,7 @@ router.post('/search', async (req, res) => {
 });
 
 // GET /api/admin/topics2/find-invalid - Scan topics2 for invalid documents
-router.get('/find-invalid', async (req, res) => {
+router.get('/find-invalid', requireAdminKey, async (req, res) => {
   try {
     const snapshot = await db.collection(COLLECTION_NAME).get();
     const invalid = [];
@@ -301,7 +318,7 @@ router.get('/find-invalid', async (req, res) => {
 });
 
 // GET /api/admin/topics2/diagnostics - Return summary statistics
-router.get('/diagnostics', async (req, res) => {
+router.get('/diagnostics', requireAdminKey, async (req, res) => {
   try {
     const snapshot = await db.collection(COLLECTION_NAME).get();
     const categories = new Set();
@@ -409,7 +426,7 @@ router.get('/diagnostics', async (req, res) => {
 });
 
 // GET /api/admin/topics2/suggest-missing-topics - Suggest missing topics based on semantic similarity
-router.get('/suggest-missing-topics', async (req, res) => {
+router.get('/suggest-missing-topics', requireAdminKey, async (req, res) => {
   try {
     const snapshot = await db.collection(COLLECTION_NAME).get();
     

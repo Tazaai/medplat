@@ -1,0 +1,237 @@
+[
+  {
+    "issue_id": "template_leakage_cross_domain",
+    "scope": "generator_engine",
+    "problem_pattern": "Management templates, complication libraries, and guideline references leak across domains. For example, cardiac management text (ACS protocols, troponin thresholds) appears in stroke/neurology cases, and trauma algorithms (ATLS) appear in non-trauma cases. This occurs because the generator lacks domain-aware content filtering.",
+    "proposed_change": "Implement domain routing layer that filters management templates, complications, and guidelines based on detected primary_domain and subdomain. Create domain_router.mjs that validates content belongs to detected domain before inclusion. Add domain-specific content libraries (neuro_complications.mjs, cardio_complications.mjs, etc.) with strict domain tags.",
+    "affected_modules": [
+      "generate_case_clinical.mjs",
+      "intelligence_core/domain_router.mjs",
+      "intelligence_core/domain_classifier.mjs",
+      "intelligence_core/domain_extensions.mjs",
+      "intelligence_core/complications/"
+    ],
+    "acceptance_criteria": [
+      "Neuro cases (stroke, seizure) contain ZERO cardiac-specific management (no troponin, no ACS protocols, no Killip classification)",
+      "Cardiac cases contain ZERO neuro-specific protocols (no NIHSS, no stroke scales, no seizure management)",
+      "Trauma cases ONLY contain ATLS/ATLS-derived content when domain is trauma",
+      "Domain classifier returns structured {primary_domain, subdomain} for all cases",
+      "Domain router logs any filtered content with reason"
+    ]
+  },
+  {
+    "issue_id": "guideline_cascade_noise",
+    "scope": "guideline_router",
+    "problem_pattern": "Guideline cascade includes irrelevant societies and generic guidelines (WHO generic, ATLS for non-trauma, sepsis guidelines for non-septic cases). Guidelines are not filtered by domain or condition_group, leading to spam of unrelated references. Region-aware filtering works but domain-aware filtering is missing.",
+    "proposed_change": "Create guideline_registry.mjs with domain-aware, condition_group-aware lookup. Structure: GUIDELINE_REGISTRY[domain][condition_group][region] = [guidelines]. Only include guidelines that match: (1) detected domain, (2) condition_group (if available), (3) region hierarchy. Filter out generic WHO/ATLS/sepsis unless domain matches. Add domain field to guideline schema and validate before cascade inclusion.",
+    "affected_modules": [
+      "intelligence_core/guideline_synthesis.mjs",
+      "intelligence_core/guideline_registry.mjs",
+      "intelligence_core/schemas/guideline_schema.mjs",
+      "generate_case_clinical.mjs"
+    ],
+    "acceptance_criteria": [
+      "Stroke cases contain ONLY neuro/stroke guidelines (AHA/ASA, Danish Stroke Society, WHO stroke-specific) - NO cardiac guidelines",
+      "Cardiac cases contain ONLY cardio guidelines (AHA/ACC, ESC, local cardiology) - NO neurology guidelines",
+      "Non-trauma cases contain ZERO ATLS references",
+      "Non-septic cases contain ZERO sepsis-specific guidelines",
+      "Guideline cascade length reduced by 40-60% (removing noise)"
+    ]
+  },
+  {
+    "issue_id": "object_serialization_bugs",
+    "scope": "post_processing",
+    "problem_pattern": "Medications, guidelines, complications, and other structured objects appear as '[object Object]' in UI instead of readable strings. Frontend receives raw objects but tries to render them as strings. Schema validation and serialization is incomplete - only medication_schema.mjs and guideline_schema.mjs exist, but serialization_helper.mjs is not integrated into pipeline.",
+    "proposed_change": "Integrate serialization_helper.mjs into generate_case_clinical.mjs before returning case data. Apply cleanCaseData() or serializeForDisplay() to all case output. Create remaining schema files: complication_schema.mjs, differential_schema.mjs, threshold_schema.mjs. Ensure all structured objects are serialized to strings before frontend transmission.",
+    "affected_modules": [
+      "generate_case_clinical.mjs",
+      "intelligence_core/serialization_helper.mjs",
+      "intelligence_core/schemas/complication_schema.mjs",
+      "intelligence_core/schemas/differential_schema.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx"
+    ],
+    "acceptance_criteria": [
+      "ZERO instances of '[object Object]' in any case output",
+      "All medications display as formatted strings: '**Drug Name** (Class) - Dose: X - Mechanism: Y'",
+      "All guidelines display as formatted strings: '**Guideline Name** (Body, Year) - Reference: URL'",
+      "Complications display as readable lists, not objects",
+      "Frontend receives only strings or properly structured JSON (no raw objects)"
+    ]
+  },
+  {
+    "issue_id": "complication_library_pollution",
+    "scope": "generator_engine",
+    "problem_pattern": "Complication libraries contain generic ICU complications (ventilator-associated pneumonia, ICU-acquired weakness, pressure ulcers) that appear in non-ICU cases. Complications are not filtered by domain or setting (outpatient vs inpatient vs ICU). Low-probability complications appear for wrong domains (cardiac complications in neuro cases).",
+    "proposed_change": "Create domain-specific complication libraries: neuro_complications.mjs, cardio_complications.mjs, id_complications.mjs, general_complications.mjs. Each library structures complications as: {name, probability: 'high|medium|low', timing: 'immediate|early|late', domain: 'neuro|cardio|id|general', setting: 'all|icu|inpatient|outpatient'}. Filter complications by domain match and setting match. Remove generic ICU bucket.",
+    "affected_modules": [
+      "intelligence_core/complications/neuro_complications.mjs",
+      "intelligence_core/complications/cardio_complications.mjs",
+      "intelligence_core/complications/id_complications.mjs",
+      "intelligence_core/domain_extensions.mjs",
+      "generate_case_clinical.mjs"
+    ],
+    "acceptance_criteria": [
+      "Outpatient cases contain ZERO ICU-specific complications (no ventilator-associated, no ICU-acquired weakness)",
+      "Neuro cases contain ONLY neuro complications (no cardiac arrhythmias, no ACS complications)",
+      "Cardiac cases contain ONLY cardiac complications (no stroke complications, no neuro deficits)",
+      "Each case has 2-3 complications per timing group (immediate/early/late) that are domain-relevant",
+      "Complication probability tags match case severity/acuity"
+    ]
+  },
+  {
+    "issue_id": "differential_diagnosis_no_structure",
+    "scope": "generator_engine",
+    "problem_pattern": "Differential diagnoses lack consistent structure. Some are strings, some are objects with FOR/AGAINST, some have debug metadata, some have tiers, some don't. No universal schema. Frontend rendering tries to handle both formats but inconsistently. Missing evidence-based reasoning for each differential.",
+    "proposed_change": "Create differential_schema.mjs with mandatory structure: {name, tier: 'tier_1|tier_2|tier_3', for: 'evidence FOR this diagnosis', against: 'evidence AGAINST this diagnosis', probability: 'high|medium|low'}. Implement differential_tiering.mjs to assign tiers based on probability and urgency. Enforce schema in normalizeCaseSchema. Frontend renders all differentials with consistent FOR/AGAINST display.",
+    "affected_modules": [
+      "intelligence_core/schemas/differential_schema.mjs",
+      "intelligence_core/differential_tiering.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "frontend/src/components/UniversalCaseDisplay.jsx",
+      "generate_case_clinical.mjs"
+    ],
+    "acceptance_criteria": [
+      "ALL differential diagnoses have consistent structure: {name, tier, for, against, probability}",
+      "ZERO differential diagnoses are plain strings",
+      "Each differential has evidence-based FOR/AGAINST arguments",
+      "Tier 1 = most likely, Tier 2 = plausible, Tier 3 = must-not-miss",
+      "Frontend displays all differentials with FOR/AGAINST sections"
+    ]
+  },
+  {
+    "issue_id": "reasoning_chain_contamination",
+    "scope": "generator_engine",
+    "problem_pattern": "Reasoning chains contain generic ABC/primary survey text (Airway, Breathing, Circulation) for non-trauma, non-emergency cases. Chains duplicate information already in management section. Chains contain domain-inappropriate steps (cardiac algorithms in neuro cases). Generic reasoning templates leak across domains.",
+    "proposed_change": "Create reasoning_chain_engine.mjs that generates domain-specific reasoning chains. Filter out generic ABC/primary survey unless domain is trauma or emergency. Remove duplication with management section. Ensure chains follow domain-appropriate logic flow (neuro: localization → mechanism → confirmatory tests; cardiac: risk stratification → diagnostic workup → management).",
+    "affected_modules": [
+      "intelligence_core/reasoning_chain_engine.mjs",
+      "intelligence_core/reasoning_cleanup.mjs",
+      "intelligence_core/domain_router.mjs",
+      "generate_case_clinical.mjs"
+    ],
+    "acceptance_criteria": [
+      "Non-trauma, non-emergency cases contain ZERO ABC/primary survey steps",
+      "Reasoning chains contain 5-8 domain-specific steps (not generic)",
+      "Neuro cases follow: history → localization → mechanism → imaging → management",
+      "Cardiac cases follow: risk stratification → ECG → biomarkers → management",
+      "No duplication between reasoning_chain and management sections"
+    ]
+  },
+  {
+    "issue_id": "pharmacology_unstructured",
+    "scope": "generator_engine",
+    "problem_pattern": "Pharmacology section contains unstructured medication information. Some medications are strings, some are objects. Missing: mechanism of action, dose adjustments (renal/hepatic), contraindications, monitoring requirements, LMIC alternatives. No schema validation. Medication objects render as '[object Object]'.",
+    "proposed_change": "Enforce medication_schema.mjs in all pharmacology sections. Schema requires: {name, class, mechanism, standard_dose, renal_adjustment, hepatic_adjustment, major_contraindications, monitoring, lmic_alternative}. Integrate serialization_helper.mjs to convert medication objects to formatted strings. Add pharmacology validation in normalizeCaseSchema.",
+    "affected_modules": [
+      "intelligence_core/schemas/medication_schema.mjs",
+      "intelligence_core/serialization_helper.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/internal_panel.mjs"
+    ],
+    "acceptance_criteria": [
+      "ALL medications follow medication_schema.mjs structure",
+      "ZERO medications are plain strings (all are structured objects validated by schema)",
+      "ALL medications have mechanism of action, dose, adjustments, contraindications, monitoring",
+      "LMIC alternatives present when region is LMIC",
+      "Pharmacology section displays as formatted strings, not '[object Object]'"
+    ]
+  },
+  {
+    "issue_id": "lmic_logic_too_generic",
+    "scope": "lmic_engine",
+    "problem_pattern": "LMIC adaptations are generic and not domain-aware. LMIC block suggests generic alternatives (cheaper drugs, basic imaging) without considering domain-specific needs. Cardiac LMIC alternatives may suggest drugs not available in LMIC. Neuro cases suggest CT when only X-ray available. Not condition-specific.",
+    "proposed_change": "Enhance lmic_fallback.mjs with domain-aware LMIC adaptations. Create domain-specific LMIC libraries: lmic_cardio.mjs, lmic_neuro.mjs, lmic_id.mjs. Each library contains condition-specific alternatives (e.g., stroke: aspirin instead of tPA if unavailable; ACS: clopidogrel instead of ticagrelor). Validate alternatives against LMIC formulary availability.",
+    "affected_modules": [
+      "intelligence_core/lmic_fallback.mjs",
+      "intelligence_core/lmic_cardio.mjs",
+      "intelligence_core/lmic_neuro.mjs",
+      "intelligence_core/lmic_id.mjs",
+      "intelligence_core/domain_router.mjs"
+    ],
+    "acceptance_criteria": [
+      "Cardiac LMIC cases suggest domain-appropriate alternatives (clopidogrel, not ticagrelor; basic ECG, not advanced imaging)",
+      "Neuro LMIC cases suggest stroke-appropriate alternatives (aspirin, not tPA if unavailable; basic CT, not MRI)",
+      "ID LMIC cases suggest infection-appropriate alternatives (basic antibiotics available in LMIC formularies)",
+      "LMIC alternatives validated against WHO Essential Medicines List",
+      "Generic LMIC block removed (all adaptations are domain-specific)"
+    ]
+  },
+  {
+    "issue_id": "threshold_algorithms_generic",
+    "scope": "generator_engine",
+    "problem_pattern": "Thresholds and algorithms are generic and not domain-specific. Same threshold values appear across domains (e.g., 'hypotension <90mmHg' in all cases). Algorithms are generic decision trees, not condition-specific. Missing threshold_schema.mjs and algorithm_schema.mjs.",
+    "proposed_change": "Create threshold_schema.mjs and algorithm_schema.mjs. Structure thresholds as: {decision, parameter, cutoff, context, region_tag, guideline_source}. Create domain-specific threshold libraries. Ensure algorithms are condition-specific (stroke: NIHSS thresholds; cardiac: Killip, GRACE scores). Remove generic thresholds.",
+    "affected_modules": [
+      "intelligence_core/schemas/threshold_schema.mjs",
+      "intelligence_core/schemas/algorithm_schema.mjs",
+      "intelligence_core/thresholds/neuro_thresholds.mjs",
+      "intelligence_core/thresholds/cardio_thresholds.mjs",
+      "generate_case_clinical.mjs"
+    ],
+    "acceptance_criteria": [
+      "Neuro cases contain neuro-specific thresholds (NIHSS, GCS, stroke scales) - NO generic hypotension thresholds",
+      "Cardiac cases contain cardiac-specific thresholds (Killip, GRACE, troponin cutoffs) - NO generic thresholds",
+      "All thresholds have schema validation with {decision, parameter, cutoff, context, guideline_source}",
+      "Algorithms are condition-specific decision trees (not generic)",
+      "Generic 'hypotension <90mmHg' threshold removed from non-cardiac cases"
+    ]
+  },
+  {
+    "issue_id": "disposition_social_logic_missing",
+    "scope": "generator_engine",
+    "problem_pattern": "Disposition and social context logic is missing or trivial. Cases lack: rehab referral needs, home support requirements, driving restrictions, follow-up specialty, social determinants. Disposition_schema.mjs does not exist. Social context not considered in discharge planning.",
+    "proposed_change": "Create disposition_module.mjs and disposition_schema.mjs. Structure: {need_rehab_referral, home_support_required: 'daily|weekly|none', driving_restrictions, follow_up_specialty, social_needs}. Generate disposition based on: cognitive status, functional deficits, support system, region (LMIC vs high-resource). Integrate into case generation pipeline.",
+    "affected_modules": [
+      "intelligence_core/disposition_module.mjs",
+      "intelligence_core/schemas/disposition_schema.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/internal_panel.mjs"
+    ],
+    "acceptance_criteria": [
+      "ALL cases have disposition section with: rehab needs, home support, driving restrictions, follow-up",
+      "Stroke cases include rehab referral recommendations",
+      "Cardiac cases include cardiac rehab and driving restrictions",
+      "Social context (support system, LMIC vs high-resource) influences disposition",
+      "Disposition schema validated before case return"
+    ]
+  },
+  {
+    "issue_id": "empty_trivial_sections",
+    "scope": "internal_panel",
+    "problem_pattern": "Some case sections are empty or contain trivial placeholder text ('No items available', 'See case analysis'). Internal panel does not enforce completeness. Schema normalizer replaces empty arrays with placeholders, but panel should regenerate if sections are empty.",
+    "proposed_change": "Enhance internal_panel.mjs to detect empty/trivial sections and require regeneration. Add completeness scoring that flags: empty differential_diagnoses (<4 items), trivial management (placeholder text), missing pathophysiology, missing guidelines. Reject case if completeness < 0.85, regenerate with explicit instructions to fill all sections.",
+    "affected_modules": [
+      "intelligence_core/internal_panel.mjs",
+      "intelligence_core/schema_normalizer.mjs",
+      "backend/routes/dialog_api.mjs"
+    ],
+    "acceptance_criteria": [
+      "ZERO cases have empty differential_diagnoses (minimum 4 items)",
+      "ZERO cases have placeholder text ('No items available', 'See case analysis')",
+      "ALL cases have non-empty pathophysiology, management, guidelines",
+      "Internal panel rejects cases with completeness < 0.85",
+      "Regeneration instructions explicitly require all sections to be filled"
+    ]
+  },
+  {
+    "issue_id": "domain_classifier_underspecified",
+    "scope": "domain_router",
+    "problem_pattern": "Domain classifier (domain_classifier.mjs) returns array of domains but does not return primary_domain and subdomain structure. Router cannot distinguish between primary domain (neuro) and subdomain (ischemic_stroke vs hemorrhagic_stroke). This leads to cross-domain leakage because routing is ambiguous.",
+    "proposed_change": "Enhance domain_classifier.mjs to return structured {primary_domain: 'neuro|cardio|id|...', subdomain: 'ischemic_stroke|acs|sepsis|...', confidence: 0.0-1.0}. Add subdomain detection logic. Update domain_router.mjs to use primary_domain + subdomain for content filtering. Add domain confidence threshold (only route if confidence > 0.7).",
+    "affected_modules": [
+      "intelligence_core/domain_classifier.mjs",
+      "intelligence_core/domain_router.mjs",
+      "generate_case_clinical.mjs",
+      "intelligence_core/domain_extensions.mjs"
+    ],
+    "acceptance_criteria": [
+      "Domain classifier returns {primary_domain, subdomain, confidence} for ALL cases",
+      "Stroke cases have primary_domain='neuro', subdomain='ischemic_stroke' or 'hemorrhagic_stroke'",
+      "ACS cases have primary_domain='cardio', subdomain='acs' or 'nstemi' or 'stemi'",
+      "Domain router uses primary_domain + subdomain for content filtering",
+      "Confidence threshold prevents misrouting (only route if confidence > 0.7)"
+    ]
+  }
+]
+

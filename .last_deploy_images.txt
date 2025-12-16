@@ -1,0 +1,2 @@
+backend=gcr.io/medplat-458911/medplat-backend:quality-backend-20251213-231625
+frontend=gcr.io/medplat-458911/medplat-frontend:quality-frontend-20251213-231800

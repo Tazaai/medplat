@@ -6,6 +6,19 @@ const router = express.Router();
 // ✅ DYNAMIC-ONLY: Categories loaded from Firestore, not static JSON
 const db = initFirebase().firestore;
 
+const ADMIN_KEY_HEADER = 'x-admin-key';
+const ADMIN_KEY_VALUE = process.env.ADMIN_DEBUG_KEY;
+
+function requireAdminKey(req, res, next) {
+  if (!ADMIN_KEY_VALUE) {
+    return res.status(403).json({ ok: false, message: 'Admin key is not configured' });
+  }
+  if (req.headers[ADMIN_KEY_HEADER] !== ADMIN_KEY_VALUE) {
+    return res.status(403).json({ ok: false, message: 'Forbidden: missing or invalid admin key' });
+  }
+  next();
+}
+
 // Get approved categories dynamically from Firestore
 async function getApprovedCategories() {
   try {
@@ -92,7 +105,7 @@ function sanitizeTopic(doc, approvedCategories) {
 // ------------------------
 
 // Sanitize one topic by id (strict schema) - ✅ DYNAMIC-ONLY
-  router.post('/admin/topics2/sanitizeOne', async (req, res) => {
+  router.post('/admin/topics2/sanitizeOne', requireAdminKey, async (req, res) => {
     const { id } = req.body;
     if (!id) return res.status(400).json({ ok: false, message: 'Missing id', details: {} });
     try {
@@ -114,7 +127,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // Find all invalid topics (detailed reasons) - ✅ DYNAMIC-ONLY
-  router.post('/admin/topics2/find-invalid', async (req, res) => {
+  router.post('/admin/topics2/find-invalid', requireAdminKey, async (req, res) => {
     try {
       const approvedCategories = await getApprovedCategories();
       const snapshot = await db.collection('topics2').get();
@@ -133,7 +146,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // ✅ DYNAMIC-ONLY: Suggest missing topics per specialty
-  router.post('/admin/topics2/suggest-missing-topics', async (req, res) => {
+  router.post('/admin/topics2/suggest-missing-topics', requireAdminKey, async (req, res) => {
     try {
       const suggestions = {
         Cardiology: ["Acute Myocardial Infarction", "Atrial Fibrillation", "Heart Failure"],
@@ -148,7 +161,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // ✅ DYNAMIC-ONLY: Approve new category (Firestore-based, no static JSON)
-  router.post('/admin/topics2/approve-category', async (req, res) => {
+  router.post('/admin/topics2/approve-category', requireAdminKey, async (req, res) => {
     const { category } = req.body;
     if (!category) return res.status(400).json({ ok: false, message: 'Missing category', details: {} });
     try {
@@ -162,7 +175,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // ✅ DYNAMIC-ONLY: Diagnostics route: scan topics2 for duplicates, missing fields, and categories
-  router.post('/admin/topics2/diagnostics', async (req, res) => {
+  router.post('/admin/topics2/diagnostics', requireAdminKey, async (req, res) => {
     try {
       const snapshot = await db.collection('topics2').get();
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -208,7 +221,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // Admin delete topic by id
-  router.post('/admin/topics2/delete', async (req, res) => {
+  router.post('/admin/topics2/delete', requireAdminKey, async (req, res) => {
     const { id } = req.body;
     if (!id) return res.status(400).json({ ok: false, message: 'Missing id', details: {} });
     try {
@@ -221,7 +234,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
   // Preview changes for admin: how many will be fixed, invalid, deleted, unapproved, suggested - ✅ DYNAMIC-ONLY
-  router.post('/admin/topics2/preview-changes', async (req, res) => {
+  router.post('/admin/topics2/preview-changes', requireAdminKey, async (req, res) => {
     try {
       const approvedCategories = await getApprovedCategories();
       const snapshot = await db.collection('topics2').get();
@@ -243,11 +256,18 @@ function sanitizeTopic(doc, approvedCategories) {
       });
       // Get suggested topics
       let suggestions = {};
-      try {
-        const suggRes = await fetch('http://localhost:3000/api/admin/topics2/suggest-missing-topics');
-        const suggData = await suggRes.json();
-        suggestions = suggData.details?.suggestions || {};
-      } catch {}
+      if (ADMIN_KEY_VALUE) {
+        try {
+          const adminBase = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 8080}`;
+          const suggRes = await fetch(`${adminBase}/api/admin/topics2/suggest-missing-topics`, {
+            headers: {
+              [ADMIN_KEY_HEADER]: ADMIN_KEY_VALUE
+            }
+          });
+          const suggData = await suggRes.json();
+          suggestions = suggData.details?.suggestions || {};
+        } catch {}
+      }
       res.json({
         ok: true,
         message: 'Preview of changes ready.',
@@ -267,7 +287,7 @@ function sanitizeTopic(doc, approvedCategories) {
   });
 
 // Admin delete topic by id
-router.post('/admin/topics2/delete', async (req, res) => {
+router.post('/admin/topics2/delete', requireAdminKey, async (req, res) => {
   const { id } = req.body;
   try {
     await db.collection('topics2').doc(id).delete();
@@ -278,7 +298,7 @@ router.post('/admin/topics2/delete', async (req, res) => {
 });
 
 // Add missing Acute Medicine topics
-router.post('/admin/topics2/add-missing-acute', async (req, res) => {
+router.post('/admin/topics2/add-missing-acute', requireAdminKey, async (req, res) => {
   // ✅ NO lang field - removed from structure
   const list = [
     { id:'bradycardia_pacing', category:'Acute Medicine', topic:'Bradycardia – Pacemaker Indications', difficulty:'intermediate', keywords:{ topic:'Bradycardia Pacemaker' }},
@@ -297,7 +317,7 @@ router.post('/admin/topics2/add-missing-acute', async (req, res) => {
 });
 
 // Add empty category placeholder
-router.post('/admin/topics2/add-category', async (req, res) => {
+router.post('/admin/topics2/add-category', requireAdminKey, async (req, res) => {
   const { category } = req.body;
   if (!category) return res.status(400).json({ ok: false, error: 'Missing category' });
   const id = `${category.replace(/\s+/g, '_').toLowerCase()}_placeholder`;
@@ -318,7 +338,7 @@ router.post('/admin/topics2/add-category', async (req, res) => {
 });
 
 // Sanitize all topics2 documents
-router.post('/admin/topics2/sanitize', async (req, res) => {
+router.post('/admin/topics2/sanitize', requireAdminKey, async (req, res) => {
   try {
     const snapshot = await db.collection('topics2').get();
     const batch = db.batch();

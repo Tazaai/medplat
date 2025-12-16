@@ -1,0 +1,22 @@
+Fix the /api/dialog 404 error in medplat-backend.
+
+1. Check Cloud Run logs for dialog_api.mjs import errors:
+   gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=medplat-backend" --limit 50 --format json --project medplat-458911 | grep -i "dialog"
+
+2. Verify backend/routes/dialog_api.mjs exports correctly (should export default function that returns router).
+
+3. In backend/index.js, add debug logging before mounting dialog route (around line 255):
+   console.log('dialogMod:', typeof dialogMod, dialogMod ? Object.keys(dialogMod) : 'null');
+   console.log('dialogRouter:', dialogRouter);
+
+4. Ensure normalizeRouter (line ~106) calls function exports: if (typeof router === 'function') router = router();
+
+5. Rebuild and redeploy backend:
+   cd backend
+   gcloud builds submit --tag gcr.io/medplat-458911/medplat-backend:latest .
+   gcloud run deploy medplat-backend --image gcr.io/medplat-458911/medplat-backend:latest --region europe-west1 --allow-unauthenticated --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" --update-env-vars "GCP_PROJECT=medplat-458911,TOPICS_COLLECTION=topics2,NODE_ENV=production,FRONTEND_ORIGIN=https://medplat-frontend-139218747785.europe-west1.run.app" --port 8080
+
+6. Test: curl -X POST https://medplat-backend-139218747785.europe-west1.run.app/api/dialog -H "Content-Type: application/json" -d '{"topic":"Test","category":"Cardiology"}' -v
+
+Expected: 200 OK or 400 (not 404). Report the exact error from logs and fix it.
+

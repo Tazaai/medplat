@@ -166,6 +166,22 @@ export function cleanDifferentialText(text) {
   return cleaned;
 }
 
+function buildDifferentialJustification(diff) {
+  const reasons = [];
+  const forText = diff?.FOR || diff?.for;
+  const againstText = diff?.AGAINST || diff?.against;
+  if (forText && forText.trim().length > 0) {
+    reasons.push(`For: ${forText.trim()}`);
+  }
+  if (againstText && againstText.trim().length > 0) {
+    reasons.push(`Against: ${againstText.trim()}`);
+  }
+  if (!reasons.length) {
+    return 'Insufficient data provided.';
+  }
+  return reasons.join(' | ');
+}
+
 /**
  * Stratify differential diagnoses into 4 tiers (backend should provide tier info)
  */
@@ -194,7 +210,7 @@ export function stratifyDifferentials(differentials) {
       stratified.common_causes.push({ 
         name: cleanDifferentialText(diff), 
         tier: 'common_causes', 
-        justification: '' 
+        justification: 'Insufficient data provided.'
       });
     } else if (typeof diff === 'object') {
       // Already structured - use tier from backend
@@ -205,14 +221,14 @@ export function stratifyDifferentials(differentials) {
         stratified[tierKey].push({
           name: cleanDifferentialText(diff.name || diff),
           tier: tierKey,
-          justification: diff.justification || 'No justification provided'
+          justification: buildDifferentialJustification(diff)
         });
       } else {
         // Fallback to common_causes if tier not recognized
         stratified.common_causes.push({
           name: cleanDifferentialText(diff.name || diff),
           tier: 'common_causes',
-          justification: diff.justification || 'No justification provided'
+          justification: buildDifferentialJustification(diff)
         });
       }
     }

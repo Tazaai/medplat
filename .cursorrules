@@ -1,0 +1,143 @@
+# MedPlat DevOps Agent Rules
+
+## Automatic Deployment Triggers
+
+When user types any of these commands, automatically run the deployment script:
+- "deploy"
+- "build"
+- "push"
+- "update MedPlat"
+- "fix backend"
+- "deploy backend"
+
+## Firestore topics2 Cleaner
+
+When user types "clean topics2":
+1. Run `node scripts/clean_topics2.mjs`
+2. The script will:
+   - Connect to Firestore and read ALL documents in `topics2`
+   - Validate structure (id, topic, category, keywords)
+   - Detect and remove duplicates (by id, topic, category)
+   - Remove ALL documents with category == "Radiology"
+   - Normalize categories to MedPlat standard list
+   - Normalize IDs to snake_case
+   - Fix missing/wrong fields
+   - Remove placeholder/generic topics
+   - Write cleaned data back to Firestore
+   - Generate comprehensive before/after report
+
+## Firestore topics2 Structure Fix
+
+When user types "fix topics2 structure":
+1. Run `node scripts/fix_topics2_structure_final.mjs`
+2. The script will:
+   - Remove ALL `lang` fields from documents
+   - Remove ALL `difficulty` fields from documents
+   - Remove ALL `area` fields from documents
+   - Fix duplicate `topic` fields
+   - Standardize `keywords` to objects (not arrays)
+   - Ensure all documents have structure: { id, topic, category, keywords: { topic } }
+   - Verify no extra fields remain
+   - Generate comprehensive fix report
+
+## Firestore topics2 Standard Structure
+
+ALL topics2 documents MUST follow this structure:
+```javascript
+{
+  id: "snake_case_topic_name",      // string, snake_case
+  topic: "Topic Name",              // string, Title Case
+  category: "Category Name",        // string
+  keywords: {                       // object (NOT array)
+    topic: "Topic Name"             // string
+  }
+}
+```
+
+FORBIDDEN fields (must NOT exist):
+- ❌ `lang` - REMOVED
+- ❌ `difficulty` - REMOVED
+- ❌ `area` - REMOVED
+- ❌ Any other extra fields
+
+When creating new topics, NEVER include lang, difficulty, or area fields.
+
+## Deployment Workflow
+
+1. **ALWAYS set environment variables:**
+   - `VITE_BACKEND_URL="https://medplat-backend-139218747785.europe-west1.run.app"`
+   - `VITE_API_BASE="https://medplat-backend-139218747785.europe-west1.run.app"`
+
+2. **Before building frontend:**
+   - `cd frontend`
+   - Delete `dist` folder
+   - Delete `node_modules`
+   - Run `npm install`
+   - Run `npm run build`
+   - Confirm console shows correct VITE_BACKEND_URL
+
+3. **Deploy frontend:**
+   ```bash
+   gcloud run deploy medplat-frontend \
+     --source . \
+     --region europe-west1 \
+     --allow-unauthenticated
+   ```
+
+4. **Deploy backend:**
+   ```bash
+   cd ../backend
+   gcloud builds submit --tag gcr.io/medplat-458911/medplat-backend --project medplat-458911
+   gcloud run deploy medplat-backend \
+     --image gcr.io/medplat-458911/medplat-backend \
+     --region europe-west1 \
+     --allow-unauthenticated \
+     --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
+     --update-env-vars "GCP_PROJECT=medplat-458911,TOPICS_COLLECTION=topics2,NODE_ENV=production" \
+     --project medplat-458911
+   ```
+
+5. **After deployment:**
+   - Print both Cloud Run URLs
+   - Verify frontend points to correct backend
+   - Warn if any code references old us-central1 URLs
+
+## URL Rules
+
+- **NEVER use URLs containing:**
+  - "us-central1"
+  - Old or random URLs such as *.run.app ending with weird IDs (except 139218747785)
+
+- **ALWAYS use:**
+  - Backend: `https://medplat-backend-139218747785.europe-west1.run.app`
+  - Frontend: `https://medplat-frontend-139218747785.europe-west1.run.app`
+
+- **Auto-fix logic:**
+  - If a URL check returns 404, automatically replace URL with the correct MedPlat backend URL
+  - Retry request automatically after URL replacement
+  - If script contains `$uri =` or similar variable assignment, replace the value with the correct backend URL automatically
+
+## Environment Files
+
+- If `.env` or `.env.production` exists, ALWAYS overwrite `VITE_BACKEND_URL` to: `https://medplat-backend-139218747785.europe-west1.run.app`
+- Set both `VITE_BACKEND_URL` and `VITE_API_BASE` for compatibility
+- Always use the correct backend URL: `https://medplat-backend-139218747785.europe-west1.run.app`
+
+## Success/Error Reporting
+
+- Always confirm success or show errors
+- Show actual Cloud Run URLs after deployment
+- Verify health checks pass
+- Warn about browser cache clearing
+
+## Backend Route Fixing
+
+When user types "fix backend" or "deploy backend":
+1. Scan all backend/routes/*.mjs files for syntax errors
+2. Fix any syntax errors (missing parentheses, unclosed template literals, missing commas/braces, invalid exports)
+3. Rebuild backend Docker image: `gcloud builds submit --tag gcr.io/medplat-458911/medplat-backend ./backend`
+4. Redeploy backend: `gcloud run deploy medplat-backend --image gcr.io/medplat-458911/medplat-backend --region europe-west1 --allow-unauthenticated --set-secrets "FIREBASE_SERVICE_KEY=FIREBASE_SERVICE_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" --update-env-vars "GCP_PROJECT=medplat-458911,TOPICS_COLLECTION=topics2,NODE_ENV=production"`
+5. Validate all routes are mounted and accessible
+6. Check logs for "Route import failed" messages
+7. If any route fails, scan and fix again
+

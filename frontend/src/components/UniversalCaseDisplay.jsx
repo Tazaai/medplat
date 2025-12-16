@@ -1411,11 +1411,14 @@ export default function UniversalCaseDisplay({
       })()}
 
       {/* 15e. Deep Evidence Mode - Only render if present AND toggle is on */}
-      {transformedCase.deepEvidence && showDeepEvidence && (
+      {showDeepEvidence && (
         <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
           <CollapsibleSection title="🔍 Deep Evidence Mode" defaultExpanded={true}>
             <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-              {safeRenderJSX(transformedCase.deepEvidence)}
+              {(!paraclinical || ((!paraclinical.labs || paraclinical.labs.length === 0) && (!paraclinical.imaging || paraclinical.imaging.length === 0)))
+                ? 'Data not available.'
+                : safeRenderJSX(transformedCase.deepEvidence)
+              }
             </div>
           </CollapsibleSection>
         </div>

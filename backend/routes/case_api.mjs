@@ -14,7 +14,7 @@ const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error('[CASE_API] CRITICAL: OPENAI_API_KEY not found at module load time');
 } else {
-  console.log(`[CASE_API] OpenAI client initialized - API key present: ${!!apiKey}, key length: ${apiKey.length}, starts with sk-: ${apiKey.startsWith('sk-')}`);
+  console.log('[CASE_API] OpenAI client initialized');
 }
 
 const client = new OpenAI({
@@ -183,6 +183,20 @@ function safeParseJSON(text) {
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+const PLACEHOLDER_PATTERNS = [
+  /not provided/i,
+  /not available/i,
+  /missing/i,
+  /pending/i,
+  /\bn\/a\b/i,
+  /unknown/i,
+];
+
+function hasMeaningfulText(value) {
+  if (!isNonEmptyString(value)) return false;
+  return !PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value));
 }
 
 function stripSurroundingWhitespace(value) {
@@ -557,7 +571,7 @@ export default function caseApi() {
         selectedModel = 'gpt-4o-mini';
       }
 
-      console.log(`[CASE_API] Init request - topic: ${topic}, model: ${selectedModel}, API key present: ${!!apiKey}, key length: ${apiKey.length}`);
+      console.log(`[CASE_API] Init request - topic: ${topic}, model: ${selectedModel}`);
       console.log(`[CASE_API] Model resolved: ${selectedModel}, proceeding to case generation`);
 
       const caseId = generateCaseId();
@@ -1143,21 +1157,32 @@ Return ONLY valid JSON:
 
   // POST /api/case/expand/expert_panel - Generate expert conference discussion
   router.post('/expand/expert_panel', async (req, res) => {
+    let caseId = null;
+    let existingCase = null;
+    const respondWithFallback = (warning) => {
+      console.warn('[CASE_API] Expert panel fallback:', warning);
+      return res.status(200).json({
+        success: false,
+        ok: false,
+        caseId,
+        warning,
+      });
+    };
+
     try {
-      const { caseId } = req.body || {};
-      
+      caseId = req.body?.caseId;
       if (!caseId) {
-        return res.status(400).json({ ok: false, error: 'Missing caseId' });
+        return respondWithFallback('Missing caseId for expert panel');
       }
 
-      const existingCase = await getCase(caseId);
+      existingCase = await getCase(caseId);
       if (!existingCase) {
-        return res.status(404).json({ ok: false, error: 'Case not found' });
+        return respondWithFallback('Case context unavailable for expert panel');
       }
 
       const selectedModel = getModel(req, existingCase);
 
-      // Check cache - if expertConference already exists, return cached value
+      // Early return if expertConference already present
       const existingExpertConf = existingCase.expertConference || existingCase.expert_conference;
       if (existingExpertConf && typeof existingExpertConf === 'string' && existingExpertConf.trim().length > 0) {
         console.log('[CASE_API] Expert Conference cache hit for caseId:', caseId);
@@ -1170,7 +1195,7 @@ Return ONLY valid JSON:
         });
       }
 
-      // Build case context for expert panel with safe defaults
+      // Build case context with safe defaults
       const caseContext = `
 Topic: ${existingCase.meta?.topic || 'Clinical case'}
 Category: ${existingCase.meta?.category || 'General Practice'}
@@ -1209,12 +1234,10 @@ Return ONLY valid JSON:
       const text = completion.choices?.[0]?.message?.content || '{}';
       const parsed = safeParseJSON(text);
 
-      // Handle both string and object formats - convert object to readable string if needed
       let expertConferenceText = '';
       if (typeof parsed.expertConference === 'string') {
         expertConferenceText = parsed.expertConference;
       } else if (typeof parsed.expertConference === 'object' && parsed.expertConference !== null) {
-        // Convert structured object to readable text
         const conf = parsed.expertConference;
         const parts = [];
         if (conf.discussion && Array.isArray(conf.discussion)) {
@@ -1244,7 +1267,7 @@ Return ONLY valid JSON:
         throw new Error('Expert Conference validation failed: missing Dr A/B/C speaker labels');
       }
 
-      const updated = await updateCaseFields(caseId, { 
+      await updateCaseFields(caseId, { 
         expertConference: expertConferenceText
       });
       const fullCase = await getCase(caseId);
@@ -1257,12 +1280,7 @@ Return ONLY valid JSON:
       });
     } catch (error) {
       console.error('[CASE_API] Expert panel error:', error);
-      // Return 400 for validation/input errors, 500 for server errors
-      const statusCode = error.message?.includes('Missing') || error.message?.includes('not found') ? 400 : 500;
-      res.status(statusCode).json({
-        ok: false,
-        error: error.message || 'Failed to generate expert conference',
-      });
+      return respondWithFallback('Expert Conference temporarily unavailable');
     }
   });
 
@@ -1323,16 +1341,26 @@ Return ONLY valid JSON with a focused answer:
 
   // POST /api/case/expand/teaching - Generate teaching block (key concepts, pitfalls, pearls)
   router.post('/expand/teaching', async (req, res) => {
+    let caseId;
+    const respondWithFallback = (warning) => {
+      console.warn('[CASE_API] Teaching fallback:', warning);
+      return res.status(200).json({
+        success: false,
+        ok: false,
+        caseId,
+        warning,
+      });
+    };
+
     try {
-      const { caseId } = req.body || {};
-      
+      caseId = req.body?.caseId;
       if (!caseId) {
-        return res.status(400).json({ ok: false, error: 'Missing caseId' });
+        return respondWithFallback('Missing caseId for teaching');
       }
 
       const existingCase = await getCase(caseId);
       if (!existingCase) {
-        return res.status(404).json({ ok: false, error: 'Case not found' });
+        return respondWithFallback('Case context unavailable for teaching');
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1371,7 +1399,7 @@ ${caseContext}
 Return ONLY valid JSON:
 {
   "teaching": ""
-}`;
+}`; 
 
       const completion = await generateCaseContent(selectedModel, prompt, 0.5, 30000);
 
@@ -1386,7 +1414,7 @@ Return ONLY valid JSON:
         throw new Error('Teaching validation failed: contains JSON/Markdown artifacts');
       }
 
-      const updated = await updateCaseFields(caseId, { 
+      await updateCaseFields(caseId, { 
         teaching: teachingText
       });
       const fullCase = await getCase(caseId);
@@ -1400,26 +1428,32 @@ Return ONLY valid JSON:
       });
     } catch (error) {
       console.error('[CASE_API] Teaching error:', error);
-      const statusCode = error.message?.includes('Missing') || error.message?.includes('not found') ? 400 : 500;
-      res.status(statusCode).json({
-        ok: false,
-        error: error.message || 'Failed to generate teaching',
-      });
+      return respondWithFallback('Teaching block temporarily unavailable');
     }
   });
 
   // POST /api/case/expand/evidence - Generate deep evidence reasoning (NO guidelines)
   router.post('/expand/evidence', async (req, res) => {
+    let caseId = null;
+    const respondWithFallback = (warning) => {
+      console.warn('[CASE_API] Deep Evidence fallback:', warning);
+      return res.status(200).json({
+        success: false,
+        ok: false,
+        caseId,
+        warning,
+      });
+    };
+
     try {
-      const { caseId } = req.body || {};
-      
+      caseId = req.body?.caseId;
       if (!caseId) {
-        return res.status(400).json({ ok: false, error: 'Missing caseId' });
+        return respondWithFallback('Missing caseId for deep evidence');
       }
 
       const existingCase = await getCase(caseId);
       if (!existingCase) {
-        return res.status(404).json({ ok: false, error: 'Case not found' });
+        return respondWithFallback('Case context unavailable for deep evidence');
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1436,12 +1470,25 @@ Return ONLY valid JSON:
         });
       }
 
+      const paraclinical = existingCase.paraclinical || {};
+      const labs = paraclinical.labs || paraclinical.Labs || '';
+      const imaging = paraclinical.imaging || paraclinical.Imaging || '';
+      const hasLabs = hasMeaningfulText(labs);
+      const hasImaging = hasMeaningfulText(imaging);
+      if (!hasLabs && !hasImaging) {
+        return respondWithFallback('Data not available in current case');
+      }
+      const paraclinicalDetails = [];
+      if (hasLabs) paraclinicalDetails.push(`Labs: ${labs}`);
+      if (hasImaging) paraclinicalDetails.push(`Imaging: ${imaging}`);
+      const paraclinicalContext = paraclinicalDetails.join('\n');
+
       const caseContext = `
 Topic: ${existingCase.meta?.topic || 'Clinical case'}
 Category: ${existingCase.meta?.category || 'General Practice'}
 History: ${existingCase.history || 'Not available'}
 Physical Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${JSON.stringify(existingCase.paraclinical || {})}
+Paraclinical: ${paraclinicalContext}
 ${existingCase.final_diagnosis ? `Diagnosis: ${existingCase.final_diagnosis}` : ''}
 ${existingCase.management ? `Management: ${JSON.stringify(existingCase.management)}` : ''}
 `.trim();
@@ -1464,12 +1511,12 @@ Ensure strict cross-section consistency; no invented labs/facts not present in e
 Case: ${existingCase.meta?.topic || 'Clinical case'}
 History: ${existingCase.history || 'Not available'}
 Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${JSON.stringify(existingCase.paraclinical || {})}
+Paraclinical: ${paraclinicalContext}
 
 Return ONLY valid JSON:
 {
   "deepEvidence": ""
-}`;
+}`; 
 
       const completion = await generateCaseContent(selectedModel, prompt, 0.5, 30000);
 
@@ -1491,11 +1538,7 @@ Return ONLY valid JSON:
       });
     } catch (error) {
       console.error('[CASE_API] Deep Evidence error:', error);
-      const statusCode = error.message?.includes('Missing') || error.message?.includes('not found') ? 400 : 500;
-      res.status(statusCode).json({
-        ok: false,
-        error: error.message || 'Failed to generate deep evidence',
-      });
+      return respondWithFallback('Deep Evidence temporarily unavailable');
     }
   });
 

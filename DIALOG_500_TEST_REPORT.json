@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-12-04T19:09:21.397Z",
+  "passed": 12,
+  "failed": 0,
+  "warnings": 0,
+  "tests": {
+    "passed": [
+      "dialog_api.mjs file exists",
+      "dialog_api.mjs contains [DIALOG_500] logging",
+      "dialog_api.mjs has proper error handling",
+      "dialog_api.mjs includes timing logs",
+      "generate_case_clinical.mjs file exists",
+      "generate_case_clinical.mjs has OpenAI error handling",
+      "generate_case_clinical.mjs has enhanced error logging",
+      "dialog_api.mjs has valid syntax",
+      "Error responses return correct format",
+      "Adequate logging statements present",
+      "All error paths have logging",
+      "Errors are properly re-thrown to outer handler"
+    ],
+    "failed": [],
+    "warnings": []
+  }
+}
