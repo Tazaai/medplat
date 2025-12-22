@@ -199,6 +199,137 @@ function hasMeaningfulText(value) {
   return !PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value));
 }
 
+function slugifyTopic(value) {
+  if (!isNonEmptyString(value)) return 'case';
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return slug || 'case';
+}
+
+function normalizeDiagnosis(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+function buildCaseContextFromCase(caseData) {
+  const meta = caseData?.meta || {};
+  const paraclinical = caseData?.paraclinical && typeof caseData.paraclinical === 'object'
+    ? caseData.paraclinical
+    : {};
+
+  return {
+    topic_slug: slugifyTopic(meta.topic || caseData?.topic || ''),
+    final_diagnosis: stripSurroundingWhitespace(caseData?.final_diagnosis || caseData?.finalDiagnosis || ''),
+    demographics: {
+      topic: meta.topic || caseData?.topic || '',
+      category: meta.category || caseData?.category || '',
+      age: meta.age || '',
+      sex: meta.sex || '',
+      setting: meta.setting || '',
+    },
+    history: stripSurroundingWhitespace(caseData?.history || ''),
+    exam: stripSurroundingWhitespace(caseData?.physical_exam || ''),
+    paraclinical: {
+      labs: paraclinical.labs || paraclinical.Labs || '',
+      imaging: paraclinical.imaging || paraclinical.Imaging || '',
+    },
+    risk: stripSurroundingWhitespace(caseData?.risk || ''),
+    stability: stripSurroundingWhitespace(caseData?.stability || ''),
+  };
+}
+
+function mergeCaseContext(existingCase, updates, lockContext = false) {
+  if (existingCase?.case_context_locked) {
+    return null;
+  }
+  const base = existingCase?.case_context && typeof existingCase.case_context === 'object'
+    ? existingCase.case_context
+    : buildCaseContextFromCase(existingCase || {});
+
+  const merged = {
+    ...base,
+    ...updates,
+  };
+
+  if (updates?.paraclinical && typeof updates.paraclinical === 'object') {
+    merged.paraclinical = {
+      labs: updates.paraclinical.labs || '',
+      imaging: updates.paraclinical.imaging || '',
+    };
+  }
+
+  return {
+    case_context: merged,
+    case_context_locked: lockContext || existingCase?.case_context_locked || false,
+  };
+}
+
+function canonicalizeCaseContextValue(value) {
+  if (typeof value === 'string') {
+    return value.trim().toLowerCase();
+  }
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (Array.isArray(value)) {
+    return value.map(canonicalizeCaseContextValue);
+  }
+  if (typeof value === 'object') {
+    const normalized = {};
+    Object.keys(value)
+      .sort()
+      .forEach((key) => {
+        normalized[key] = canonicalizeCaseContextValue(value[key]);
+      });
+    return normalized;
+  }
+  return value;
+}
+
+function isSameCaseContext(a, b) {
+  const normalizedA = canonicalizeCaseContextValue(a);
+  const normalizedB = canonicalizeCaseContextValue(b);
+  return JSON.stringify(normalizedA) === JSON.stringify(normalizedB);
+}
+
+function requireLockedCaseContext(existingCase, endpoint) {
+  const storedContext = existingCase?.case_context;
+  if (!storedContext || typeof storedContext !== 'object') {
+    throw new Error(`Persistent case_context missing for ${endpoint}`);
+  }
+  if (!existingCase.case_context_locked) {
+    throw new Error(`Case context not locked for ${endpoint}`);
+  }
+  if (!hasMeaningfulText(storedContext.final_diagnosis)) {
+    throw new Error(`Case context missing final diagnosis for ${endpoint}`);
+  }
+  return storedContext;
+}
+
+function extractCaseId(req) {
+  return req.body?.caseId || req.body?.case_id || '';
+}
+
+function getCaseContextForExpand(req, existingCase, endpoint) {
+  const body = req.body || {};
+  const payloadContext = body.full_case_context || body.fullCaseContext || body.case_context;
+  if (!payloadContext || typeof payloadContext !== 'object') {
+    throw new Error('Missing full_case_context payload');
+  }
+
+  const storedContext = requireLockedCaseContext(existingCase, endpoint);
+  if (!isSameCaseContext(payloadContext, storedContext)) {
+    console.warn(`[CASE_API] Case context mismatch for ${endpoint}`, {
+      caseId: existingCase?.caseId || existingCase?.id || 'unknown',
+    });
+    throw new Error('Case context mismatch');
+  }
+
+  return storedContext;
+}
+
 function stripSurroundingWhitespace(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -382,9 +513,23 @@ function stabilizeCaseFields(caseData) {
   if (!stabilized.paraclinical || typeof stabilized.paraclinical !== 'object') {
     stabilized.paraclinical = { labs: '', imaging: '' };
   } else {
+    // Safely normalize labs - can be string, object, or array
+    let normalizedLabs = stabilized.paraclinical.labs;
+    if (normalizedLabs === null || normalizedLabs === undefined) {
+      normalizedLabs = '';
+    } else if (typeof normalizedLabs !== 'string' && !Array.isArray(normalizedLabs) && typeof normalizedLabs !== 'object') {
+      normalizedLabs = String(normalizedLabs);
+    }
+    // Safely normalize imaging - can be string, object, or array
+    let normalizedImaging = stabilized.paraclinical.imaging;
+    if (normalizedImaging === null || normalizedImaging === undefined) {
+      normalizedImaging = '';
+    } else if (typeof normalizedImaging !== 'string' && !Array.isArray(normalizedImaging) && typeof normalizedImaging !== 'object') {
+      normalizedImaging = String(normalizedImaging);
+    }
     stabilized.paraclinical = {
-      labs: stabilized.paraclinical.labs || '',
-      imaging: stabilized.paraclinical.imaging || '',
+      labs: normalizedLabs,
+      imaging: normalizedImaging,
     };
   }
 
@@ -721,10 +866,16 @@ Return ONLY valid JSON:
       const parsed = safeParseJSON(text);
 
       const stabilized = stabilizeInitOutput(parsed);
-      
+
+      const baseCaseContext = buildCaseContextFromCase({
+        meta: stabilized.meta,
+      });
+
       const caseData = {
         caseId,
         ...stabilized,
+        case_context: baseCaseContext,
+        case_context_locked: false,
         model: selectedModel, // Store model for subsequent steps
         createdAt: new Date().toISOString(),
       };
@@ -751,7 +902,7 @@ Return ONLY valid JSON:
   // POST /api/case/history - Generate history based on context
   router.post('/history', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -775,6 +926,7 @@ Detail: Include symptom quality, timing, exacerbating/alleviating factors, and f
 Tone: Concise, objective, clinically relevant, professional
 
 Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
+No placeholders: All required fields must be populated with real case content. Do not use "Not provided" for finalDiagnosis.
 
 Return ONLY valid JSON:
 {
@@ -786,7 +938,14 @@ Return ONLY valid JSON:
       const text = completion.choices?.[0]?.message?.content || '{}';
       const parsed = safeParseJSON(text);
 
-      const updated = await updateCaseFields(caseId, { history: parsed.history || '' });
+      const historyText = parsed.history || '';
+      const updatePayload = { history: historyText };
+      const contextUpdate = mergeCaseContext(existingCase, { history: historyText });
+      if (contextUpdate) {
+        Object.assign(updatePayload, contextUpdate);
+      }
+
+      const updated = await updateCaseFields(caseId, updatePayload);
       const fullCase = await getCase(caseId);
       const processedCase = postProcessCase(stabilizeCaseFields(fullCase));
 
@@ -807,7 +966,7 @@ Return ONLY valid JSON:
   // POST /api/case/exam - Generate physical exam
   router.post('/exam', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -841,7 +1000,14 @@ Return ONLY valid JSON:
       const text = completion.choices?.[0]?.message?.content || '{}';
       const parsed = safeParseJSON(text);
 
-      const updated = await updateCaseFields(caseId, { physical_exam: parsed.physical_exam || '' });
+      const examText = parsed.physical_exam || '';
+      const updatePayload = { physical_exam: examText };
+      const contextUpdate = mergeCaseContext(existingCase, { exam: examText });
+      if (contextUpdate) {
+        Object.assign(updatePayload, contextUpdate);
+      }
+
+      const updated = await updateCaseFields(caseId, updatePayload);
       const fullCase = await getCase(caseId);
       const processedCase = postProcessCase(stabilizeCaseFields(fullCase));
 
@@ -862,7 +1028,7 @@ Return ONLY valid JSON:
   // POST /api/case/paraclinical - Generate labs + imaging
   router.post('/paraclinical', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -886,14 +1052,26 @@ Reasoning chains: Structure as test → result → interpretation → clinical i
 Focus: Highlight pathognomonic findings or key diagnostic markers
 
 Labs: Use SI units. Consistent naming: lipase, amylase, WBC (not leukocytes), bicarbonate (not HCO3-), LFTs, triglycerides. Include normal ranges ONLY when clinically relevant, format as "N: X–Y" with interpretation (normal | high | low | borderline).
+CRITICAL: Do not leave partial lab entries. If a lab value is missing or placeholder (e.g., ".", empty field), omit it entirely. Do not include incomplete lab panels (e.g., "CBC: not provided"). Only include labs with actual values.
+
 Imaging: Structure as clear CT, MRI, Ultrasound blocks. Include brief decision reasoning (CT vs MRI vs US) when relevant: CT for emergencies/perforation/hemorrhage, US for gallbladder/DVT/pediatrics, MRI for neurology/soft tissue/spine.
+CRITICAL: If imaging contradicts the diagnosis (e.g., normal CT angiography with NSTEMI), the finalDiagnosis must reconcile this using ONLY existing Stage A data:
+- If troponin is elevated, diagnosis can be NSTEMI (troponin-driven, non-occlusive plaque, microvascular ischemia)
+- If reconciliation cannot be justified from Stage A data, set finalDiagnosis to reflect the imaging findings or state uncertainty
+
 Timing/dynamics: When relevant (troponin, CK-MB, D-dimer, cultures, LP, radiology timing), include ONE short sentence about when marker rises/peaks/declines or when test becomes meaningful.
 ALWAYS include finalDiagnosis, differentialDiagnosis, and management fields, even if empty strings/arrays.
 DifferentialDiagnosis: Return 3-6 options. Each item MUST be an object:
 - diagnosis: short name
-- FOR: 1 supporting argument grounded in provided history/exam/labs/imaging OR explicitly "not provided"
-- AGAINST: 2 refuting arguments in ONE line, formatted exactly as "1) ...; 2) ...", grounded in provided data OR explicitly absent/unspecified
-Use probability-shift language (e.g., "raises probability", "lowers probability", "argues against") rather than generic exclusions.
+- FOR: 1 supporting argument grounded in provided history/exam/labs/imaging OR explicitly "Not provided" if no supporting evidence exists
+- AGAINST: 2 refuting arguments in ONE line, formatted exactly as "1) ...; 2) ...", grounded in provided data
+
+CRITICAL RULES:
+- Do NOT use "Insufficient data provided" when AGAINST evidence already exists (e.g., normal CXR excludes PE, CTA excludes dissection)
+- Populate FOR and AGAINST using available Stage A data only
+- If AGAINST evidence exists (normal imaging, negative labs, etc.), use it explicitly
+- Only use "Not provided" or "Absent/unspecified" when data is truly missing, not when it exists and argues against the diagnosis
+- Use probability-shift language (e.g., "raises probability", "lowers probability", "argues against") rather than generic exclusions
 Management: must match the finalDiagnosis and the case physiology. Include contraindications/nuances if relevant. Escalation/disposition thresholds must be case-specific (avoid generic triggers).
 Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
 
@@ -925,6 +1103,12 @@ Return ONLY valid JSON:
         // Lock diagnosis after ECG/lab interpretation step
         // Always set final_diagnosis (default to empty string if missing)
         const lockedDiagnosis = parsed.finalDiagnosis || parsed.final_diagnosis || parsed.Final_Diagnosis || '';
+        if (!hasMeaningfulText(lockedDiagnosis)) {
+          throw new Error('Final diagnosis validation failed: missing or placeholder');
+        }
+        if (containsJsonArtifacts(lockedDiagnosis)) {
+          throw new Error('Final diagnosis validation failed: contains JSON/Markdown artifacts');
+        }
         updateFields.final_diagnosis = lockedDiagnosis;
 
         // Stage A: Always set differential_diagnoses with required For/Against structure
@@ -941,10 +1125,22 @@ Return ONLY valid JSON:
         updateFields.management = validateManagementObject(management);
 
         // Store locked diagnosis in meta for reuse across sections
-        if (lockedDiagnosis) {
+        if (hasMeaningfulText(lockedDiagnosis)) {
           updateFields.meta = existingCase.meta || {};
           updateFields.meta.locked_diagnosis = lockedDiagnosis;
           updateFields.meta.diagnosis_locked_at = new Date().toISOString();
+        }
+
+        const contextUpdate = mergeCaseContext(existingCase, {
+          final_diagnosis: lockedDiagnosis,
+          history: existingCase.history || '',
+          exam: existingCase.physical_exam || '',
+          paraclinical: updateFields.paraclinical,
+          risk: existingCase.risk || '',
+          stability: existingCase.stability || '',
+        }, true);
+        if (contextUpdate) {
+          Object.assign(updateFields, contextUpdate);
         }
 
         return updateFields;
@@ -1009,7 +1205,7 @@ Return ONLY valid JSON:
   // POST /api/case/expand/pathophysiology - Generate pathophysiology on demand
   router.post('/expand/pathophysiology', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -1020,12 +1216,23 @@ Return ONLY valid JSON:
         return res.status(404).json({ ok: false, error: 'Case not found' });
       }
 
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'pathophysiology');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
+      }
+
       const selectedModel = getModel(req, existingCase);
 
-      const prompt = `Generate pathophysiology for:
-Topic: ${existingCase.meta?.topic || 'Clinical case'}
-History: ${existingCase.history || 'Not available'}
-Physical Exam: ${existingCase.physical_exam || 'Not available'}
+      const prompt = `Generate pathophysiology for the locked case context below.
+
+CRITICAL: Use the provided case_context as immutable ground truth. Do NOT change diagnosis or introduce new diseases.
+DO NOT CHANGE CASE CONTENT.
+Expand only. If data is missing, say "Not provided".
+
+FULL CASE CONTEXT JSON:
+${JSON.stringify(caseContext)}
 
 Reasoning chain: Trigger (cellular/molecular) → organ dysfunction → systemic effects → compensatory responses
 Depth: Connect pathophys mechanisms to clinical presentation and diagnostic findings
@@ -1075,7 +1282,7 @@ Return ONLY valid JSON:
   // POST /api/case/expand/management - Generate management on demand
   router.post('/expand/management', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -1084,6 +1291,13 @@ Return ONLY valid JSON:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return res.status(404).json({ ok: false, error: 'Case not found' });
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'management');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1099,7 +1313,15 @@ Return ONLY valid JSON:
         });
       }
 
-const prompt = `Generate management for this case. Include:
+const prompt = `Generate management for the locked case context below. Include:
+- Do NOT change diagnosis or introduce new diseases. Expand only.
+- If data is missing, say "Not provided" rather than inventing facts.
+DO NOT CHANGE CASE CONTENT.
+
+FULL CASE CONTEXT JSON:
+${JSON.stringify(caseContext)}
+
+Include:
 - Initial treatment (first-line interventions)
 - Definitive treatment (targeted therapy)
 - Contraindications/nuances: if any intervention depends on pregnancy, renal/hepatic function, bleeding risk, drug interactions, comorbidities, or instability, state the constraint briefly (do not invent missing facts)
@@ -1112,11 +1334,6 @@ Escalation: Specify objective thresholds (vitals, labs, symptoms) that trigger n
 Clarity: Concise, action-oriented, exam-ready format
 
 Keep wording short, high-level, clear. Use standard international units for vitals. Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
-
-Case: ${existingCase.meta?.topic || 'Clinical case'}
-History: ${existingCase.history || 'Not available'}
-Exam: ${existingCase.physical_exam || 'Not available'}
-Labs/Imaging: ${JSON.stringify(existingCase.paraclinical || {})}
 
 Return ONLY valid JSON:
 {
@@ -1170,7 +1387,7 @@ Return ONLY valid JSON:
     };
 
     try {
-      caseId = req.body?.caseId;
+      caseId = extractCaseId(req);
       if (!caseId) {
         return respondWithFallback('Missing caseId for expert panel');
       }
@@ -1178,6 +1395,18 @@ Return ONLY valid JSON:
       existingCase = await getCase(caseId);
       if (!existingCase) {
         return respondWithFallback('Case context unavailable for expert panel');
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'expert_panel');
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          ok: false,
+          caseId,
+          error: error.message || 'Case context not available',
+        });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1195,21 +1424,18 @@ Return ONLY valid JSON:
         });
       }
 
-      // Build case context with safe defaults
-      const caseContext = `
-Topic: ${existingCase.meta?.topic || 'Clinical case'}
-Category: ${existingCase.meta?.category || 'General Practice'}
-History: ${existingCase.history || 'Not available'}
-Physical Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${JSON.stringify(existingCase.paraclinical || {})}
-${existingCase.final_diagnosis ? `Diagnosis: ${existingCase.final_diagnosis}` : ''}
-${existingCase.management ? `Management: ${JSON.stringify(existingCase.management)}` : ''}
-`.trim();
+      const caseContextJson = JSON.stringify(caseContext);
 
       const prompt = `Generate an expert conference with 3 consultants with different perspectives. Choose roles dynamically from the case topic/context (do not hardcode a fixed specialty set):
 - Dr A: most relevant domain consultant for the case topic
 - Dr B: acute care/triage perspective (focus on immediate risk and disposition)
 - Dr C: diagnostic/referral perspective (focus on discriminating tests and alternatives)
+
+CRITICAL: Use the locked case_context provided below. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+DO NOT CHANGE CASE CONTENT.
+DO NOT CHANGE CASE CONTENT.
+DO NOT CHANGE CASE CONTENT.
+DO NOT CHANGE CASE CONTENT.
 
 Include:
 1. Diagnostic approach and findings grounded in provided data
@@ -1219,10 +1445,8 @@ Include:
 
 Keep concise (10-14 sentences), professional, globally understandable. Return as plain text string, not object. Use natural language: "Dr A: [comment]. Dr B: [comment]." Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
 
-Case: ${existingCase.meta?.topic || 'Clinical case'}
-History: ${existingCase.history || 'Not available'}
-Exam: ${existingCase.physical_exam || 'Not available'}
-Diagnosis: ${existingCase.final_diagnosis || 'Not available'}
+FULL CASE CONTEXT JSON:
+${caseContextJson}
 
 Return ONLY valid JSON:
 {
@@ -1287,7 +1511,8 @@ Return ONLY valid JSON:
   // POST /api/case/expand/question - Answer focused user question
   router.post('/expand/question', async (req, res) => {
     try {
-      const { caseId, userQuestion } = req.body || {};
+      const caseId = extractCaseId(req);
+      const { userQuestion } = req.body || {};
       
       if (!caseId || !userQuestion) {
         return res.status(400).json({ ok: false, error: 'Missing caseId or userQuestion' });
@@ -1298,14 +1523,24 @@ Return ONLY valid JSON:
         return res.status(404).json({ ok: false, error: 'Case not found' });
       }
 
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'question');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
+      }
+
+      const selectedModel = getModel(req, existingCase);
+
       const prompt = `Answer this focused clinical question based on the case:
 Question: ${userQuestion}
 
-Case Context:
-Topic: ${existingCase.meta?.topic || 'Clinical case'}
-History: ${existingCase.history || 'Not available'}
-Physical Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${JSON.stringify(existingCase.paraclinical || {})}
+CRITICAL: Use the locked case_context below as immutable ground truth. Do NOT change diagnosis or introduce new diseases.
+DO NOT CHANGE CASE CONTENT.
+Expand only. If data is missing, say "Not provided".
+
+FULL CASE CONTEXT JSON:
+${JSON.stringify(caseContext)}
 
 Use professional clinical reasoning. Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
 
@@ -1353,7 +1588,7 @@ Return ONLY valid JSON with a focused answer:
     };
 
     try {
-      caseId = req.body?.caseId;
+      caseId = extractCaseId(req);
       if (!caseId) {
         return respondWithFallback('Missing caseId for teaching');
       }
@@ -1361,6 +1596,18 @@ Return ONLY valid JSON with a focused answer:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return respondWithFallback('Case context unavailable for teaching');
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'teaching');
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          ok: false,
+          caseId,
+          error: error.message || 'Case context not available',
+        });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1377,24 +1624,19 @@ Return ONLY valid JSON with a focused answer:
         });
       }
 
-      const caseContext = `
-Topic: ${existingCase.meta?.topic || 'Clinical case'}
-Category: ${existingCase.meta?.category || 'General Practice'}
-History: ${existingCase.history || 'Not available'}
-Physical Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${JSON.stringify(existingCase.paraclinical || {})}
-${existingCase.final_diagnosis ? `Diagnosis: ${existingCase.final_diagnosis}` : ''}
-`.trim();
+      const caseContextJson = JSON.stringify(caseContext);
 
       const prompt = `Generate a concise teaching block for this clinical case. Include:
 1. Key concepts (2-3 most important learning points)
 2. Common pitfalls (what students/learners often miss)
 3. Clinical pearls (practical takeaways)
 
+CRITICAL: Use the locked case_context provided below. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+
 Keep brief (6-10 sentences total), clinically useful, educational. Use professional, exam-level language suitable for USMLE Step 2, medical students, doctors, researchers. Each pearl/pitfall should map to a specific part of the case (history, exam, labs, or management). Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
 
-Case Context:
-${caseContext}
+FULL CASE CONTEXT JSON:
+${caseContextJson}
 
 Return ONLY valid JSON:
 {
@@ -1446,7 +1688,7 @@ Return ONLY valid JSON:
     };
 
     try {
-      caseId = req.body?.caseId;
+      caseId = extractCaseId(req);
       if (!caseId) {
         return respondWithFallback('Missing caseId for deep evidence');
       }
@@ -1454,6 +1696,18 @@ Return ONLY valid JSON:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return respondWithFallback('Case context unavailable for deep evidence');
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'evidence');
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          ok: false,
+          caseId,
+          error: error.message || 'Case context not available',
+        });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1470,7 +1724,7 @@ Return ONLY valid JSON:
         });
       }
 
-      const paraclinical = existingCase.paraclinical || {};
+      const paraclinical = caseContext.paraclinical || {};
       const labs = paraclinical.labs || paraclinical.Labs || '';
       const imaging = paraclinical.imaging || paraclinical.Imaging || '';
       const hasLabs = hasMeaningfulText(labs);
@@ -1483,20 +1737,17 @@ Return ONLY valid JSON:
       if (hasImaging) paraclinicalDetails.push(`Imaging: ${imaging}`);
       const paraclinicalContext = paraclinicalDetails.join('\n');
 
-      const caseContext = `
-Topic: ${existingCase.meta?.topic || 'Clinical case'}
-Category: ${existingCase.meta?.category || 'General Practice'}
-History: ${existingCase.history || 'Not available'}
-Physical Exam: ${existingCase.physical_exam || 'Not available'}
-Paraclinical: ${paraclinicalContext}
-${existingCase.final_diagnosis ? `Diagnosis: ${existingCase.final_diagnosis}` : ''}
-${existingCase.management ? `Management: ${JSON.stringify(existingCase.management)}` : ''}
-`.trim();
+      const caseContextJson = JSON.stringify(caseContext);
 
       const prompt = `Generate Deep Evidence (specialist-level) as plain text only.
 
+CRITICAL: Use the locked case_context provided below. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+
 Rules (universal):
-- Strictly use ONLY the provided case facts (history/exam/paraclinical/diagnosis/management). If a value is missing, explicitly say it is not provided rather than assuming it.
+- Strictly use ONLY the provided Stage A case facts (history/exam/paraclinical/diagnosis/management). Reference Stage A data explicitly by name (e.g., "The troponin of X", "CT angiography showing Y").
+- If a value is missing, explicitly state "Not provided" rather than assuming it.
+- State uncertainty where data is incomplete (e.g., "Limited by missing X", "Cannot assess Y without Z").
+- Do not overstate conclusions beyond what Stage A data supports.
 - Do not restate the case; every sentence must add reasoning (probability shift, mechanism, decision impact, or test interpretation).
 - Explain why a finding changes diagnostic probability OR changes a management decision (probability-shift language, not checklist exclusions).
 - Include thresholds, kinetics, mechanisms, or decision-impact when applicable to the findings present (do not invent missing numbers).
@@ -1504,13 +1755,17 @@ Rules (universal):
 
 Output:
 - 8-12 sentences, dense and clinically useful.
+
+FULL CASE CONTEXT JSON:
+${caseContextJson}
 - Refer explicitly to discriminating findings already present (numeric/qualitative) and tie them to what they rule in/out and what they change next.
+- When referencing data, cite it explicitly: "The [test name] showing [result] argues for/against [diagnosis] because..."
 
 Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
 
-Case: ${existingCase.meta?.topic || 'Clinical case'}
-History: ${existingCase.history || 'Not available'}
-Exam: ${existingCase.physical_exam || 'Not available'}
+Case: ${caseContext.demographics?.topic || 'Clinical case'}
+History: ${caseContext.history || 'Not available'}
+Exam: ${caseContext.exam || 'Not available'}
 Paraclinical: ${paraclinicalContext}
 
 Return ONLY valid JSON:
@@ -1545,7 +1800,7 @@ Return ONLY valid JSON:
   // POST /api/case/expand/stability - Generate stability score
   router.post('/expand/stability', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -1554,6 +1809,13 @@ Return ONLY valid JSON:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return res.status(404).json({ ok: false, error: 'Case not found' });
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'stability');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1570,7 +1832,20 @@ Return ONLY valid JSON:
         });
       }
 
-      const prompt = `Assess patient stability. Return: stable / borderline / unstable. One sentence justification. Case: ${existingCase.meta?.topic || 'Clinical case'}. History: ${existingCase.history || 'Not available'}. Exam: ${existingCase.physical_exam || 'Not available'}. Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections. Return JSON: {"stability": ""}`;
+      const caseContextJson = JSON.stringify(caseContext);
+
+      const prompt = `Assess patient stability based on the FULL case context below. Return: stable / borderline / unstable. One sentence justification.
+
+CRITICAL: Use the locked case_context provided. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+DO NOT CHANGE CASE CONTENT.
+DO NOT CHANGE CASE CONTENT.
+
+Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
+
+FULL CASE CONTEXT JSON:
+${caseContextJson}
+
+Return JSON: {"stability": ""}`;
 
       const completion = await generateCaseContent(selectedModel, prompt, 0.3, 20000);
 
@@ -1614,7 +1889,7 @@ Return ONLY valid JSON:
   // POST /api/case/expand/risk - Generate risk label
   router.post('/expand/risk', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -1623,6 +1898,13 @@ Return ONLY valid JSON:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return res.status(404).json({ ok: false, error: 'Case not found' });
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'risk');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1639,7 +1921,18 @@ Return ONLY valid JSON:
         });
       }
 
-      const prompt = `Assess clinical risk. Return: high / moderate / low. No explanation. Case: ${existingCase.meta?.topic || 'Clinical case'}. History: ${existingCase.history || 'Not available'}. Exam: ${existingCase.physical_exam || 'Not available'}. Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections. Return JSON: {"risk": ""}`;
+      const caseContextJson = JSON.stringify(caseContext);
+
+      const prompt = `Assess clinical risk based on the FULL case context below. Return: high / moderate / low. No explanation.
+
+CRITICAL: Use the locked case_context provided. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+
+Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections.
+
+FULL CASE CONTEXT JSON:
+${caseContextJson}
+
+Return JSON: {"risk": ""}`;
 
       const completion = await generateCaseContent(selectedModel, prompt, 0.3, 20000);
 
@@ -1683,7 +1976,7 @@ Return ONLY valid JSON:
   // POST /api/case/expand/consistency - Check consistency
   router.post('/expand/consistency', async (req, res) => {
     try {
-      const { caseId } = req.body || {};
+      const caseId = extractCaseId(req);
       
       if (!caseId) {
         return res.status(400).json({ ok: false, error: 'Missing caseId' });
@@ -1692,6 +1985,36 @@ Return ONLY valid JSON:
       const existingCase = await getCase(caseId);
       if (!existingCase) {
         return res.status(404).json({ ok: false, error: 'Case not found' });
+      }
+
+      // Validate that diagnosis and management exist before computing consistency
+      const hasDiagnosis = existingCase.final_diagnosis && 
+                           typeof existingCase.final_diagnosis === 'string' && 
+                           existingCase.final_diagnosis.trim().length > 0 &&
+                           !existingCase.final_diagnosis.toLowerCase().includes('not provided') &&
+                           !existingCase.final_diagnosis.toLowerCase().includes('not available');
+      
+      const hasManagement = existingCase.management && 
+                           typeof existingCase.management === 'object' &&
+                           ((existingCase.management.initial && typeof existingCase.management.initial === 'string' && existingCase.management.initial.trim().length > 0) ||
+                            (existingCase.management.definitive && typeof existingCase.management.definitive === 'string' && existingCase.management.definitive.trim().length > 0));
+
+      if (!hasDiagnosis || !hasManagement) {
+        return res.status(400).json({ 
+          ok: false, 
+          error: 'Consistency check requires both diagnosis and management to be present. Please complete Stage A case generation first.',
+          requires: {
+            diagnosis: !hasDiagnosis,
+            management: !hasManagement
+          }
+        });
+      }
+
+      let caseContext;
+      try {
+        caseContext = getCaseContextForExpand(req, existingCase, 'consistency');
+      } catch (error) {
+        return res.status(400).json({ ok: false, error: error.message || 'Case context not available' });
       }
 
       const selectedModel = getModel(req, existingCase);
@@ -1708,7 +2031,33 @@ Return ONLY valid JSON:
         });
       }
 
-      const prompt = `Check if history, exam, labs contradict. If yes, note the contradiction (max 2 lines). If no, return "Consistent". Case: ${existingCase.meta?.topic || 'Clinical case'}. History: ${existingCase.history || 'Not available'}. Exam: ${existingCase.physical_exam || 'Not available'}. Labs: ${JSON.stringify(existingCase.paraclinical || {})}. Ensure strict cross-section consistency; no invented labs/facts not present in earlier sections. Return JSON: {"consistency": ""}`;
+      const caseContextJson = JSON.stringify(caseContext);
+
+      const prompt = `Check clinical consistency across all Stage A data (history, exam, paraclinical, diagnosis, management).
+
+CRITICAL: Use the locked case_context provided below. Do NOT change, regenerate, or question the diagnosis. The diagnosis is already determined from Stage A data.
+
+CRITICAL RULES:
+- NEVER auto-mark "Consistent" without thorough verification
+- Mark "Consistent" ONLY if ALL of the following align without unresolved conflict:
+  1. History matches physical exam findings
+  2. Paraclinical results support the diagnosis
+  3. Diagnosis is justified by available data
+  4. Management aligns with diagnosis and case physiology
+  5. No contradictions between imaging findings and diagnosis
+
+- If imaging contradicts diagnosis (e.g., normal CT angiography with NSTEMI diagnosis), explicitly reconcile using ONLY Stage A data:
+  * If reconciliation possible (e.g., troponin-driven, non-occlusive plaque, microvascular ischemia), explain the reconciliation
+  * If reconciliation cannot be justified from Stage A data, return "Unable to assess"
+
+- If any contradiction exists that cannot be resolved, describe it (max 2 lines)
+
+- Do not invent data to force consistency
+
+FULL CASE CONTEXT JSON:
+${caseContextJson}
+
+Return JSON: {"consistency": ""}`;
 
       const completion = await generateCaseContent(selectedModel, prompt, 0.3, 20000);
 
