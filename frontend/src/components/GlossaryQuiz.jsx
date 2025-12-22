@@ -53,7 +53,7 @@ const GlossaryQuiz = ({
     setIsLoading(true);
     
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/glossary/quiz/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ const GlossaryQuiz = ({
     setIsLoading(true);
 
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/glossary/quiz/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

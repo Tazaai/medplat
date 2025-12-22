@@ -13,6 +13,56 @@ export default function InteractiveCaseGenerator() {
   const [userQuestion, setUserQuestion] = useState('');
   const [questionAnswer, setQuestionAnswer] = useState(null);
 
+  const slugifyTopic = (value) => {
+    if (typeof value !== 'string') return 'case';
+    const slug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    return slug || 'case';
+  };
+
+  const buildCaseContextPayload = () => {
+    if (caseData?.case_context && typeof caseData.case_context === 'object') {
+      return caseData.case_context;
+    }
+
+    const meta = caseData?.meta || {};
+    const topic = meta.topic || caseData?.topic || '';
+    const paraclinical =
+      caseData?.paraclinical && typeof caseData.paraclinical === 'object'
+        ? caseData.paraclinical
+        : { labs: '', imaging: '' };
+
+    return {
+      topic_slug: slugifyTopic(topic),
+      final_diagnosis: caseData?.final_diagnosis || '',
+      demographics: {
+        topic,
+        category: meta.category || caseData?.category || '',
+        age: meta.age || '',
+        sex: meta.sex || '',
+        setting: meta.setting || '',
+      },
+      history: caseData?.history || '',
+      exam: caseData?.physical_exam || '',
+      paraclinical: {
+        labs: paraclinical.labs || '',
+        imaging: paraclinical.imaging || '',
+      },
+      risk: caseData?.risk || '',
+      stability: caseData?.stability || '',
+    };
+  };
+
+  const getExpandPayload = (endpoint) => ({
+    caseId,
+    case_id: caseId,
+    requested_section: endpoint,
+    full_case_context: buildCaseContextPayload(),
+  });
+
   // Initialize case
   const handleInit = async () => {
     const topic = prompt('Enter case topic:');
@@ -131,7 +181,7 @@ export default function InteractiveCaseGenerator() {
       const response = await fetch(`${API_BASE}/api/case/expand/pathophysiology`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId }),
+        body: JSON.stringify({ ...getExpandPayload('pathophysiology') }),
       });
 
       const data = await response.json();
@@ -156,7 +206,7 @@ export default function InteractiveCaseGenerator() {
       const response = await fetch(`${API_BASE}/api/case/expand/management`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId }),
+        body: JSON.stringify({ ...getExpandPayload('management') }),
       });
 
       const data = await response.json();
@@ -181,7 +231,7 @@ export default function InteractiveCaseGenerator() {
       const response = await fetch(`${API_BASE}/api/case/expand/expert_panel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId }),
+        body: JSON.stringify({ ...getExpandPayload('expert_panel') }),
       });
 
       const data = await response.json();
@@ -207,7 +257,7 @@ export default function InteractiveCaseGenerator() {
       const response = await fetch(`${API_BASE}/api/case/expand/question`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseId, userQuestion }),
+        body: JSON.stringify({ ...getExpandPayload('question'), userQuestion }),
       });
 
       const data = await response.json();

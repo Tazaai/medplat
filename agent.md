@@ -1,4 +1,108 @@
 =====================================================
+# MedPlat — Cursor Rules (Authoritative)
+=====================================================
+
+## Role
+Cursor is used for **code writing, refactoring, and repo-wide reasoning**.
+It must follow MedPlat clinical and architectural rules exactly.
+
+---
+
+## Core Principles
+- Universal, dynamic system
+- No hardcoding (disease, specialty, MCQs, simulations)
+- No prompt overloading
+- Data honesty above all
+
+---
+
+## Stage Architecture (MANDATORY)
+
+### Stage A — Ground Truth
+- Generates all clinical facts
+- Single source of truth
+- Never hallucinate
+- Missing data → say **"Not provided"**
+
+### Stage B — On-Demand
+- Triggered only by user
+- Additive only
+- Never modifies Stage A
+- Never invents data
+- If unavailable →  
+  **"On-demand expansion currently unavailable for this case."**
+
+---
+
+## Fixed Case Structure (DO NOT BREAK)
+
+1. History  
+2. Physical Examination  
+3. Paraclinical Investigations  
+4. Differential Diagnoses (FOR / AGAINST)  
+5. Final Diagnosis  
+6. Management (Initial / Definitive / Escalation / Disposition)  
+7. Stability  
+8. Risk  
+9. Consistency  
+10. Teaching (on-demand)  
+11. Deep Evidence (on-demand)  
+12. Expert Conference (on-demand)
+
+---
+
+## MCQs
+- Generated dynamically from Stage A
+- No static question banks
+- Reasoning-based, not recall
+- If data missing →  
+  **"Cannot be determined from provided data."**
+
+---
+
+## Interactive Simulation (User vs AI)
+- Dynamic, case-driven
+- No scripted flows
+- AI may challenge user
+- AI must never introduce new facts
+- All reasoning grounded in Stage A
+
+---
+
+## Expert Freedom Mode (Inside Safe Frame)
+Allowed:
+- Deep reasoning
+- Strategy comparison
+- Expert disagreement
+
+Only if:
+- Grounded in Stage A
+- Uncertainty stated explicitly
+
+Forbidden:
+- Invented labs/imaging/events
+- "Typical findings" without data
+
+---
+
+## Frontend Rules
+- Paraclinical empty → show **"Not provided"**
+- Do not render expansions without valid payload
+- No placeholders or stale content
+
+---
+
+## Deployment Boundary
+- Cursor **does not deploy**
+- Deployment is local only via terminal
+- Cursor assists with code only
+
+---
+
+## One-Line Law
+**If data is missing, say it. Never guess.**
+
+=====================================================
 🧠 MedPlat Diagnostic & Readiness Review
 =====================================================
 📘 PROJECT_GUIDE.md found — master documentation loaded

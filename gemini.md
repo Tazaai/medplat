@@ -304,16 +304,43 @@ MedPlat supports **formal category certification** (e.g. Cardiology, Endocrinolo
 - Certification logic must never override data honesty or safety rules
 
 ---
+## 15. Deployment Rule (Authoritative)
 
-## 15. Deployment Rules
+- **Deployment is LOCAL → Cloud Run only**
+- Source of truth = **local VS workspace**
+- **No GitHub Actions, no new workflows**
+- **No new services, no env changes**
 
-- All deployments must update **existing services**.
-- Do **not** create new services, instances, or environments unless explicitly authorized for a major version change.
-- Both backend and frontend must be deployed together to ensure compatibility.
+### Method (ONLY):
+
+- Use existing script: `commit_and_deploy.ps1`
+- This script:
+  1. Builds frontend
+  2. Deploys backend to existing `medplat-backend`
+  3. Deploys frontend to existing `medplat-frontend`
+  4. Verifies health endpoints
+
+### How to run:
+
+The user has granted the necessary credentials and permissions for AI agents (Gemini / Codex / Cloud Code) to execute the `commit_and_deploy.ps1` script, enabling automated local deployment.
+
+```powershell
+./commit_and_deploy.ps1
+```
+
+### Verification (manual):
+
+- `/health` → 200
+- Admin routes → 403 without key
+- Cloud Run logs → **no OpenAI key metadata**
+
+### If asked how to deploy:
+
+> Use the existing local deploy script. No new deployment method.
 
 ---
 
-## 17. Generator, MCQs & Simulation — Universal Rules + Expert Freedom Mode
+## 16. Generator, MCQs & Simulation — Universal Rules + Expert Freedom Mode
 
 ### Classic Case Generator (ALL cases)
 - Must be **universal and dynamic**

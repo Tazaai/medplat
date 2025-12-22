@@ -342,7 +342,7 @@ function PanelDiscussion({ caseData }) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
+  const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
 
   const fetchDiscussion = async () => {
     if (discussion) {

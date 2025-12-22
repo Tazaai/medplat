@@ -2475,27 +2475,33 @@ function removeParaclinicalPlaceholders(caseData) {
     /\b(?:cbc|complete blood count|lipid panel|metabolic panel)\s*[:\-]?\s*$/gi,
   ];
 
-  // Clean labs
+  // Clean labs - Replace placeholders/empty values with "Not provided"
   if (paraclinical.labs) {
     if (typeof paraclinical.labs === 'object' && !Array.isArray(paraclinical.labs)) {
       const cleanedLabs = {};
       for (const [key, value] of Object.entries(paraclinical.labs)) {
-        const valueStr = String(value || '').trim().toLowerCase();
-        // Only keep if it's not a placeholder and has actual content
-        if (valueStr && !placeholders.includes(valueStr) && valueStr.length > 2) {
-          // Check if it's an incomplete panel reference
-          const isIncompletePanel = incompletePanelPatterns.some(pattern => 
-            pattern.test(`${key}: ${valueStr}`)
-          );
-          if (!isIncompletePanel) {
-            cleanedLabs[key] = value;
-          }
+        const valueStr = String(value || '').trim();
+        const valueStrLower = valueStr.toLowerCase();
+        // Replace placeholders/empty with "Not provided"
+        if (!valueStr || valueStr === '.' || placeholders.includes(valueStrLower) || valueStr.length <= 2) {
+          // Skip empty/placeholder entries - don't include in output
+          continue;
+        }
+        // Check if it's an incomplete panel reference
+        const isIncompletePanel = incompletePanelPatterns.some(pattern => 
+          pattern.test(`${key}: ${valueStrLower}`)
+        );
+        if (!isIncompletePanel) {
+          cleanedLabs[key] = value;
         }
       }
+      // If all labs were placeholders/empty, set to empty string (will show "Not provided" in frontend)
       paraclinical.labs = Object.keys(cleanedLabs).length > 0 ? cleanedLabs : '';
     } else if (typeof paraclinical.labs === 'string') {
-      // Remove placeholder phrases from string
+      // Remove placeholder phrases and incomplete panels from string
       let cleanedLabs = paraclinical.labs;
+      // Replace common placeholder patterns with empty (frontend will show "Not provided")
+      cleanedLabs = cleanedLabs.replace(/\.\s*$/g, ''); // Remove trailing dots
       for (const placeholder of placeholders) {
         cleanedLabs = cleanedLabs.replace(new RegExp(`\\b${placeholder}\\b`, 'gi'), '');
       }
@@ -2505,34 +2511,49 @@ function removeParaclinicalPlaceholders(caseData) {
       }
       // Remove sentences that only mention incomplete panels
       const sentences = cleanedLabs.split(/[.!?]/).filter(s => {
-        const sLower = s.toLowerCase();
-        return !incompletePanelPatterns.some(pattern => pattern.test(sLower)) &&
-               s.trim().length > 0;
+        const sLower = s.toLowerCase().trim();
+        return sLower.length > 0 && 
+               !incompletePanelPatterns.some(pattern => pattern.test(sLower)) &&
+               !placeholders.some(p => sLower === p || sLower.includes(p));
       });
       cleanedLabs = sentences.join('. ').trim();
+      // If result is empty or only whitespace, set to empty (frontend shows "Not provided")
       paraclinical.labs = cleanedLabs || '';
     }
   }
 
-  // Clean imaging
+  // Clean imaging - Replace placeholders/empty values (frontend will show "Not provided")
   if (paraclinical.imaging) {
     if (typeof paraclinical.imaging === 'object' && !Array.isArray(paraclinical.imaging)) {
       const cleanedImaging = {};
       for (const [key, value] of Object.entries(paraclinical.imaging)) {
-        const valueStr = String(value || '').trim().toLowerCase();
-        // Only keep if it's not a placeholder
-        if (valueStr && !placeholders.includes(valueStr) && valueStr.length > 2) {
-          cleanedImaging[key] = value;
+        const valueStr = String(value || '').trim();
+        const valueStrLower = valueStr.toLowerCase();
+        // Replace placeholders/empty with empty (frontend shows "Not provided")
+        if (!valueStr || valueStr === '.' || placeholders.includes(valueStrLower) || valueStr.length <= 2) {
+          // Skip empty/placeholder entries - don't include in output
+          continue;
         }
+        cleanedImaging[key] = value;
       }
+      // If all imaging was placeholders/empty, set to empty string (frontend shows "Not provided")
       paraclinical.imaging = Object.keys(cleanedImaging).length > 0 ? cleanedImaging : '';
     } else if (typeof paraclinical.imaging === 'string') {
       // Remove placeholder phrases from string
       let cleanedImaging = paraclinical.imaging;
+      // Replace common placeholder patterns
+      cleanedImaging = cleanedImaging.replace(/\.\s*$/g, ''); // Remove trailing dots
       for (const placeholder of placeholders) {
         cleanedImaging = cleanedImaging.replace(new RegExp(`\\b${placeholder}\\b`, 'gi'), '');
       }
-      paraclinical.imaging = cleanedImaging.trim() || '';
+      // Remove sentences that are only placeholders
+      const sentences = cleanedImaging.split(/[.!?]/).filter(s => {
+        const sLower = s.toLowerCase().trim();
+        return sLower.length > 0 && !placeholders.some(p => sLower === p || sLower.includes(p));
+      });
+      cleanedImaging = sentences.join('. ').trim();
+      // If result is empty or only whitespace, set to empty (frontend shows "Not provided")
+      paraclinical.imaging = cleanedImaging || '';
     }
   }
 

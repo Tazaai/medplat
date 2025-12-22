@@ -87,8 +87,8 @@ async function runTests() {
       body: { caseId: null },
       validate: (data) => {
         const paraclinical = data.data?.paraclinical;
-        const hasLabs = paraclinical?.labs && paraclinical.labs.trim().length > 0;
-        const hasImaging = paraclinical?.imaging && paraclinical.imaging.trim().length > 0;
+        const hasLabs = paraclinical?.labs && typeof paraclinical.labs === 'string' && paraclinical.labs.trim().length > 0;
+        const hasImaging = paraclinical?.imaging && typeof paraclinical.imaging === 'string' && paraclinical.imaging.trim().length > 0;
         const hasDifferentials = Array.isArray(data.data?.differential_diagnoses) && data.data.differential_diagnoses.length > 0;
         return {
           pass: hasLabs && hasImaging && hasDifferentials,
@@ -248,8 +248,8 @@ async function runTestsFixed() {
     });
     const paraData1 = await para1.json();
     const paraclinical = paraData1.data?.paraclinical;
-    const hasLabs = paraclinical?.labs && paraclinical.labs.trim().length > 0;
-    const hasImaging = paraclinical?.imaging && paraclinical.imaging.trim().length > 0;
+    const hasLabs = paraclinical?.labs && typeof paraclinical.labs === 'string' && paraclinical.labs.trim().length > 0;
+    const hasImaging = paraclinical?.imaging && typeof paraclinical.imaging === 'string' && paraclinical.imaging.trim().length > 0;
     const hasDifferentials = Array.isArray(paraData1.data?.differential_diagnoses) && paraData1.data.differential_diagnoses.length > 0;
     console.log(`✓ Paraclinical: labs=${hasLabs ? '✓' : '✗'}, imaging=${hasImaging ? '✓' : '✗'}, differentials=${hasDifferentials ? '✓' : '✗'}`);
     results.push({ pass: hasLabs && hasImaging && hasDifferentials, name: 'Test Case 1' });

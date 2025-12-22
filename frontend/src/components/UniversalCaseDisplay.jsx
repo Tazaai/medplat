@@ -6,6 +6,8 @@ import CollapsibleSection from "./CollapsibleSection";
 import { annotateVital, annotateLab } from "../utils/clinicalAnnotations";
 import { formatParaclinical, formatLabs, formatImaging } from "../utils/paraclinicalFormatter";
 
+const STAGE_B_UNAVAILABLE_NOTE = "On-demand expansion currently unavailable for this case.";
+
 export default function UniversalCaseDisplay({ 
   caseData,
   showExpert = false,
@@ -13,7 +15,11 @@ export default function UniversalCaseDisplay({
   showDeepEvidence = false,
   showStability = false,
   showRisk = false,
-  showConsistency = false
+  showConsistency = false,
+  paraclinicalExpanded = false,
+  onParaclinicalToggle = null,
+  loadingParaclinical = false,
+  paraclinicalLoaded = false
 }) {
   if (!caseData) return null;
 
@@ -288,7 +294,13 @@ export default function UniversalCaseDisplay({
 
   // Helper to render paraclinical object (uses frontend formatter for clean grouped bullet lists)
   const renderParaclinical = (paraclinical) => {
-    if (!paraclinical || typeof paraclinical !== "object") {
+    const isEffectivelyEmpty = !paraclinical || 
+      Object.keys(paraclinical).length === 0 ||
+      paraclinical.status === "not_provided" ||
+      (!paraclinical.labs && !paraclinical.imaging) ||
+      (Array.isArray(paraclinical.labs) && paraclinical.labs.length === 0 && Array.isArray(paraclinical.imaging) && paraclinical.imaging.length === 0);
+
+    if (isEffectivelyEmpty) {
       return <span className="text-gray-400 italic">Not provided</span>;
     }
     
@@ -649,16 +661,29 @@ export default function UniversalCaseDisplay({
         </div>
       )}
 
-      {/* 3. Paraclinical Investigations */}
-      {paraclinical && Object.keys(paraclinical).length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
-          <CollapsibleSection title="🧪 Paraclinical Investigations" defaultExpanded={true}>
-            <div className="prose prose-neutral max-w-none">
-              {renderParaclinical(paraclinical)}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
+      {/* 3. Paraclinical Investigations - Always render section, fetch on toggle */}
+      <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto" key="paraclinical-section">
+        <CollapsibleSection 
+          title="🧪 Paraclinical Investigations" 
+          defaultExpanded={paraclinicalExpanded}
+          sectionKey="paraclinical"
+          onToggle={onParaclinicalToggle}
+        >
+          <div className="prose prose-neutral max-w-none">
+            {loadingParaclinical ? (
+              <div className="flex items-center gap-2 text-gray-600">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                <span>Loading paraclinical data...</span>
+              </div>
+            ) : paraclinicalLoaded && paraclinicalExpanded ? (
+              // Only render when both loaded AND expanded (user explicitly clicked)
+              paraclinical && Object.keys(paraclinical).length > 0 && paraclinical.status !== "not_provided"
+                ? renderParaclinical(paraclinical)
+                : <div className="text-gray-500 italic">Not provided</div>
+            ) : null}
+          </div>
+        </CollapsibleSection>
+      </div>
 
       {/* 3a. Diagnostic Evidence */}
       {paraclinical?.diagnostic_evidence && Object.keys(paraclinical.diagnostic_evidence).length > 0 && (
@@ -1322,126 +1347,141 @@ export default function UniversalCaseDisplay({
         </div>
       )}
 
-      {/* 15a. Stability - Only render if present AND toggle is on */}
-      {transformedCase.stability && showStability && (
+      {/* 15a. Stability - Render based on loaded state, not content */}
+      {showStability && (
         <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
           <CollapsibleSection title="⚖️ Stability Assessment" defaultExpanded={true}>
             <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-              {safeRenderJSX(transformedCase.stability)}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
-
-      {/* 15b. Risk - Only render if present AND toggle is on */}
-      {transformedCase.risk && showRisk && (
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
-          <CollapsibleSection title="⚠️ Risk Assessment" defaultExpanded={true}>
-            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-              {safeRenderJSX(transformedCase.risk)}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
-
-      {/* 15c. Consistency - Only render if present AND toggle is on */}
-      {transformedCase.consistency && showConsistency && (
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
-          <CollapsibleSection title="✓ Consistency Check" defaultExpanded={true}>
-            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-              {safeRenderJSX(transformedCase.consistency)}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
-
-      {/* 15d. Teaching Mode - Only render if present AND toggle is on */}
-      {showTeaching && (() => {
-        const hasStructuredTeaching = (transformedCase.key_concepts?.length > 0 || 
-                                       transformedCase.clinical_pearls?.length > 0 || 
-                                       transformedCase.common_pitfalls?.length > 0);
-        const hasStringTeaching = transformedCase.teaching && typeof transformedCase.teaching === 'string' && transformedCase.teaching.trim().length > 0;
-        
-        if (!hasStructuredTeaching && !hasStringTeaching) return null;
-        
-        return (
-          <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
-            <CollapsibleSection title="🎓 Teaching Mode" defaultExpanded={true}>
-              {hasStructuredTeaching ? (
-                <div className="space-y-4">
-                  {transformedCase.key_concepts?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-2">Key Concepts</h4>
-                      <ul className="list-disc list-inside space-y-1 text-gray-700">
-                        {transformedCase.key_concepts.map((concept, idx) => (
-                          <li key={idx}>{safeRenderJSX(concept)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {transformedCase.clinical_pearls?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-green-800 mb-2">Clinical Pearls</h4>
-                      <ul className="list-disc list-inside space-y-1 text-gray-700">
-                        {transformedCase.clinical_pearls.map((pearl, idx) => (
-                          <li key={idx}>{safeRenderJSX(pearl)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {transformedCase.common_pitfalls?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-orange-800 mb-2">Common Pitfalls</h4>
-                      <ul className="list-disc list-inside space-y-1 text-gray-700">
-                        {transformedCase.common_pitfalls.map((pitfall, idx) => (
-                          <li key={idx}>{safeRenderJSX(pitfall)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-                  {safeRenderJSX(transformedCase.teaching)}
-                </div>
-              )}
-            </CollapsibleSection>
-          </div>
-        );
-      })()}
-
-      {/* 15e. Deep Evidence Mode - Only render if present AND toggle is on */}
-      {showDeepEvidence && (
-        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
-          <CollapsibleSection title="🔍 Deep Evidence Mode" defaultExpanded={true}>
-            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-              {(!paraclinical || ((!paraclinical.labs || paraclinical.labs.length === 0) && (!paraclinical.imaging || paraclinical.imaging.length === 0)))
-                ? 'Data not available.'
-                : safeRenderJSX(transformedCase.deepEvidence)
+              {transformedCase.stability && typeof transformedCase.stability === 'string' && transformedCase.stability.trim().length > 0
+                ? safeRenderJSX(transformedCase.stability)
+                : <span className="text-gray-400 italic">Not provided</span>
               }
             </div>
           </CollapsibleSection>
         </div>
       )}
 
-      {/* 16. Expert Conference Discussion - Only render if present AND toggle is on */}
-      {showExpert && (() => {
-        // Also check for expertConference (from expand endpoint)
-        const expertConf = transformedCase.expertConference || expert_conference;
-        const hasExpertConference = expertConferenceStructured || 
-          (expertConf && 
-           ((typeof expertConf === 'string' && expertConf.trim().length > 0) ||
-            (typeof expertConf === 'object' && Object.keys(expertConf).length > 0)));
-        
-        // Skip silently if missing
-        if (!hasExpertConference) {
-          return null;
-        }
-        
-        return (
-          <div className="bg-white rounded-xl shadow-sm p-4 max-w-3xl mx-auto">
-            <CollapsibleSection title="👥 Expert Conference Discussion" defaultExpanded={true}>
-          {expertConferenceStructured ? (
+      {/* 15b. Risk - Render based on loaded state, not content */}
+      {showRisk && (
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
+          <CollapsibleSection title="⚠️ Risk Assessment" defaultExpanded={true}>
+            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+              {transformedCase.risk && typeof transformedCase.risk === 'string' && transformedCase.risk.trim().length > 0
+                ? safeRenderJSX(transformedCase.risk)
+                : <span className="text-gray-400 italic">Not provided</span>
+              }
+            </div>
+          </CollapsibleSection>
+        </div>
+      )}
+
+      {/* 15c. Consistency - Render based on loaded state, not content */}
+      {showConsistency && (
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
+          <CollapsibleSection title="✓ Consistency Check" defaultExpanded={true}>
+            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+              {transformedCase.consistency && typeof transformedCase.consistency === 'string' && transformedCase.consistency.trim().length > 0
+                ? safeRenderJSX(transformedCase.consistency)
+                : <span className="text-gray-400 italic">Not provided</span>
+              }
+            </div>
+          </CollapsibleSection>
+        </div>
+      )}
+
+      {/* 15d. Teaching Mode - ALWAYS render when showTeaching is true, regardless of content */}
+      {showTeaching && (
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
+          <CollapsibleSection title="🎓 Teaching Mode" defaultExpanded={true}>
+            {(() => {
+              const hasStructuredTeaching = (transformedCase.key_concepts?.length > 0 || 
+                                             transformedCase.clinical_pearls?.length > 0 || 
+                                             transformedCase.common_pitfalls?.length > 0);
+              const hasStringTeaching = transformedCase.teaching && typeof transformedCase.teaching === 'string' && transformedCase.teaching.trim().length > 0;
+              
+              // Always render something - never return null
+              if (hasStructuredTeaching) {
+                return (
+                  <div className="space-y-4">
+                    {transformedCase.key_concepts?.length > 0 ? (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-2">Key Concepts</h4>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          {transformedCase.key_concepts.map((concept, idx) => (
+                            <li key={idx}>{safeRenderJSX(concept)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {transformedCase.clinical_pearls?.length > 0 ? (
+                      <div>
+                        <h4 className="font-semibold text-green-800 mb-2">Clinical Pearls</h4>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          {transformedCase.clinical_pearls.map((pearl, idx) => (
+                            <li key={idx}>{safeRenderJSX(pearl)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {transformedCase.common_pitfalls?.length > 0 ? (
+                      <div>
+                        <h4 className="font-semibold text-orange-800 mb-2">Common Pitfalls</h4>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          {transformedCase.common_pitfalls.map((pitfall, idx) => (
+                            <li key={idx}>{safeRenderJSX(pitfall)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              } else if (hasStringTeaching) {
+                return (
+                  <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+                    {safeRenderJSX(transformedCase.teaching)}
+                  </div>
+                );
+              } else {
+                // Always show something - never hide the section
+                return <span className="text-gray-400 italic">Not provided</span>;
+              }
+            })()}
+          </CollapsibleSection>
+        </div>
+      )}
+
+      {/* 15e. Deep Evidence Mode - Render based on loaded state, not content */}
+      {showDeepEvidence && (
+        <div className="bg-white rounded-xl shadow-sm p-4 space-y-2 max-w-3xl mx-auto">
+          <CollapsibleSection title="🔍 Deep Evidence Mode" defaultExpanded={true}>
+            <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+              {transformedCase.deepEvidence && typeof transformedCase.deepEvidence === 'string' && transformedCase.deepEvidence.trim().length > 0
+                ? safeRenderJSX(transformedCase.deepEvidence)
+                : <span className="text-gray-400 italic">Not provided</span>
+              }
+            </div>
+          </CollapsibleSection>
+        </div>
+      )}
+
+      {/* 16. Expert Conference Discussion - ALWAYS render when showExpert is true, regardless of content */}
+      {showExpert && (
+        <div className="bg-white rounded-xl shadow-sm p-4 max-w-3xl mx-auto">
+          <CollapsibleSection title="👥 Expert Conference Discussion" defaultExpanded={true}>
+            {(() => {
+              // Also check for expertConference (from expand endpoint)
+              const expertConf = transformedCase.expertConference || expert_conference;
+              const hasExpertConference = expertConferenceStructured || 
+                (expertConf && 
+                 ((typeof expertConf === 'string' && expertConf.trim().length > 0) ||
+                  (typeof expertConf === 'object' && Object.keys(expertConf).length > 0)));
+              
+              // Always render something - never return null or hide
+              if (!hasExpertConference) {
+                return <span className="text-gray-400 italic">Not provided</span>;
+              }
+              
+              return expertConferenceStructured ? (
             <div className="space-y-4">
               {expertConferenceStructured.discussion && (
                 <div className="prose prose-neutral max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
@@ -1542,11 +1582,11 @@ export default function UniversalCaseDisplay({
                 return <div>{processed}</div>;
               })()}
             </div>
-          )}
-            </CollapsibleSection>
-          </div>
-        );
-      })()}
+          );
+            })()}
+          </CollapsibleSection>
+        </div>
+      )}
 
       {/* 17. Guidelines - Only render if present */}
       {(() => {

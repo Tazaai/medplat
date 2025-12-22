@@ -19,10 +19,24 @@ const app = express();
 // 🔧 GLOBAL CORS FIX - Must be at the absolute top, before any routes
 // Restrict CORS to frontend origin only
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'https://medplat-frontend-139218747785.europe-west1.run.app';
+const ALLOWED_ORIGINS = [
+  FRONTEND_ORIGIN,
+  'http://localhost:5173', // Vite dev server (default)
+  'http://localhost:5178', // Vite dev server (alternative port)
+  'http://localhost:3000', // Alternative dev port
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5178',
+  'http://127.0.0.1:3000'
+];
+// Support comma-separated origins in FRONTEND_ORIGIN env var
+if (process.env.FRONTEND_ORIGIN && process.env.FRONTEND_ORIGIN.includes(',')) {
+  const additionalOrigins = process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim());
+  ALLOWED_ORIGINS.push(...additionalOrigins);
+}
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  // Allow requests from frontend origin only
-  if (origin === FRONTEND_ORIGIN) {
+  // Allow requests from frontend origin or localhost (for local dev)
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
   }
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");

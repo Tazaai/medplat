@@ -29,7 +29,7 @@ const PeerChallenge = ({ userId }) => {
 
   const fetchChallenges = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/social/challenges/user/${userId}`);
       
       if (response.ok) {
@@ -43,7 +43,7 @@ const PeerChallenge = ({ userId }) => {
 
   const fetchFriends = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/social/friends/list/${userId}`);
       
       if (response.ok) {
@@ -59,7 +59,7 @@ const PeerChallenge = ({ userId }) => {
     if (!selectedFriend) return;
 
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/social/challenges/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,7 +86,7 @@ const PeerChallenge = ({ userId }) => {
 
   const handleAcceptChallenge = async (challengeId) => {
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const backendUrl = import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${backendUrl}/api/social/challenges/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

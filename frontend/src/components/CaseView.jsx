@@ -45,7 +45,7 @@ function normalizeCaseData(raw) {
     // Core case fields (universal structure)
     history: raw.history || "",
     physical_exam: raw.physical_exam || "",
-    paraclinical: raw.paraclinical || { labs: "", imaging: "" },
+    paraclinical: raw.paraclinical,
     differential_diagnoses: Array.isArray(raw.differential_diagnoses) ? raw.differential_diagnoses : [],
     final_diagnosis: raw.final_diagnosis || "",
     management: raw.management || { initial: "", definitive: "", escalation: "", disposition: "" },
@@ -61,8 +61,52 @@ function normalizeCaseData(raw) {
     teaching: raw.teaching || (raw.key_concepts || raw.clinical_pearls || raw.common_pitfalls ? 'structured' : ''),
     // Deep Evidence Mode
     deepEvidence: raw.deepEvidence || "",
+    case_context: raw.case_context || raw.caseContext || null,
     // Legacy compatibility fields (for backward compatibility)
     ...raw,
+  };
+}
+
+function slugifyTopic(value) {
+  if (typeof value !== "string") return "case";
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return slug || "case";
+}
+
+function buildCaseContextPayload(caseData, topicFallback = "") {
+  if (caseData?.case_context && typeof caseData.case_context === "object") {
+    return caseData.case_context;
+  }
+
+  const meta = caseData?.meta || {};
+  const topic = meta.topic || caseData?.topic || topicFallback || "";
+  const paraclinical =
+    caseData?.paraclinical && typeof caseData.paraclinical === "object"
+      ? caseData.paraclinical
+      : { labs: "", imaging: "" };
+
+  return {
+    topic_slug: slugifyTopic(topic),
+    final_diagnosis: caseData?.final_diagnosis || "",
+    demographics: {
+      topic,
+      category: meta.category || caseData?.category || "",
+      age: meta.age || "",
+      sex: meta.sex || "",
+      setting: meta.setting || "",
+    },
+    history: caseData?.history || "",
+    exam: caseData?.physical_exam || "",
+    paraclinical: {
+      labs: paraclinical.labs || "",
+      imaging: paraclinical.imaging || "",
+    },
+    risk: caseData?.risk || "",
+    stability: caseData?.stability || "",
   };
 }
 
@@ -101,8 +145,39 @@ export default function CaseView() {
   const [caseData, setCaseData] = useState(null);
   const [caseId, setCaseId] = useState(null); // Store caseId for expand operations
   const [loading, setLoading] = useState(false);
-  const [expanding, setExpanding] = useState(false);
+  // Individual loading states for each on-demand button (no shared state)
+  const [loadingExpert, setLoadingExpert] = useState(false);
+  const [loadingTeaching, setLoadingTeaching] = useState(false);
+  const [loadingEvidence, setLoadingEvidence] = useState(false);
+  const [loadingStability, setLoadingStability] = useState(false);
+  const [loadingRisk, setLoadingRisk] = useState(false);
+  const [loadingConsistency, setLoadingConsistency] = useState(false);
   const [stageBWarnings, setStageBWarnings] = useState({});
+  
+  // Track which sections have been loaded (request completed) - independent of content
+  const [loadedSections, setLoadedSections] = useState({
+    expert: false,
+    teaching: false,
+    evidence: false,
+    stability: false,
+    risk: false,
+    consistency: false,
+    paraclinical: false
+  });
+  
+  // Visibility toggles for on-demand sections
+  const [showExpert, setShowExpert] = useState(false);
+  const [showTeaching, setShowTeaching] = useState(false);
+  const [showDeepEvidence, setShowDeepEvidence] = useState(false);
+  const [showStability, setShowStability] = useState(false);
+  const [showRisk, setShowRisk] = useState(false);
+  const [showConsistency, setShowConsistency] = useState(false);
+  
+  // Task: Isolate Paraclinical expanded state - prevent it from being affected by other section expansions
+  const [paraclinicalExpanded, setParaclinicalExpanded] = useState(false);
+  // Explicit paraclinical state - only fetch on user click
+  const [paraclinicalData, setParaclinicalData] = useState(null);
+  const [loadingParaclinical, setLoadingParaclinical] = useState(false);
 
   const [userLocation, setUserLocation] = useState("unspecified");
   const [manualRegion, setManualRegion] = useState("");
@@ -332,22 +407,139 @@ export default function CaseView() {
     const isSuccess = payload?.success || payload?.ok;
     const updatedCase = payload?.data || payload?.case;
     if (isSuccess && updatedCase) {
-      setCaseData(normalizeCaseData(updatedCase));
+      // Task: Isolate Paraclinical state - preserve existing paraclinical data structure
+      // to prevent CollapsibleSection from resetting when other sections expand
+      setCaseData(prevCase => {
+        const normalized = normalizeCaseData(updatedCase);
+        // Always preserve paraclinical reference from previous case if it exists
+        // This prevents Paraclinical CollapsibleSection from remounting/resetting
+        // when other sections (Stability, Risk, etc.) are expanded
+        // Use paraclinicalData state if available, otherwise preserve from prevCase
+        const preservedParaclinical = paraclinicalData || prevCase?.paraclinical;
+        if (preservedParaclinical) {
+          return {
+            ...normalized,
+            paraclinical: preservedParaclinical // Keep same reference - prevents remount
+          };
+        }
+        return normalized;
+      });
     }
   };
 
+  // Explicit handler to fetch paraclinical ONLY on user click
+  const handleParaclinicalToggle = async (isOpen) => {
+    setParaclinicalExpanded(isOpen);
+    
+    // Only fetch if opening AND data doesn't exist
+    if (isOpen && !paraclinicalData && caseId && !loadingParaclinical) {
+      setLoadingParaclinical(true);
+      try {
+        const res = await safeFetchQuiz(`${API_BASE}/api/case/paraclinical`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ caseId }),
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const isSuccess = data.success || data.ok;
+          const paraclinicalSource = data.data || data.case || data;
+          const resolvedParaclinical = paraclinicalSource?.paraclinical
+            || (paraclinicalSource && (paraclinicalSource.labs || paraclinicalSource.imaging)
+              ? {
+                  labs: paraclinicalSource.labs || '',
+                  imaging: paraclinicalSource.imaging || ''
+                }
+              : null);
+
+          // Check if paraclinical has meaningful content
+          // Always set paraclinical data when request completes (even if empty)
+          if (isSuccess && resolvedParaclinical) {
+            setParaclinicalData(resolvedParaclinical);
+            // Update caseData with paraclinical
+            setCaseData(prevCase => ({
+              ...prevCase,
+              paraclinical: resolvedParaclinical
+            }));
+            console.log("✅ Paraclinical fetched on user click");
+          } else if (isSuccess) {
+            // Empty response - set not_provided
+            const notProvided = { status: "not_provided" };
+            setParaclinicalData(notProvided);
+            setCaseData(prevCase => ({
+              ...prevCase,
+              paraclinical: notProvided
+            }));
+            console.log("⚠️ Paraclinical response empty, setting status to not_provided");
+          }
+          
+          // Mark paraclinical as loaded when request completes
+          setLoadedSections(prev => ({ ...prev, paraclinical: true }));
+        } else {
+          console.error("❌ Failed to fetch paraclinical:", res.status);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching paraclinical:", err);
+      } finally {
+        setLoadingParaclinical(false);
+      }
+    }
+  };
+
+  // Get individual loading state setter for each endpoint
+  const getLoadingState = (endpoint) => {
+    const map = {
+      expert_panel: [loadingExpert, setLoadingExpert],
+      teaching: [loadingTeaching, setLoadingTeaching],
+      evidence: [loadingEvidence, setLoadingEvidence],
+      stability: [loadingStability, setLoadingStability],
+      risk: [loadingRisk, setLoadingRisk],
+      consistency: [loadingConsistency, setLoadingConsistency],
+    };
+    return map[endpoint] || [false, () => {}];
+  };
+
+  const getExpandPayload = (endpoint) => ({
+    caseId,
+    case_id: caseId,
+    requested_section: endpoint,
+    full_case_context: buildCaseContextPayload(caseData, effectiveTopic),
+  });
+
   const expandSection = async (endpoint) => {
-    if (!caseId || expanding || loading) return;
+    if (!caseId || loading) return;
+    const [isLoading, setLoadingState] = getLoadingState(endpoint);
+    if (isLoading) return; // Prevent double-clicks on same button
+    
+    // Map endpoint to show state setter - each button independently controls its section
+    const showStateMap = {
+      expert_panel: setShowExpert,
+      teaching: setShowTeaching,
+      evidence: setShowDeepEvidence,
+      stability: setShowStability,
+      risk: setShowRisk,
+      consistency: setShowConsistency
+    };
+    
+    // Immediately show the section when button is clicked
+    const setShowState = showStateMap[endpoint];
+    if (setShowState) {
+      setShowState(true);
+    }
+    
     const isStageB = STAGE_B_ENDPOINTS.has(endpoint);
     if (isStageB) {
       setStageBWarnings((prev) => ({ ...prev, [endpoint]: "" }));
     }
-    setExpanding(true);
+    setLoadingState(true);
     try {
       const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseId }),
+        body: JSON.stringify({
+          ...getExpandPayload(endpoint),
+        }),
       });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: Failed to expand ${endpoint}`);
@@ -355,11 +547,26 @@ export default function CaseView() {
       const data = await res.json();
       const updatedCase = data?.data || data?.case;
       const expandedSuccess = data?.success || data?.ok;
-      const expansionReady = expandedSuccess && !!updatedCase;
+      // Always mark as ready if request succeeds - even if content is empty/"Not provided"
+      // Empty content is valid - section should still render
       if (isStageB) {
-        setStageBWarnings((prev) => ({ ...prev, [endpoint]: expansionReady ? "" : STAGE_B_UNAVAILABLE_NOTE }));
+        setStageBWarnings((prev) => ({ ...prev, [endpoint]: "" }));
       }
       applyExpandedCase(data);
+      
+      // Mark section as loaded when request completes (regardless of content)
+      const sectionMap = {
+        expert_panel: 'expert',
+        teaching: 'teaching',
+        evidence: 'evidence',
+        stability: 'stability',
+        risk: 'risk',
+        consistency: 'consistency'
+      };
+      const sectionKey = sectionMap[endpoint];
+      if (sectionKey) {
+        setLoadedSections(prev => ({ ...prev, [sectionKey]: true }));
+      }
     } catch (err) {
       console.error(`Failed to expand ${endpoint}:`, err);
       if (isStageB) {
@@ -367,8 +574,25 @@ export default function CaseView() {
       } else {
         alert(`Failed to expand ${endpoint}: ${err.message || err}`);
       }
+      // Still mark as loaded even on error (so section can show error state)
+      const sectionMap = {
+        expert_panel: 'expert',
+        teaching: 'teaching',
+        evidence: 'evidence',
+        stability: 'stability',
+        risk: 'risk',
+        consistency: 'consistency'
+      };
+      const sectionKey = sectionMap[endpoint];
+      if (sectionKey) {
+        setLoadedSections(prev => ({ ...prev, [sectionKey]: true }));
+      }
+      // Clear any false "unavailable" warnings - request completed, section should render
+      if (isStageB) {
+        setStageBWarnings((prev) => ({ ...prev, [endpoint]: "" }));
+      }
     } finally {
-      setExpanding(false);
+      setLoadingState(false);
     }
   };
   
@@ -382,6 +606,26 @@ export default function CaseView() {
     setLoading(true);
     setCaseData(null);
     setStageBWarnings({});
+    // Reset paraclinical state for new case
+    setParaclinicalData(null);
+    setParaclinicalExpanded(false);
+    // Reset all on-demand section visibility states
+    setShowExpert(false);
+    setShowTeaching(false);
+    setShowDeepEvidence(false);
+    setShowStability(false);
+    setShowRisk(false);
+    setShowConsistency(false);
+    // Reset all loaded sections for new case
+    setLoadedSections({
+      expert: false,
+      teaching: false,
+      evidence: false,
+      stability: false,
+      risk: false,
+      consistency: false,
+      paraclinical: false
+    });
     
     try {
       // 🎯 OPTIMIZATION: If gamify mode, use direct MCQ generation (faster, cheaper - 1 API call instead of 2)
@@ -501,37 +745,31 @@ export default function CaseView() {
           }
         }
         
-        // Step 4: Generate paraclinical (labs + imaging)
+        // Step 4: Generate paraclinical (Stage A - part of base case)
         const paraclinicalRes = await safeFetchQuiz(`${API_BASE}/api/case/paraclinical`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ caseId: newCaseId, model: selectedModel }),
         });
-
-        if (!paraclinicalRes.ok) {
-          throw new Error(`HTTP ${paraclinicalRes.status}: Failed to generate paraclinical`);
-        }
         
         if (paraclinicalRes.ok) {
           const paraclinicalData = await paraclinicalRes.json();
+          // Support both new format (success + data) and old format (ok + case)
           const isSuccess = paraclinicalData.success || paraclinicalData.ok;
-          const paraclinicalSource = paraclinicalData.data || paraclinicalData.case || paraclinicalData;
-          const resolvedParaclinical = paraclinicalSource?.paraclinical
-            || (paraclinicalSource && (paraclinicalSource.labs || paraclinicalSource.imaging)
-              ? {
-                  labs: paraclinicalSource.labs,
-                  imaging: paraclinicalSource.imaging
-                }
-              : null);
-
-          if (isSuccess && resolvedParaclinical) {
-            currentCase = {
-              ...currentCase,
-              paraclinical: resolvedParaclinical
-            };
-            console.log("Paraclinical generated");
-          } else if (isSuccess && !resolvedParaclinical) {
-            console.log("Paraclinical generated but payload empty");
+          if (isSuccess) {
+            currentCase = paraclinicalData.data || paraclinicalData.case || currentCase;
+            console.log("✅ Paraclinical generated (Stage A)");
+            // Set paraclinical data and mark as loaded since it's part of base generation
+            const resolvedParaclinical = currentCase?.paraclinical;
+            if (resolvedParaclinical) {
+              setParaclinicalData(resolvedParaclinical);
+              setCaseData(prevCase => ({
+                ...prevCase,
+                paraclinical: resolvedParaclinical
+              }));
+              setLoadedSections(prev => ({ ...prev, paraclinical: true }));
+              setParaclinicalExpanded(true);
+            }
           }
         }
 
@@ -985,10 +1223,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("expert_panel")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.expert_panel)}
+                        disabled={loadingExpert || loading || Boolean(stageBWarnings.expert_panel)}
                         className="px-3 py-1 bg-blue-200 rounded text-sm"
                       >
-                        Expert Conference
+                        {loadingExpert ? "Loading..." : "Expert Conference"}
                       </button>
                     )}
 
@@ -996,10 +1234,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("teaching")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.teaching)}
+                        disabled={loadingTeaching || loading || Boolean(stageBWarnings.teaching)}
                         className="px-3 py-1 bg-purple-200 rounded text-sm"
                       >
-                        Teaching Mode
+                        {loadingTeaching ? "Loading..." : "Teaching Mode"}
                       </button>
                     )}
 
@@ -1007,10 +1245,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("evidence")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.evidence)}
+                        disabled={loadingEvidence || loading || Boolean(stageBWarnings.evidence)}
                         className="px-3 py-1 bg-indigo-200 rounded text-sm"
                       >
-                        Deep Evidence
+                        {loadingEvidence ? "Loading..." : "Deep Evidence"}
                       </button>
                     )}
 
@@ -1018,10 +1256,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("stability")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.stability)}
+                        disabled={loadingStability || loading || Boolean(stageBWarnings.stability)}
                         className="px-3 py-1 bg-yellow-200 rounded text-sm"
                       >
-                        Stability
+                        {loadingStability ? "Loading..." : "Stability"}
                       </button>
                     )}
 
@@ -1029,10 +1267,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("risk")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.risk)}
+                        disabled={loadingRisk || loading || Boolean(stageBWarnings.risk)}
                         className="px-3 py-1 bg-red-200 rounded text-sm"
                       >
-                        Risk
+                        {loadingRisk ? "Loading..." : "Risk"}
                       </button>
                     )}
 
@@ -1040,10 +1278,10 @@ export default function CaseView() {
                       <button
                         type="button"
                         onClick={() => expandSection("consistency")}
-                        disabled={expanding || loading || Boolean(stageBWarnings.consistency)}
+                        disabled={loadingConsistency || loading || Boolean(stageBWarnings.consistency)}
                         className="px-3 py-1 bg-gray-200 rounded text-sm"
                       >
-                        Consistency
+                        {loadingConsistency ? "Loading..." : "Consistency"}
                       </button>
                     )}
                   </div>
@@ -1062,14 +1300,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.expertConference && !caseData.expert_conference && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showExpert;
+                      setShowExpert(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.expertConference && !caseData.expert_conference && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/expert_panel`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("expert_panel") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1078,17 +1320,35 @@ export default function CaseView() {
                             if (isSuccess && newCaseData) {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
+                              console.log("✅ Expert Conference expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Expert Conference warning:", data.warning);
+                              alert(`Expert Conference: ${data.warning}`);
+                            } else {
+                              console.error("❌ Expert Conference failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand expert conference: ${data.error || 'Unknown error'}`);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, expert: true }));
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Expert Conference HTTP error:", res.status, errorData);
+                            alert(`Failed to expand expert conference: ${errorData.error || `HTTP ${res.status}`}`);
+                            // Mark as loaded even on error
+                            setLoadedSections(prev => ({ ...prev, expert: true }));
                           }
                         } catch (err) {
-                          console.error("Failed to expand expert conference:", err);
+                          console.error("❌ Failed to expand expert conference:", err);
                           alert(`Failed to expand expert conference: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, expert: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, expert: true }));
                       }
-                      // Toggle visibility
-                      setShowExpert(isProd ? true : !showExpert);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1116,14 +1376,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.teaching && !caseData.key_concepts?.length && !caseData.clinical_pearls?.length && !caseData.common_pitfalls?.length && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showTeaching;
+                      setShowTeaching(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.teaching && !caseData.key_concepts?.length && !caseData.clinical_pearls?.length && !caseData.common_pitfalls?.length && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/teaching`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("teaching") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1132,17 +1396,35 @@ export default function CaseView() {
                             if (isSuccess && newCaseData) {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
+                              console.log("✅ Teaching Mode expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Teaching warning:", data.warning);
+                              alert(`Teaching Mode: ${data.warning}`);
+                            } else {
+                              console.error("❌ Teaching failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand teaching: ${data.error || 'Unknown error'}`);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, teaching: true }));
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Teaching HTTP error:", res.status, errorData);
+                            alert(`Failed to expand teaching: ${errorData.error || `HTTP ${res.status}`}`);
+                            // Mark as loaded even on error
+                            setLoadedSections(prev => ({ ...prev, teaching: true }));
                           }
                         } catch (err) {
-                          console.error("Failed to expand teaching:", err);
+                          console.error("❌ Failed to expand teaching:", err);
                           alert(`Failed to expand teaching: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, teaching: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, teaching: true }));
                       }
-                      // Toggle visibility
-                      setShowTeaching(isProd ? true : !showTeaching);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1170,14 +1452,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.deepEvidence && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showDeepEvidence;
+                      setShowDeepEvidence(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.deepEvidence && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/evidence`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("evidence") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1186,17 +1472,35 @@ export default function CaseView() {
                             if (isSuccess && newCaseData) {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
+                              console.log("✅ Deep Evidence expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Deep Evidence warning:", data.warning);
+                              alert(`Deep Evidence: ${data.warning}`);
+                            } else {
+                              console.error("❌ Deep Evidence failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand deep evidence: ${data.error || 'Unknown error'}`);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, evidence: true }));
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Deep Evidence HTTP error:", res.status, errorData);
+                            alert(`Failed to expand deep evidence: ${errorData.error || `HTTP ${res.status}`}`);
+                            // Mark as loaded even on error
+                            setLoadedSections(prev => ({ ...prev, evidence: true }));
                           }
                         } catch (err) {
-                          console.error("Failed to expand deep evidence:", err);
+                          console.error("❌ Failed to expand deep evidence:", err);
                           alert(`Failed to expand deep evidence: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, evidence: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, evidence: true }));
                       }
-                      // Toggle visibility
-                      setShowDeepEvidence(isProd ? true : !showDeepEvidence);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1224,14 +1528,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.stability && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showStability;
+                      setShowStability(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.stability && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/stability`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("stability") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1241,16 +1549,24 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, stability: true }));
+                          } else {
+                            // Mark as loaded even on HTTP error
+                            setLoadedSections(prev => ({ ...prev, stability: true }));
                           }
                         } catch (err) {
                           console.error("Failed to expand stability:", err);
                           alert(`Failed to expand stability: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, stability: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, stability: true }));
                       }
-                      // Toggle visibility
-                      setShowStability(isProd ? true : !showStability);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1278,14 +1594,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.risk && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showRisk;
+                      setShowRisk(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.risk && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/risk`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("risk") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1295,16 +1615,24 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, risk: true }));
+                          } else {
+                            // Mark as loaded even on HTTP error
+                            setLoadedSections(prev => ({ ...prev, risk: true }));
                           }
                         } catch (err) {
                           console.error("Failed to expand risk:", err);
                           alert(`Failed to expand risk: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, risk: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, risk: true }));
                       }
-                      // Toggle visibility
-                      setShowRisk(isProd ? true : !showRisk);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1332,14 +1660,18 @@ export default function CaseView() {
                   <button
                     type="button"
                     onClick={async () => {
-                      // If data doesn't exist, load it first
-                      if (!caseData.consistency && caseId && !expanding) {
+                      // Immediately show section when clicked
+                      const willShow = isProd ? true : !showConsistency;
+                      setShowConsistency(willShow);
+                      
+                      // If data doesn't exist and we're showing, load it
+                      if (willShow && !caseData.consistency && caseId && !expanding) {
                         setExpanding(true);
                         try {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/consistency`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("consistency") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1349,16 +1681,24 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(newCaseData);
                               setCaseData(normalizedCase);
                             }
+                            // Mark as loaded when request completes
+                            setLoadedSections(prev => ({ ...prev, consistency: true }));
+                          } else {
+                            // Mark as loaded even on HTTP error
+                            setLoadedSections(prev => ({ ...prev, consistency: true }));
                           }
                         } catch (err) {
                           console.error("Failed to expand consistency:", err);
                           alert(`Failed to expand consistency: ${err.message}`);
+                          // Mark as loaded even on error
+                          setLoadedSections(prev => ({ ...prev, consistency: true }));
                         } finally {
                           setExpanding(false);
                         }
+                      } else if (willShow) {
+                        // Already have data, just mark as loaded
+                        setLoadedSections(prev => ({ ...prev, consistency: true }));
                       }
-                      // Toggle visibility
-                      setShowConsistency(isProd ? true : !showConsistency);
                     }}
                     disabled={expanding || loading}
                     className={`px-3 py-1 rounded text-sm transition-all ${
@@ -1388,12 +1728,16 @@ export default function CaseView() {
               <div style={{ order: 1 }}>
                 <UniversalCaseDisplay 
                   caseData={caseData} 
-                  showExpert={hasExpertConference}
-                  showTeaching={hasTeaching}
-                  showDeepEvidence={hasDeepEvidence}
-                  showStability={hasStability}
-                  showRisk={hasRisk}
-                  showConsistency={hasConsistency}
+                  showExpert={showExpert}
+                  showTeaching={showTeaching}
+                  showDeepEvidence={showDeepEvidence}
+                  showStability={showStability}
+                  showRisk={showRisk}
+                  showConsistency={showConsistency}
+                  paraclinicalExpanded={paraclinicalExpanded}
+                  onParaclinicalToggle={handleParaclinicalToggle}
+                  loadingParaclinical={loadingParaclinical}
+                  paraclinicalLoaded={loadedSections.paraclinical}
                 />
               </div>
               
@@ -1420,7 +1764,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/expert_panel`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("expert_panel") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1431,10 +1775,20 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(caseData);
                               setCaseData(normalizedCase);
                               console.log("✅ Expert Conference expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Expert Conference warning:", data.warning);
+                              alert(`Expert Conference: ${data.warning}`);
+                            } else {
+                              console.error("❌ Expert Conference failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand expert conference: ${data.error || 'Unknown error'}`);
                             }
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Expert Conference HTTP error:", res.status, errorData);
+                            alert(`Failed to expand expert conference: ${errorData.error || `HTTP ${res.status}`}`);
                           }
                         } catch (err) {
-                          console.error("Failed to expand expert conference:", err);
+                          console.error("❌ Failed to expand expert conference:", err);
                           alert(`Failed to expand expert conference: ${err.message}`);
                         } finally {
                           setExpanding(false);
@@ -1470,7 +1824,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/teaching`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("teaching") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1481,10 +1835,20 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(caseData);
                               setCaseData(normalizedCase);
                               console.log("✅ Teaching Mode expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Teaching warning:", data.warning);
+                              alert(`Teaching Mode: ${data.warning}`);
+                            } else {
+                              console.error("❌ Teaching failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand teaching: ${data.error || 'Unknown error'}`);
                             }
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Teaching HTTP error:", res.status, errorData);
+                            alert(`Failed to expand teaching: ${errorData.error || `HTTP ${res.status}`}`);
                           }
                         } catch (err) {
-                          console.error("Failed to expand teaching:", err);
+                          console.error("❌ Failed to expand teaching:", err);
                           alert(`Failed to expand teaching: ${err.message}`);
                         } finally {
                           setExpanding(false);
@@ -1520,7 +1884,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/evidence`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("evidence") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1531,10 +1895,20 @@ export default function CaseView() {
                               const normalizedCase = normalizeCaseData(caseData);
                               setCaseData(normalizedCase);
                               console.log("✅ Deep Evidence Mode expanded", data.cached ? "(cached)" : "");
+                            } else if (data.warning) {
+                              console.warn("⚠️ Deep Evidence warning:", data.warning);
+                              alert(`Deep Evidence: ${data.warning}`);
+                            } else {
+                              console.error("❌ Deep Evidence failed:", data.error || 'Unknown error');
+                              alert(`Failed to expand deep evidence: ${data.error || 'Unknown error'}`);
                             }
+                          } else {
+                            const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                            console.error("❌ Deep Evidence HTTP error:", res.status, errorData);
+                            alert(`Failed to expand deep evidence: ${errorData.error || `HTTP ${res.status}`}`);
                           }
                         } catch (err) {
-                          console.error("Failed to expand deep evidence:", err);
+                          console.error("❌ Failed to expand deep evidence:", err);
                           alert(`Failed to expand deep evidence: ${err.message}`);
                         } finally {
                           setExpanding(false);
@@ -1570,7 +1944,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/stability`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("stability") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1620,7 +1994,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/risk`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("risk") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
@@ -1670,7 +2044,7 @@ export default function CaseView() {
                           const res = await safeFetchQuiz(`${API_BASE}/api/case/expand/consistency`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ caseId }),
+                            body: JSON.stringify({ ...getExpandPayload("consistency") }),
                           });
                           if (res.ok) {
                             const data = await res.json();
